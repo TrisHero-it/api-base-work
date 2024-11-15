@@ -89,4 +89,19 @@ class AccountController extends Controller
             return response()->json($account);
     }
 
+    public function myAccount(Request $request) {
+        $token =  $request->header('Authorization');
+        if ($token==null) {
+            return response()->json([
+                'error' => 'Bạn chưa đăng nhập'
+            ]);
+        }
+        $token = explode(' ', $token);
+        $token = $token[1];
+        $account = Account::query()->where('remember_token', $token)->select('email','username','id')->first();
+        $detailAccount = AccountProfile::query()->select('full_name', 'position', 'number_phone','address', 'birthday', 'manager_id','role_id', 'created_at', 'updated_at', 'avatar')->where('email', $account->id)->first();
+        $account = array_merge($account->toArray(), $detailAccount->toArray());
+        return response()->json($account);
+    }
+
 }

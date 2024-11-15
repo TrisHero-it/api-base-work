@@ -10,7 +10,7 @@ class ColorController extends Controller
 {
     public function index()
     {
-        $colors = Color::query()->get();
+        $colors = Color::query()->select('color')->get();
 
         return response()->json($colors);
     }

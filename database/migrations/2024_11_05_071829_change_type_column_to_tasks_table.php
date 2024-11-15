@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stages', function (Blueprint $table) {
-            $table->integer('expired_after_hours')->nullable();
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->text('description')->nullable()->change();
         });
     }
 
@@ -21,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stages', function (Blueprint $table) {
-            $table->dropColumn('expired_after_hours');
+        Schema::table('tasks', function (Blueprint $table) {
+            //
         });
     }
 };
-

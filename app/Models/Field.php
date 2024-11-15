@@ -14,6 +14,12 @@ class Field extends Model
         'workflow_id',
         'stage_id',
         'require',
-        'type'
+        'type',
+        'options',
+        'model'
+    ];
+
+    protected $casts = [
+        'options' => 'array'
     ];
 }

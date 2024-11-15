@@ -16,7 +16,10 @@ class Task extends Model
         "account_id",
         "stage_id",
         'failed_at',
-        'reason'
+        'reason',
+        'expired',
+        'status',
+        'started_at'
     ];
 
     public function stage()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Account;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data_yield_tasks', function (Blueprint $table) {
+        Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('fields_id')->constrained('data_yields')->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Task::class)->constrained()->cascadeOnDelete();
-            $table->string('value');
+            $table->foreignIdFor(Account::class)->constrained();
+            $table->dateTime('checkin')->nullable();
+            $table->dateTime('checkout')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('data_yield_tasks');
+        Schema::dropIfExists('attendances');
     }
 };

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stages', function (Blueprint $table) {
-            $table->integer('expired_after_hours')->nullable();
+        Schema::table('history_move_tasks', function (Blueprint $table) {
+            $table->foreignId('worker')->nullable()->constrained('accounts');
         });
     }
 
@@ -21,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stages', function (Blueprint $table) {
-            $table->dropColumn('expired_after_hours');
+        Schema::table('history_move_tasks', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('worker');
         });
     }
 };
-

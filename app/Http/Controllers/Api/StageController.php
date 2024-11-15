@@ -14,10 +14,12 @@ class StageController extends Controller
     {
         $stages = Stage::query()->where('workflow_id', $id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
-            $tasks = Task::query()->where('stage_id', $stage->id)->orderBy('updated_at', 'desc')->get();
+            $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
+            foreach ($tasks as $task) {
+                $task['id'] = $task->code;
+            }
             $stage['tasks'] = $tasks;
         }
-
         return response()->json($stages);
     }
 
@@ -81,7 +83,9 @@ class StageController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $stage = Stage::query()->findOrFail($id);
+            $a = explode('_', $id);
+            $b = $a[1];
+            $stage = Stage::query()->findOrFail($b);
             $stage->update($request->all());
             return \response()->json([
                 'success' => 'Sửa thành công'

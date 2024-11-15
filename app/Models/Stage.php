@@ -13,7 +13,8 @@ class Stage extends Model
         'name',
         'workflow_id',
         'description',
-        'index'
+        'index',
+        'expired_after_hours'
     ];
 
     public function tasks() {

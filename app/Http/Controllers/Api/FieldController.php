@@ -10,7 +10,7 @@ class FieldController extends Controller
 {
     public function index(Request $request, int $id)
     {
-        $yields = Field::query()->where('workflow_id', $id)->get();
+        $yields = Field::query()->where('model', 'field')->where('workflow_id', $id)->get();
 
         return response()->json($yields);
     }
@@ -18,9 +18,11 @@ class FieldController extends Controller
     public function store(Request $request)
     {
         try {
-            Field::query()->create($request->all());
+            $data =  $request->except('options');
+            $data['options'] = explode(',', $request->options);
+            $file =  Field::query()->create($data);
             return response()->json(['success' => 'Thêm thành công']);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
         }
     }
@@ -29,11 +31,13 @@ class FieldController extends Controller
     {
         try {
             $yield = Field::query()->findOrFail($id);
-            $yield->update($request->all());
+            $data =  $request->except('options');
+            $data['options'] = explode(',', $request->options);
+            $yield->update($data);
             return response()->json([
                 'success' => 'Sửa thành công'
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'
             ], 500);
@@ -47,7 +51,7 @@ class FieldController extends Controller
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'
             ], 500);
