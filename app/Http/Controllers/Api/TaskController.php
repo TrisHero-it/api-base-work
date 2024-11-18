@@ -68,6 +68,11 @@ class TaskController extends Controller
     {
         try {
             $task = Task::query()->where('code', $id)->first();
+            if ($task == null) {
+                return response()->json([
+                    'error' => 'Sai mã code nhiệm vụ'
+                ]);
+            }
             $dateTime = Carbon::parse(now());
             if (!isset( $request->stage_id) && !isset($request->account_id)) {
                 $task->update($request->all());
@@ -81,18 +86,7 @@ class TaskController extends Controller
             if (isset($stage)) {
                 $data = $request->all();
                 $data['started_at'] = null;
-//                if (isset($task->account_id)) {
-//                    $data['started_at'] = $dateTime;
-//                    if (isset($stage->expired_after_hours)) {
-//                        $data['expired'] = $dateTime->copy()->addHours($stage->expired_after_hours);
-//                    }
-//                }
-//                if ($stage->index < $task->stage->index) {
-//                    $data['account_id'] = null;
-//                }else if( $stage->index > $task->stage->index){
-//                    $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $id)->orderByDesc('id')->first();
-//                    $data['account_id'] = $a->worker ?? null;
-//                }
+
                     $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->first() ?? null;
                     $data['account_id'] = $worker!=null ? $worker->worker : null;
                     if ($data['account_id'] != null) {
