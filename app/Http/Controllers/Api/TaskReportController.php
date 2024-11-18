@@ -52,6 +52,7 @@ class TaskReportController extends Controller
     public function store(Request $request, int $id)
     {
         try {
+            $task = FieldTask::query()->where('code', $id)->first();
             $data = $request->all();
             $index = 0;
             $total = count($data);
@@ -60,7 +61,7 @@ class TaskReportController extends Controller
                 if ($index == $total) {
                     break;
                 }
-                $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $id)->first();
+                $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $task->id)->first();
                 if (isset($a)) {
                     $a->update([
                         'value' => $value,
