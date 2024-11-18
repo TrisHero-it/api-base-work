@@ -20,13 +20,13 @@ use Illuminate\Http\Request;
 |
 */
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
+Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store');
 
 Route::middleware(['check.login'])->group(function () {
     // Send Email Notification
     Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
 
 // Account
-    Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store');
     Route::put('accounts/{id}', [AccountController::class, 'update'])->name('api.accounts.update');
     Route::get('accounts-search', [AccountController::class, 'search']);
     Route::get('accounts/{id}', [AccountController::class, 'show'])->name('api.accounts.show');
