@@ -83,9 +83,7 @@ class StageController extends Controller
 
     public function update(Request $request, $id) {
         try {
-            $a = explode('_', $id);
-            $b = $a[1];
-            $stage = Stage::query()->findOrFail($b);
+            $stage = Stage::query()->findOrFail($id);
             $stage->update($request->all());
             return \response()->json([
                 'success' => 'Sửa thành công'

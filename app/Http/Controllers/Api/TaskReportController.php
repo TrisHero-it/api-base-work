@@ -43,7 +43,6 @@ class TaskReportController extends Controller
             ];
             $b = array_merge($b, $task);
         }
-
             $arrTask[] = $b;
         }
 
