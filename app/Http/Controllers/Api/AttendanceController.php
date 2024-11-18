@@ -26,10 +26,10 @@ class AttendanceController extends Controller
         if (isset($a)) {
             $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
         }
-        if (isset($account)) {
+        if (isset($account->checkin)) {
             $isToday = Carbon::parse($account->checkin)->isToday();
         }
-        if ($isToday === true) {
+        if (isset($isToday)) {
             return response()->json([
                 'error' => 'Hôm nay bạn đã điểm danh rồi'
             ]);
