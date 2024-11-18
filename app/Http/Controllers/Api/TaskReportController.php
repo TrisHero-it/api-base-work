@@ -32,8 +32,8 @@ class TaskReportController extends Controller
         foreach ($tasks as $task) {
             if ($c ==0) {
                 $d = [
-                    'staff' => $task->account->username,
-                    'task_name'=> $task->task->name,
+                    'Người thực thi' => $task->account->username,
+                    'Tên nhiệm vụ'=> $task->task->name,
                 ];
                 $b = array_merge($b,$d);
             }
