@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Field;
 use App\Models\FieldTask;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
 class TaskReportController extends Controller
@@ -52,12 +53,13 @@ class TaskReportController extends Controller
     public function store(Request $request, int $id)
     {
         try {
-            $task = FieldTask::query()->where('code', $id)->first();
+            $task = Task::query()->where('code', $id)->first();
             $data = $request->all();
             $index = 0;
             $total = count($data);
             foreach ($data as $field => $value) {
                 $index++;
+
                 if ($index == $total) {
                     break;
                 }
@@ -71,7 +73,7 @@ class TaskReportController extends Controller
                         'value' => $value,
                         'model' => 'report-field',
                         'fields_id' => $field,
-                        'task_id' => $id,
+                        'task_id' => $task->id,
                         'account_id'=> $request->account_id
                     ]);
                 }
