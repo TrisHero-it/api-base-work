@@ -64,7 +64,7 @@ class StageController extends Controller
                         ]);
                     }
 
-                    Stage::create([
+                 $a =  Stage::create([
                         'name' => $request->name,
                         'workflow_id'=> $request->workflow_id,
                         'description' => $request->description,
@@ -74,7 +74,8 @@ class StageController extends Controller
                 }
             }
             return response()->json([
-                'success' => 'Thêm thành công'
+                'success' => 'Thêm thành công',
+                'id'=> $a->id
             ]);
         }catch (\Exception $exception){
             return response()->json(['error' => 'Đã xảy ra lỗi'], 500);

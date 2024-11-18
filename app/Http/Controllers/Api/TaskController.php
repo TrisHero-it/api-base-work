@@ -73,7 +73,19 @@ class TaskController extends Controller
                     'error' => 'Sai mã code nhiệm vụ'
                 ]);
             }
-            if (!isset( $request->stage_id) && !isset($request->account_id)) {
+            if (!isset( $request->stage_id) && !isset($request->account_id) && !isset($request->expired)) {
+                $b = $request->except('expired');
+                $task->update($request->all());
+                return response()->json([
+                    'success' => 'Chỉnh sửa thành công'
+                ]);
+            }
+
+            if (isset($request->expired) && isset($request->account_id)) {
+                $b = $request->except('expired');
+                    $dateTime = Carbon::parse(now())->addHours($request->expired);
+                    $b['started_at'] = now();
+                    $b['expired'] = $dateTime;
                 $task->update($request->all());
                 return response()->json([
                     'success' => 'Chỉnh sửa thành công'
@@ -83,7 +95,7 @@ class TaskController extends Controller
 //    Chuyển giai đoạn
             $stage = Stage::query()->where('id', $request->stage_id)->first() ?? null;
             if (isset($stage)) {
-                $data = $request->all();
+                $data = $request->except('expired');
                 $data['started_at'] = null;
                     $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->first() ?? null;
                     $data['account_id'] = $worker!=null ? $worker->worker : null;
