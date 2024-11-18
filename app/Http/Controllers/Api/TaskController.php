@@ -55,7 +55,7 @@ class TaskController extends Controller
             }
 
             return response()->json([
-                'success' => 'Thêm thành công'
+               'id' => $task->id
             ]);
         } catch (\Exception $exception) {
             return response()->json([

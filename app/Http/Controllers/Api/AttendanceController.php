@@ -24,19 +24,19 @@ class AttendanceController extends Controller
         $token = explode(' ', $token)[1];
         $a = Account::query()->where('remember_token', $token)->first();
         if (isset($a)) {
-            $account = Attendance::where('account_id', $a->account_id)->orderBy('id', 'desc')->first();
+            $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
         }
         if (isset($account)) {
             $isToday = Carbon::parse($account->checkin)->isToday();
         }
-        if (isset($isToday)) {
+        if ($isToday === true) {
             return response()->json([
                 'error' => 'Hôm nay bạn đã điểm danh rồi'
             ]);
         } else {
             Attendance::query()
                 ->create([
-                    'account_id' => 4,
+                    'account_id' => $a->id,
                     'checkin' => now()
                 ]);
 
@@ -49,10 +49,12 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
-        $account = Attendance::where('account_id', 4)->orderBy('id', 'desc')->first();
+        $token = $request->header('Authorization');
+        $token = explode(' ', $token)[1];
+        $a = Account::query()->where('remember_token', $token)->first();
+        $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();
         if (!$isToday) {
-
             return response()->json([
                 'error' => 'Bạn chưa điểm danh @@'
             ]);
