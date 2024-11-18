@@ -93,7 +93,7 @@ class TaskController extends Controller
 //                    $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $id)->orderByDesc('id')->first();
 //                    $data['account_id'] = $a->worker ?? null;
 //                }
-                    $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $id)->where('worker', '!=', null)->first() ?? null;
+                    $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->first() ?? null;
                     $data['account_id'] = $worker!=null ? $worker->worker : null;
                     if ($data['account_id'] != null) {
                         $data['started_at'] = $worker->started_at;
