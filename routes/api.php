@@ -19,8 +19,9 @@ use Illuminate\Http\Request;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 
-//Route::middleware(['check.login'])->group(function () {
+Route::middleware(['check.login'])->group(function () {
     // Send Email Notification
     Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
 
@@ -32,7 +33,6 @@ use Illuminate\Http\Request;
     Route::get('me', [AccountController::class, 'myAccount'])->name('api.accounts.myAccount');
 
 // Login
-    Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 // Workflows
     Route::get('workflows', [WorkflowController::class, 'index']);
     Route::put('workflows/{id}', [WorkflowController::class, 'update']);
@@ -124,4 +124,4 @@ use Illuminate\Http\Request;
     Route::post('task-reports/{id}', [\App\Http\Controllers\Api\TaskReportController::class, 'store']);
     Route::put('task-reports/{id}', [\App\Http\Controllers\Api\TaskReportController::class, 'update']);
     Route::delete('task-reports/{id}', [\App\Http\Controllers\Api\TaskReportController::class, 'destroy']);
-//});
+});
