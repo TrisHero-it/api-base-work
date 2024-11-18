@@ -32,7 +32,6 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('accounts/{id}', [AccountController::class, 'show'])->name('api.accounts.show');
     Route::get('me', [AccountController::class, 'myAccount'])->name('api.accounts.myAccount');
 
-// Login
 // Workflows
     Route::get('workflows', [WorkflowController::class, 'index']);
     Route::put('workflows/{id}', [WorkflowController::class, 'update']);

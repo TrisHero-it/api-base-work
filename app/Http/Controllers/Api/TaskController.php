@@ -106,8 +106,11 @@ class TaskController extends Controller
                 }
 
                 if ($task->stage_id != $stage->id) {
+                    $token = $request->header('Authorization');
+                    $token = explode(' ', $token)[1];
+                    $acc = Account::query()->where('remember_token', $token)->first() ?? null;
                     HistoryMoveTask::query()->create([
-                        'account_id' => 1,
+                        'account_id' => $acc->id,
                         'task_id' => $task->id,
                         'old_stage' => $task->stage_id,
                         'new_stage' => $stage->id,
