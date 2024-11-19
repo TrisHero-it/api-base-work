@@ -77,7 +77,8 @@ class WorkflowCategoryController extends Controller
                     }
                 }
             }
-            return response()->json(['success' => 'Thêm thành công']);
+            return response()->json(['success' => 'Thêm thành công',
+                'id' => $workflow->id]);
         }catch (\Exception $exception){
             return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
         }

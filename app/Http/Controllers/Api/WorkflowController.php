@@ -123,7 +123,8 @@ class WorkflowController extends Controller
                 'description' => 'Đánh dấu hoàn thành công việc',
                 'index' => 1
             ]);
-            return response()->json(['success' => 'Thêm thành công']);
+            return response()->json(['success' => 'Thêm thành công',
+                'id'=> $workflow->id]);
         }catch (\Exception $exception){
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'

@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 
 class KpiController extends Controller
 {
-    public function store(Request $request) {
+
+    public function index(Request $request) {
 
     }
 }
