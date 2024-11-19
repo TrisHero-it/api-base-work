@@ -20,16 +20,19 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        $isToday = false;
         $token = $request->header('Authorization');
         $token = explode(' ', $token)[1];
         $a = Account::query()->where('remember_token', $token)->first();
         if (isset($a)) {
             $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
         }
-        if (isset($account->checkin)) {
-            $isToday = Carbon::parse($account->checkin)->isToday();
-        }
-        if (isset($isToday)) {
+       if (isset($account)) {
+           if ($account->checkin != null) {
+               $isToday = Carbon::parse($account->checkin)->isToday();
+           }
+       }
+        if ($isToday == true) {
             return response()->json([
                 'error' => 'Hôm nay bạn đã điểm danh rồi'
             ]);
@@ -49,17 +52,18 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
+        $isToday = false;
         $token = $request->header('Authorization');
         $token = explode(' ', $token)[1];
         $a = Account::query()->where('remember_token', $token)->first();
         $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();
-        if (!$isToday) {
+        if ($isToday == false) {
             return response()->json([
                 'error' => 'Bạn chưa điểm danh @@'
             ]);
         } else {
-            if (isset($account->checkout)) {
+            if ($account->checkout != null) {
 
                 return response()->json([
                     'error' => 'Hôm nay bạn đã checkout rồi'
