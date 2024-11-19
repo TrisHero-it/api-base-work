@@ -46,7 +46,7 @@ class StageController extends Controller
                         ]);
                     }
 
-                    Stage::create([
+                    $a =   Stage::create([
                         'name' => $request->name,
                         'workflow_id'=> $request->workflow_id,
                         'description' => $request->description,
