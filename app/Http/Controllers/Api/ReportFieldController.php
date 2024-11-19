@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Field;
 use App\Models\FieldTask;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
 class ReportFieldController extends Controller
@@ -32,7 +33,8 @@ class ReportFieldController extends Controller
            if (isset($request->task_id)) {
                $reports = Field::query()->where('model', 'report-field')->where('workflow_id', $id)->where('stage_id', $request->stage_id)->get();
                foreach ($reports as $report) {
-                   $a = FieldTask::query()->select('value')->where('fields_id', $report->id)->where('task_id', $request->task_id)->first();
+                   $task = Task::query()->where('code', $request->task_id)->first();
+                   $a = FieldTask::query()->select('value')->where('fields_id', $report->id)->where('task_id', $task->id)->first();
                    if (isset($a)) {
                        $report['value'] = $a->value;
                    }else {
