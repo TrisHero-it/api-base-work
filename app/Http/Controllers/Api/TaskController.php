@@ -119,7 +119,8 @@ class TaskController extends Controller
                         'old_stage' => $task->stage_id,
                         'new_stage' => $stage->id,
                         'started_at' => $task->started_at ?? null,
-                        'worker' => $task->account_id
+                        'worker' => $task->account_id,
+                        'expired_at'=> $task->expired_at ?? null,
                     ]);
                 }
                 $data['expired'] = null;
