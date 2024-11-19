@@ -105,7 +105,7 @@ class StageController extends Controller
             ]);
         }catch (\Exception $exception){
             return response()->json([
-                'error' => 'Đã xảy ra lỗi'
+                'error' => 'Giai đoạn có chứa nhiệm vụ'
             ], 500);
         }
     }
