@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\HistoryMoveTask;
+use App\Models\Notification;
 use App\Models\Stage;
 use App\Models\Task;
 use Carbon\Carbon;
@@ -81,17 +82,6 @@ class TaskController extends Controller
                 ]);
             }
 
-            if (isset($request->expired) && isset($request->account_id)) {
-                $b = $request->except('expired');
-                    $dateTime = Carbon::parse(now())->addHours($request->expired);
-                    $b['started_at'] = now();
-                    $b['expired'] = $dateTime;
-                $task->update($request->all());
-                return response()->json([
-                    'success' => 'Chỉnh sửa thành công'
-                ]);
-            }
-
 //    Chuyển giai đoạn
             $stage = Stage::query()->where('id', $request->stage_id)->first() ?? null;
             if (isset($stage)) {
@@ -123,6 +113,7 @@ class TaskController extends Controller
                         'expired_at'=> $task->expired_at ?? null,
                     ]);
                 }
+
                 $data['expired'] = null;
 
                 if ($stage->name == 'Hoàn thành') {
@@ -147,6 +138,11 @@ class TaskController extends Controller
                 } else {
 //giao việc
                     if (isset($request->account_id)) {
+                        Notification::query()->create([
+                            'title' => 'Nhiệm vụ mới cho bạn',
+                            'message' => 'Nhiệm vụ '.$task->name. ' được giao cho bạn',
+                            'link' => env('APP_URL').'/tasks/'.$task->code
+                        ]);
                         $data['started_at'] = now();
                     }
                     if (isset($stage->expired_after_hours)) {
@@ -162,6 +158,11 @@ class TaskController extends Controller
             }else if (isset($request->account_id)){
                 $data = $request->all();
                 $data['started_at'] = now();
+                Notification::query()->create([
+                    'title' => 'Nhiệm vụ mới cho bạn',
+                    'message' => 'Nhiệm vụ '.$task->name. ' được giao cho bạn',
+                    'link' => env('APP_URL').'/tasks/'.$task->code
+                ]);
                 if ($task->stage->expired_after_hours != null) {
                     $data['expired'] = now()->addHours($task->stage->expired_after_hours);
                 }

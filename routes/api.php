@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\LoginController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TaskStickerController;
 use App\Http\Controllers\Api\WorkflowController;
 use Illuminate\Support\Facades\Route;
@@ -23,8 +24,9 @@ Route::post('login', [LoginController::class, 'store'])->name('api.login.store')
 Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store');
 
 Route::middleware(['check.login'])->group(function () {
-    // Send Email Notification
+// Send Email Notification
     Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('api.notifications.index');
 
 // Account
     Route::put('accounts/{id}', [AccountController::class, 'update'])->name('api.accounts.update');
