@@ -24,14 +24,15 @@ class StageController extends Controller
     }
 
     public function store(Request $request) {
-        try {
+//        try {
             if (!isset($request->index)) {
                 $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();
                $a = Stage::query()->create([
                     'name' => $request->name,
                     'workflow_id'=> $request->workflow_id,
                     'description' => $request->description ?? null,
-                    'index'=> $stage->index+1
+                    'index'=> $stage->index+1,
+                   'expired_after_hours'=> $request->expired_after_hours ?? null
                 ]);
             }else {
                 if (isset($request->right)){
@@ -77,9 +78,9 @@ class StageController extends Controller
                 'success' => 'Thêm thành công',
                 'id'=> $a->id
             ]);
-        }catch (\Exception $exception){
-            return response()->json(['error' => 'Đã xảy ra lỗi'. $exception->getMessage()], 500);
-        }
+//        }catch (\Exception $exception){
+//            return response()->json(['error' => 'Đã xảy ra lỗi '. $exception->getMessage()], 500);
+//        }
     }
 
     public function update(Request $request, $id) {

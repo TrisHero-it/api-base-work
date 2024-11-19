@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Account;
 use App\Models\Field;
 use App\Models\FieldTask;
 use App\Models\Task;
@@ -53,27 +54,22 @@ class TaskReportController extends Controller
     {
         try {
             $task = Task::query()->where('code', $id)->first();
-            $data = $request->all();
-            $index = 0;
-            $total = count($data);
+            $data = $request->except('account_id');
             foreach ($data as $field => $value) {
-                $index++;
-
-                if ($index == $total) {
-                    break;
-                }
                 $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $task->id)->first();
                 if (isset($a)) {
                     $a->update([
                         'value' => $value,
                     ]);
                 }else {
+                    $b = explode(' ', $request->header('Authorization'));
+                    $acc = Account::query()->where('remember_token', $b[1])->first();
                     FieldTask::query()->create([
                         'value' => $value,
                         'model' => 'report-field',
                         'fields_id' => $field,
                         'task_id' => $task->id,
-                        'account_id'=> $request->account_id
+                        'account_id'=> $acc->id,
                     ]);
                 }
             }

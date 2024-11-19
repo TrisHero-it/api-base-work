@@ -124,3 +124,5 @@ Route::middleware(['check.login'])->group(function () {
     Route::put('task-reports/{id}', [\App\Http\Controllers\Api\TaskReportController::class, 'update']);
     Route::delete('task-reports/{id}', [\App\Http\Controllers\Api\TaskReportController::class, 'destroy']);
 });
+
+//  KPI
