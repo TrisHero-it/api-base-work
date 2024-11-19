@@ -68,6 +68,9 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $token = $request->header('Authorization');
+            $token = explode(' ', $token)[1];
+            $acc = Account::query()->where('remember_token', $token)->first() ?? null;
             $task = Task::query()->where('code', $id)->first();
             if ($task == null) {
                 return response()->json([
@@ -100,9 +103,7 @@ class TaskController extends Controller
                 }
 
                 if ($task->stage_id != $stage->id) {
-                    $token = $request->header('Authorization');
-                    $token = explode(' ', $token)[1];
-                    $acc = Account::query()->where('remember_token', $token)->first() ?? null;
+
                     HistoryMoveTask::query()->create([
                         'account_id' => $acc->id,
                         'task_id' => $task->id,
@@ -140,7 +141,7 @@ class TaskController extends Controller
                     if (isset($request->account_id)) {
                         Notification::query()->create([
                             'title' => 'Nhiệm vụ mới cho bạn',
-                            'message' => 'Nhiệm vụ '.$task->name. ' được giao cho bạn',
+                            'message' => 'Nhiệm vụ '.$task->name. ' được ' . $acc->username . ' giao cho bạn',
                             'link' => env('APP_URL').'/tasks/'.$task->code
                         ]);
                         $data['started_at'] = now();
@@ -160,7 +161,7 @@ class TaskController extends Controller
                 $data['started_at'] = now();
                 Notification::query()->create([
                     'title' => 'Nhiệm vụ mới cho bạn',
-                    'message' => 'Nhiệm vụ '.$task->name. ' được giao cho bạn',
+                    'message' => 'Nhiệm vụ '.$task->name. ' được ' . $acc->username . ' giao cho bạn',
                     'link' => env('APP_URL').'/tasks/'.$task->code
                 ]);
                 if ($task->stage->expired_after_hours != null) {
