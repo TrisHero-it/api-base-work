@@ -27,10 +27,10 @@ class StageController extends Controller
         try {
             if (!isset($request->index)) {
                 $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();
-                Stage::query()->create([
+               $a = Stage::query()->create([
                     'name' => $request->name,
                     'workflow_id'=> $request->workflow_id,
-                    'description' => $request->description,
+                    'description' => $request->description ?? null,
                     'index'=> $stage->index+1
                 ]);
             }else {
@@ -78,7 +78,7 @@ class StageController extends Controller
                 'id'=> $a->id
             ]);
         }catch (\Exception $exception){
-            return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
+            return response()->json(['error' => 'Đã xảy ra lỗi'. $exception->getMessage()], 500);
         }
     }
 
