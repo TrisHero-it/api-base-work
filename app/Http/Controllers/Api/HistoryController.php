@@ -19,7 +19,7 @@ class HistoryController extends Controller
         $task = Task::query()->where('code', $request->task_id)->first();
         $histories = HistoryMoveTask::query()->where('task_id', $task->id)->orderBy('id', 'desc')->get();
         if (isset($request->stage_id)) {
-            $a = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->orderBy('id', 'desc')->first();
+            $a = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->where('worker', '!=', null)->orderBy('id', 'desc')->first();
             return response()->json($a);
         }
         foreach ($histories as $history) {
