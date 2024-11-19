@@ -17,7 +17,12 @@ class HistoryController extends Controller
     public function index(Request $request)
     {
         $histories = HistoryMoveTask::query()->where('task_id', $request->task_id)->orderBy('id', 'desc')->get();
+        if (isset($request->stage_id)) {
+            $a = HistoryMoveTask::query()->where('task_id', $request->task_id)->where('old_stage', $request->stage_id)->orderBy('id', 'desc')->first();
+            return response()->json($a);
+        }
         foreach ($histories as $history) {
+
             $name = AccountProfile::query()->where('id', $history->account_id)->first();
             $name = $name->full_name;
             $history['full_name'] = $name;
