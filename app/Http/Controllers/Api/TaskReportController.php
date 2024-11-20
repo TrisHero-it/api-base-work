@@ -81,7 +81,7 @@ class TaskReportController extends Controller
                         'model' => 'report-field',
                         'fields_id' => $field,
                         'task_id' => $task->id,
-                        'account_id'=> $acc->id,
+                        'account_id'=> $task->account_id,
                     ]);
                 }
             }

@@ -12,6 +12,5 @@ class KpiController extends Controller
     public function index(Request $request) {
 
 
-
     }
 }
