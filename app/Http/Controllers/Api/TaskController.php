@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\HistoryMoveTask;
+use App\Models\Kpi;
 use App\Models\Notification;
 use App\Models\Stage;
 use App\Models\Task;
@@ -56,6 +57,7 @@ class TaskController extends Controller
             }
 
             return response()->json([
+                'success'=> 'Thêm thành công',
                'id' => $task->code
             ]);
         } catch (\Exception $exception) {
@@ -112,6 +114,17 @@ class TaskController extends Controller
                         'started_at' => $task->started_at ?? null,
                         'worker' => $task->account_id,
                         'expired_at'=> $task->expired_at ?? null,
+                    ]);
+                    if ($task->expired_at > now()) {
+                        $j = 1;
+                    }else {
+                        $j =0;
+                    }
+                    Kpi::query()->create([
+                        'account_id' => $task->account_id,
+                        'stage_id' => $task->stage_id,
+                        'task_id' => $task->id,
+                        'status' => $j
                     ]);
                 }
 
