@@ -113,9 +113,9 @@ class TaskController extends Controller
                         'new_stage' => $stage->id,
                         'started_at' => $task->started_at ?? null,
                         'worker' => $task->account_id,
-                        'expired_at'=> $task->expired_at ?? null,
+                        'expired_at'=> $task->expired ?? null,
                     ]);
-                    if ($task->expired_at > now()) {
+                    if ($task->expired > now() || $task->expired == null) {
                         $j = 1;
                     }else {
                         $j =0;
