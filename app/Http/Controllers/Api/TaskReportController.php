@@ -13,41 +13,37 @@ class TaskReportController extends Controller
 {
     public function index($id, Request $request)
     {
-        $arrTask = [];
-        $arrCondition = [];
         $fields = Field::query()->where('stage_id', $id)->get();
-        foreach ($fields as $field) {
-            $query = FieldTask::query();
-            $query->where('fields_id', $field->id);
-            foreach ($arrCondition as $condition) {
-                $query->where('task_id', '!=', $condition);
-            }
-            $a = $query->first();
-            if ($a == null) {
-                continue;
-            }
-            $tasks = FieldTask::query()->where('task_id', $a->task_id)->get();
-            $arrCondition[] = $a->task_id;
-            $b =[];
-            $c =0;
-        foreach ($tasks as $task) {
-            if ($c ==0) {
-                $d = [
-                    'Người thực thi' => $task->account->username,
-                    'Tên nhiệm vụ'=> $task->task->name,
-                ];
-                $b = array_merge($b,$d);
-            }
-            $c = 1;
-            $task = [
-                $task->field->name => $task->value,
-            ];
-            $b = array_merge($b, $task);
-        }
-            $arrTask[] = $b;
-        }
+        $tasks = Task::query()->where('stage_id', $id)->orderBy('id', 'desc')->get();
 
-        return response()->json($arrTask);
+        $b = 0;
+        $arrMerge  = [];
+        foreach ($tasks as $task) {
+            $arr = [];
+            foreach ($fields as $field) {
+                $a = FieldTask::query()->where('task_id', $task->id)->where('fields_id', $field->id)->first();
+
+                if ($a == null) {
+                    break;
+                }else {
+                    if ($b == 0) {
+                        $arr= array_merge([
+                            'Người thực thi' => $a->account->username,
+                            'Tên nhiệm vụ'=> $a->task->name,
+                        ], $arr) ;
+                    }
+                    $arr = array_merge([
+                        $field->name => $a->value,
+                    ], $arr) ;
+                }
+            }
+            if ($arr != null) {
+                $arrMerge[] = $arr;
+            }
+        }
+        return response()->json($arrMerge);
+
+
     }
 
     public function store(Request $request, int $id)
