@@ -49,6 +49,9 @@ class HistoryController extends Controller
             }else {
                 $account = null;
             }
+            if ($task->account_id != null && $task->stage->id == $stage->id) {
+                $account = $task->account;
+            }
             $stage['account'] = $account ?? null;
            if ($stage->index != 0 && $stage->index != 1) {
                $histories = HistoryMoveTask::query()->where('task_id', $idTask)->where('old_stage', $stage->id)->orderBy('id', 'desc')->get();
