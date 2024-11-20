@@ -19,7 +19,8 @@ class Task extends Model
         'reason',
         'expired',
         'status',
-        'started_at'
+        'started_at',
+        'kpi'
     ];
 
     public function stage()
