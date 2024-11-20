@@ -13,35 +13,50 @@ class TaskReportController extends Controller
 {
     public function index($id, Request $request)
     {
+        $arrTask = [];
+        $arrCondition = [];
+//      Lấy ra các trường thuộc giai đoạn í
         $fields = Field::query()->where('stage_id', $id)->get();
-        $tasks = Task::query()->where('stage_id', $id)->orderBy('id', 'desc')->get();
-
-        $b = 0;
-        $arrMerge  = [];
-        foreach ($tasks as $task) {
-            $arr = [];
-            foreach ($fields as $field) {
-                $a = FieldTask::query()->where('task_id', $task->id)->where('fields_id', $field->id)->first();
-
-                if ($a == null) {
-                    break;
-                }else {
-                    if ($b == 0) {
-                        $arr= array_merge([
-                            'Người thực thi' => $a->account->username,
-                            'Tên nhiệm vụ'=> $a->task->name,
-                        ], $arr) ;
-                    }
-                    $arr = array_merge([
-                        $field->name => $a->value,
-                    ], $arr) ;
+        foreach ($fields as $field) {
+            if (!isset($g))
+            {
+                $g = $field->id;
+            }
+            $query = FieldTask::query();
+//           Lấy ra các giá trị từ bảng fieldtask theo fields_id
+            $query->where('fields_id', $g);
+            $query->where('model', 'report-field');
+            foreach ($arrCondition as $condition) {
+                $query->where('task_id', '!=', $condition);
+            }
+                $a = $query->first();
+            if ($a == null) {
+                continue;
+            }
+//          Lấy ra tất cả nhiệm vụ từ giá trị mình vừa lấy ở trên
+            $tasks = FieldTask::query()->where('task_id', $a->task_id)->get();
+//          Thêm giá trị vừa rôồi vào để lọc cho vòng lặp sau
+            $arrCondition[] = $a->task_id;
+            $b =[];
+            $c =0;
+            foreach ($tasks as $task) {
+                if ($c ==0) {
+                    $d = [
+                        'Người thực thi' => $task->account->username,
+                        'Tên nhiệm vụ'=> $task->task->name,
+                    ];
+                    $b = array_merge($b,$d);
                 }
+                $c = 1;
+                $task = [
+                    $task->field->name => $task->value,
+                ];
+                $b = array_merge($b, $task);
             }
-            if ($arr != null) {
-                $arrMerge[] = $arr;
-            }
+            $arrTask[] = $b;
         }
-        return response()->json($arrMerge);
+
+        return response()->json($arrTask);
 
 
     }
