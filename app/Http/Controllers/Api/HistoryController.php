@@ -45,14 +45,7 @@ class HistoryController extends Controller
                 if ($task->account_id != null) {
                     $a = Account::query()->where('id', $task->account_id)->first();
                 }else {
-                    $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->first();
-                    if (isset($a)){
-                        if ($a->worker != null) {
-                            $account = AccountProfile::query()->where('email', $a->worker)->first();
-                        }
-                    }else {
-                        $account = null;
-                    }
+                    $account = null;
                 }
             }else {
                 $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->first();
