@@ -235,7 +235,7 @@ class TaskController extends Controller
             }
             $imageUrl = Storage::put('/public/images', $image);
             $imageUrl = Storage::url($imageUrl);
-            return response()->json(['urlImage' => 'http://14.225.204.53:8000' . $imageUrl]);
+            return response()->json(['urlImage' => 'https://work.1997.pro.vn/api/' . $imageUrl]);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 500);
         }
