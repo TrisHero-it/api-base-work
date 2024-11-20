@@ -16,8 +16,8 @@ class TaskReportController extends Controller
         $arrTask = [];
         $arrCondition = [];
 //      Lấy ra các trường thuộc giai đoạn í
-        $fields = Field::query()->where('stage_id', $id)->get();
-        foreach ($fields as $field) {
+        $field = Field::query()->where('stage_id', $id)->first();
+        while (true) {
             if (!isset($g))
             {
                 $g = $field->id;
@@ -29,9 +29,9 @@ class TaskReportController extends Controller
             foreach ($arrCondition as $condition) {
                 $query->where('task_id', '!=', $condition);
             }
-                $a = $query->first();
+            $a = $query->first();
             if ($a == null) {
-                continue;
+                break;
             }
 //          Lấy ra tất cả nhiệm vụ từ giá trị mình vừa lấy ở trên
             $tasks = FieldTask::query()->where('task_id', $a->task_id)->get();
@@ -55,6 +55,7 @@ class TaskReportController extends Controller
             }
             $arrTask[] = $b;
         }
+
 
         return response()->json($arrTask);
 
