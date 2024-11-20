@@ -41,13 +41,6 @@ class HistoryController extends Controller
         $stages = Stage::query()->where('workflow_id', $task->stage->workflow_id)->orderByDesc('index')->get();
         $data = [];
         foreach ($stages as $stage) {
-            if ($task->stage_id == $stage->id) {
-                if ($task->account_id != null) {
-                    $a = Account::query()->where('id', $task->account_id)->first();
-                }else {
-                    $account = null;
-                }
-            }else {
                 $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->first();
                 if (isset($a)){
                     if ($a->worker != null) {
