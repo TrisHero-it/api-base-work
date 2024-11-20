@@ -50,7 +50,7 @@ class HistoryController extends Controller
                 $account = null;
             }
             if ($task->account_id != null && $task->stage->id == $stage->id) {
-                $account = $task->account;
+                $account = AccountProfile::query()->where('email', $task->account_id)->first();
             }
             $stage['account'] = $account ?? null;
            if ($stage->index != 0 && $stage->index != 1) {
