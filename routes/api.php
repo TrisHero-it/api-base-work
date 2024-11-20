@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 */
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store');
+Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'uploadImage']);
 
 Route::middleware(['check.login'])->group(function () {
 // Send Email Notification
@@ -61,7 +62,6 @@ Route::middleware(['check.login'])->group(function () {
     Route::delete('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'destroy']);
 
 // Upload ảnh
-    Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'uploadImage']);
 
 // Comments - Bình luận
     Route::get('comments/{id}/task', [\App\Http\Controllers\Api\CommentController::class, 'index']);

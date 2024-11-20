@@ -19,7 +19,7 @@ class   CheckToken
         $token = $request->header('authorization');
         if (empty($token)) {
             return response()->json([
-                'error' => 'Đăng nhập đi bạn ơi ~~'
+                'error' => 'Bạn chưa đăng nhập'
             ]);
         }
         $token = explode(' ', $token);
