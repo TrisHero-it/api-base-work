@@ -20,4 +20,9 @@ class Kpi extends Model
         'Hoàn thành qúa hạn',
         'Hoàn thành đúng thời hạn'
     ];
+
+    public function getStatus2Attribute()
+    {
+        return self::STATUS[$this->status] ;
+    }
 }
