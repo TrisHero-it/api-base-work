@@ -190,8 +190,9 @@ class TaskController extends Controller
                 $data['started_at'] = now();
                 Notification::query()->create([
                     'title' => 'Nhiệm vụ mới cho bạn',
-                    'message' => 'Nhiệm vụ '.$task->name. ' được ' . $acc->username . ' giao cho bạn',
-                    'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id
+                    'message' => 'Nhiệm vụ ' .$task->name. ' được ' . $acc->username . ' giao cho bạn',
+                    'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id.'?seen=1&task='.$task->id,
+                    'account_id'=> $request->account_id,
                 ]);
                 if ($task->stage->expired_after_hours != null) {
                     $data['expired'] = now()->addHours($task->stage->expired_after_hours);
