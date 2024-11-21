@@ -69,10 +69,11 @@ class TaskController extends Controller
 
     public function update(Request $request, $id)
     {
+        return response()->json([
+            'error' => $request->account_id
+        ]);
         try {
-            return response()->json([
-                'error' => $request->account_id
-            ]);
+
             $token = $request->header('Authorization');
             $token = explode(' ', $token)[1];
             $acc = Account::query()->where('remember_token', $token)->first() ?? null;
