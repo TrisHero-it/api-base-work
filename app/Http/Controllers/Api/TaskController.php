@@ -78,13 +78,13 @@ class TaskController extends Controller
                 if ($task->account_id != null && $request->account_id != $task->account_id) {
                     return response()->json([
                         'error' => 'Nhiệm vụ này đã có người nhận rồi'
-                    ], 500);
+                    ]);
                 }
             }
             if ($task == null) {
                 return response()->json([
                     'error' => 'Sai mã code nhiệm vụ'
-                ], 500);
+                ]);
             }
             if (!isset( $request->stage_id) && !isset($request->account_id) && !isset($request->expired)) {
                 $b = $request->except('expired');
