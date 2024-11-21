@@ -71,7 +71,7 @@ class TaskController extends Controller
     {
         return response()->json([
             'error' => $request->account_id
-        ]);
+        ], 500);
         try {
 
             $token = $request->header('Authorization');
@@ -82,7 +82,7 @@ class TaskController extends Controller
                 if ($task->account_id != null && $request->account_id != $task->account_id) {
                     return response()->json([
                         'error' => 'Nhiệm vụ này đã có người nhận rồi'
-                    ]);
+                    ], 500);
                 }
             }
             if ($task == null) {
