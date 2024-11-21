@@ -70,15 +70,19 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            return response()->json(['error'=>$request->all()]);
+            return response()->json([
+                'error' => $request->account_id
+            ]);
             $token = $request->header('Authorization');
             $token = explode(' ', $token)[1];
             $acc = Account::query()->where('remember_token', $token)->first() ?? null;
             $task = Task::query()->where('code', $id)->first();
-            if ($task->account_id != null && $request->account_id != $task->account_id) {
-                return response()->json([
-                    'error' => 'Nhiệm vụ này đã có người nhận rồi'
-                ]);
+            if ($request->account_id!= null) {
+                if ($task->account_id != null && $request->account_id != $task->account_id) {
+                    return response()->json([
+                        'error' => 'Nhiệm vụ này đã có người nhận rồi'
+                    ]);
+                }
             }
             if ($task == null) {
                 return response()->json([
