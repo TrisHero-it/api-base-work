@@ -70,7 +70,7 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            return response()->json($request->all());
+            return response()->json(['error'=>$request->all()]);
             $token = $request->header('Authorization');
             $token = explode(' ', $token)[1];
             $acc = Account::query()->where('remember_token', $token)->first() ?? null;
