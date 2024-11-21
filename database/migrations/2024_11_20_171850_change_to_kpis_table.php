@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('kpis', function (Blueprint $table) {
-            $table->foreignIdFor(\App\Models\Task::class)->constrained()->onDelete('cascade');
-            $table->foreignIdFor(\App\Models\Stage::class)->constrained()->onDelete('cascade');
-            $table->foreignIdFor(\App\Models\Account::class)->constrained()->onDelete('cascade');
+            $table->foreignIdFor(\App\Models\Task::class)->nullable()->constrained()->onDelete('cascade');
+            $table->foreignIdFor(\App\Models\Stage::class)->nullable()->constrained()->onDelete('cascade');
+            $table->foreignIdFor(\App\Models\Account::class)->nullable()->constrained()->onDelete('cascade');
         });
     }
 

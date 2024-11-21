@@ -74,6 +74,11 @@ class TaskController extends Controller
             $token = explode(' ', $token)[1];
             $acc = Account::query()->where('remember_token', $token)->first() ?? null;
             $task = Task::query()->where('code', $id)->first();
+            if ($task->account_id != null && $request->account_id != null) {
+                return response()->json([
+                    'error' => 'Nhiệm vụ này đã có người nhận rồi'
+                ]);
+            }
             if ($task == null) {
                 return response()->json([
                     'error' => 'Sai mã code nhiệm vụ'

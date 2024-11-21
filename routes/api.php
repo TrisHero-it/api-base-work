@@ -22,6 +22,8 @@ use Illuminate\Http\Request;
 */
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store');
+
+// Upload ảnh
 Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'uploadImage']);
 
 Route::middleware(['check.login'])->group(function () {
@@ -60,8 +62,6 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'show']);
     Route::put('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'update']);
     Route::delete('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'destroy']);
-
-// Upload ảnh
 
 // Comments - Bình luận
     Route::get('comments/{id}/task', [\App\Http\Controllers\Api\CommentController::class, 'index']);

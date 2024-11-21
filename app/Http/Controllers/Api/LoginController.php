@@ -17,7 +17,7 @@ class LoginController extends Controller
                 return response()->json(['error'=> 'Tài khoản hoặc mật khẩu không đúng'],401);
             }
         } catch (\Throwable $th) {
-            return response()->json(['error'=> 'Đã xảy ra lỗi'],500);
+            return response()->json(['error'=> 'Đã xảy ra lỗi '.$th->getMessage()],500);
         }
     }
 
