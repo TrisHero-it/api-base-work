@@ -7,11 +7,13 @@ use App\Models\Account;
 use App\Models\AccountProfile;
 use App\Models\AccountWorkflow;
 use App\Models\AccountWorkflowCategory;
+use App\Models\Notification;
 use App\Models\Stage;
 use App\Models\Task;
 use App\Models\Workflow;
 use App\Models\WorkflowCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WorkflowController extends Controller
 {
@@ -163,8 +165,16 @@ class WorkflowController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
+        if (isset($request->task)) {
+            $b = Notification::query()->where('id', $request->task)->where('account_id', Auth::id())->first();
+            if ($b->seen != 'Đã seen') {
+                $b->update([
+                    'seen' => 'Đã seen'
+                ]);
+            }
+        }
         $arr = [];
         $arrMember= [];
         $workflow = Workflow::query()->where('id', $id)->first()->toArray();
