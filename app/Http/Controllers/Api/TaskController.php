@@ -112,7 +112,6 @@ class TaskController extends Controller
                 }
 
                 if ($task->stage_id != $stage->id) {
-
                     if ($stage->index > $task->stage->index) {
                         $a =  Kpi::query()->where('task_id', $task->id)->where('stage_id', $stage->id)->first();
                         if ($a != null) {
