@@ -17,6 +17,11 @@ class HistoryController extends Controller
     public function index(Request $request)
     {
         $task = Task::query()->where('code', $request->task_id)->first();
+        if ($task == null) {
+            return response()->json([
+                'error' => 'Sai mã code nhiệm vụ'
+            ]);
+        }
         $histories = HistoryMoveTask::query()->where('task_id', $task->id)->orderBy('id', 'desc')->get();
         if (isset($request->stage_id)) {
             $a = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->where('worker', '!=', null)->orderBy('id', 'desc')->first();
