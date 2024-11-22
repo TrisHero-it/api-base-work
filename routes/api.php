@@ -26,7 +26,7 @@ Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts
 // Upload ảnh
 Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'uploadImage']);
 
-//Route::middleware(['check.login'])->group(function () {
+Route::middleware(['check.login'])->group(function () {
 // Send Email Notification
     Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
     Route::get('/notifications', [NotificationController::class, 'index'])->name('api.notifications.index');
@@ -129,6 +129,6 @@ Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'u
 //  KPI
     Route::get('kpi', [\App\Http\Controllers\Api\KpiController::class, 'index']);
 
-//});
+});
 
 
