@@ -130,5 +130,3 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('kpi', [\App\Http\Controllers\Api\KpiController::class, 'index']);
 
 });
-
-
