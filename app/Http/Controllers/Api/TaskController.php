@@ -169,7 +169,7 @@ class TaskController extends Controller
                     if (isset($request->account_id)) {
                         Notification::query()->create([
                             'title' => 'Nhiệm vụ mới cho bạn',
-                            'message' => 'Nhiệm vụ <strong>' .$task->name. '</strong> được <strong>' . $acc->username . '</strong> giao cho bạn',
+                            'message' => 'Nhiệm vụ <strong>' .$task->name. '</strong> được <strong>' . $acc->account_profile->full_name . '</strong> giao cho bạn',
                             'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id,
                             'account_id'=> $request->account_id,
                         ]);
@@ -190,7 +190,7 @@ class TaskController extends Controller
                 $data['started_at'] = now();
                 Notification::query()->create([
                     'title' => 'Nhiệm vụ mới cho bạn',
-                    'message' => 'Nhiệm vụ <strong>' .$task->name. '</strong> được <strong>' . $acc->username . '</strong> giao cho bạn',
+                    'message' => 'Nhiệm vụ <strong>' .$task->name. '</strong> được <strong>' . $acc->account_profile->full_name . '</strong> giao cho bạn',
                     'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id,
                     'account_id'=> $request->account_id,
                 ]);
