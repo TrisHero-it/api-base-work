@@ -133,7 +133,7 @@ class TaskController extends Controller
                     }else {
                         $j =0;
                     }
-                   if ($task->account_id != null) {
+                   if ($task->account_id != null && $task->stage->index > $stage->index) {
                        Kpi::query()->create([
                            'account_id' => $task->account_id,
                            'stage_id' => $task->stage_id,

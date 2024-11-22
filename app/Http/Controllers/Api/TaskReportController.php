@@ -66,6 +66,11 @@ class TaskReportController extends Controller
     {
         try {
             $task = Task::query()->where('code', $id)->first();
+            if ($task == null) {
+                return response()->json([
+                    'error' => 'Không tìm thấy nhiệm vụ'
+                ]);
+            }
             $data = $request->except('account_id');
             foreach ($data as $field => $value) {
                 $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $task->id)->first();
