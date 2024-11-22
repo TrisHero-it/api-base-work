@@ -16,6 +16,6 @@ class Account extends Authenticatable
 
     public function account_profile(){
 
-        return $this->hasOne(AccountProfile::class, 'email','email');
+        return $this->hasOne(AccountProfile::class, 'email','id');
     }
 }
