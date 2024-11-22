@@ -128,6 +128,7 @@ Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'u
 
 //  KPI
     Route::get('kpi', [\App\Http\Controllers\Api\KpiController::class, 'index']);
+
 //});
 
 
