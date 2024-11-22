@@ -103,8 +103,10 @@ class TaskController extends Controller
                     if ($stage->index != 0 && $stage->index != 1) {
                         $data['account_id'] = $worker!=null ? $worker->worker : null;
                     }
-                    if ($data['account_id'] != null) {
-                        $data['started_at'] = $worker->started_at;
+                    if (isset($data['account_id'])) {
+                        if ($data['account_id'] != null) {
+                            $data['started_at'] = $worker->started_at;
+                        }
                     }
                 if ($stage->index == 0) {
                     $data['failed_at'] = $task->stage->name;
