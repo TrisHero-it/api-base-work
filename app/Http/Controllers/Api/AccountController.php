@@ -54,8 +54,9 @@ class AccountController extends Controller
             $data = $request->except('avatar');
             if (isset($request->avatar)) {
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
+                $data['avatar'] = Storage::url($data['avatar']);
             }
-            $accountProfile::update($request->all());
+            $accountProfile::update($data);
             return response()->json([
                 'success' => 'Cập nhập thành kông'
             ]);
