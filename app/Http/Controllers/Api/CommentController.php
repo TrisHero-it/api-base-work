@@ -13,7 +13,7 @@ class CommentController extends Controller
 {
     public function index(int $id)
     {
-        $task = Task::query()->where('id', $id)->first();
+        $task = Task::query()->where('code', $id)->first();
 
         $comments = Comment::query()->where('task_id', $task->id)->where('comment_id', null)->orderByDesc('id')->get();
         foreach ($comments as $comment) {
@@ -42,7 +42,7 @@ class CommentController extends Controller
             $token = $a[1];
             $account = Account::query()->where('remember_token', $token)->first();
             $data['account_id'] = $account->id;
-            $task = Task::query()->where('code', $request->task_id)->first();
+            $task = Task::query()->where('id', $request->task_id)->first();
             $data['task_id'] = $task->id;
             $comment = Comment::query()->create($data);
 
