@@ -99,7 +99,7 @@ class TaskController extends Controller
             if (isset($stage)) {
                 $data = $request->except('expired');
                 $data['started_at'] = null;
-                    $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->first() ?? null;
+                    $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->orderBy('id', 'desc')->first() ?? null;
                     if ($stage->index != 0 && $stage->index != 1) {
                         $data['account_id'] = $worker!=null ? $worker->worker : null;
                     }
