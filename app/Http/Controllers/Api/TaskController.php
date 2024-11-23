@@ -109,6 +109,8 @@ class TaskController extends Controller
                     }else {
                         $data['expired'] = null;
                 }
+                return response()->json($worker);
+
 
                     if (isset($data['account_id'])) {
                         if ($data['account_id'] != null) {
@@ -195,7 +197,6 @@ class TaskController extends Controller
                         ]);
                         $data['started_at'] = now();
                     }
-                    return response()->json($data);
                     if (isset($stage->expired_after_hours) && $data['expired'] == null) {
                         $data['expired'] = now()->addHours($stage->expired_after_hours);
                     }
