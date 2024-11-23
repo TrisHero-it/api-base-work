@@ -8,6 +8,7 @@ use App\Models\AccountProfile;
 use App\Models\AccountWorkflowCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
@@ -50,6 +51,10 @@ class AccountController extends Controller
         try {
             $account = Account::findOrFail($id);
             $accountProfile = AccountProfile::where('email', $account->email)->first();
+            $data = $request->except('avatar');
+            if (isset($request->avatar)) {
+                $data['avatar'] = Storage::put('public/avatars', $request->avatar);
+            }
             $accountProfile::update($request->all());
             return response()->json([
                 'success' => 'Cập nhập thành kông'
