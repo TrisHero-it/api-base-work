@@ -109,8 +109,6 @@ class TaskController extends Controller
                     }else {
                         $data['expired'] = null;
                 }
-                return response()->json($worker);
-
 
                     if (isset($data['account_id'])) {
                         if ($data['account_id'] != null) {
