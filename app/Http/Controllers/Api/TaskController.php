@@ -255,6 +255,7 @@ class TaskController extends Controller
 
     public function uploadImage(Request $request)
     {
+        dd($request->all());
         try {
             $image = $request->file('image');
             if (!isset($image)) {

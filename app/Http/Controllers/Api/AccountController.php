@@ -47,16 +47,16 @@ class AccountController extends Controller
         }
     }
 
-    public function update(Request $request, int $id) {
+    public function update( int $id, Request $request) {
         try {
             $account = Account::findOrFail($id);
-            $accountProfile = AccountProfile::where('email', $account->email)->first();
+            $accountProfile = AccountProfile::where('email', $account->id)->first();
             $data = $request->except('avatar');
             if (isset($request->avatar)) {
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
-                $data['avatar'] = Storage::url($data['avatar']);
+                $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
             }
-            $accountProfile::update($data);
+            $accountProfile->update($data);
             return response()->json([
                 'success' => 'Cập nhập thành kông'
             ]);

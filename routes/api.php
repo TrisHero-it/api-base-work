@@ -32,7 +32,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('api.notifications.index');
 
 // Account
-    Route::put('accounts/{id}', [AccountController::class, 'update'])->name('api.accounts.update');
+    Route::post('accounts/{id}', [AccountController::class, 'update'])->name('api.accounts.update');
     Route::get('accounts-search', [AccountController::class, 'search']);
     Route::get('accounts/{id}', [AccountController::class, 'show'])->name('api.accounts.show');
     Route::get('me', [AccountController::class, 'myAccount'])->name('api.accounts.myAccount');
