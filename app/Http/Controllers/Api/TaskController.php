@@ -195,6 +195,7 @@ class TaskController extends Controller
                         ]);
                         $data['started_at'] = now();
                     }
+                    return response()->json($data);
                     if (isset($stage->expired_after_hours) && $data['expired'] == null) {
                         $data['expired'] = now()->addHours($stage->expired_after_hours);
                     }
@@ -217,7 +218,6 @@ class TaskController extends Controller
                 if ($task->stage->expired_after_hours != null && $data['expired'] == null) {
                     $data['expired'] = now()->addHours($task->stage->expired_after_hours);
                 }
-                return(1);
                 $task->update(
                     $data
                 );
