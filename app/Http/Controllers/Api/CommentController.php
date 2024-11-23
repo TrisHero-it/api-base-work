@@ -37,7 +37,11 @@ class CommentController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->except('task_id');
+            $data = $request->except('task_id', 'account_id');
+            $a = explode(' ', $request->header('Authorization'));
+            $token = $a[1];
+            $account = Account::query()->where('remember_token', $token)->first();
+            $data['account_id'] = $account->id;
             $task = Task::query()->where('code', $request->task_id)->first();
             $data['task_id'] = $task->id;
             $comment = Comment::query()->create($data);
