@@ -101,6 +101,7 @@ class TaskController extends Controller
                 $data['started_at'] = null;
                     $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->first() ?? null;
                     if ($stage->index != 0 && $stage->index != 1) {
+                        $data['expired'] = $worker->expired_at;
                         $data['account_id'] = $worker!=null ? $worker->worker : null;
                     }
                     if (isset($data['account_id'])) {
@@ -209,7 +210,7 @@ class TaskController extends Controller
                     'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id,
                     'account_id'=> $request->account_id,
                 ]);
-                if ($task->stage->expired_after_hours != null) {
+                if ($task->stage->expired_after_hours != null && $data['expired'] == null) {
                     $data['expired'] = now()->addHours($task->stage->expired_after_hours);
                 }
                 $task->update(
