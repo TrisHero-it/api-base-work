@@ -8,7 +8,6 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TaskStickerController;
 use App\Http\Controllers\Api\WorkflowController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +26,9 @@ Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts
 Route::post('upload-image', [\App\Http\Controllers\Api\TaskController::class, 'uploadImage']);
 
 Route::middleware(['check.login'])->group(function () {
+    Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
+
+    Route::post('upload-image-base64', [\App\Http\Controllers\Api\TaskController::class, 'uploadImageBase64']);
 // Send Email Notification
     Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
     Route::get('/notifications', [NotificationController::class, 'index'])->name('api.notifications.index');

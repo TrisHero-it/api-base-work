@@ -260,7 +260,6 @@ class TaskController extends Controller
 
     public function uploadImage(Request $request)
     {
-        dd($request->all());
         try {
             $image = $request->file('image');
             if (!isset($image)) {
@@ -272,5 +271,36 @@ class TaskController extends Controller
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 500);
         }
+    }
+
+    public function loadYoutube()
+    {
+        try {
+            $tasks = Task::query()->where('link_youtube', '!=', null)->get();
+            foreach ($tasks as $task) {
+                $videoId = $task->link_youtube; // Thay VIDEO_ID bằng ID của video YouTube
+                $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
+
+                $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
+
+                $response = file_get_contents($url);
+                $data = json_decode($response, true);
+                $task->update([
+                    'view_count' => $data['items'][0]['statistics']['viewCount'],
+                    'like_count' => $data['items'][0]['statistics']['likeCount'],
+                    'comment_count' => $data['items'][0]['statistics']['commentCount'],
+                ]);
+            }
+
+            return response()->json([
+                'success' => 'Cập nhập thành công'
+            ]);
+        }catch (\Exception $exception){
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
+    public function uploadImageBase64() {
+
     }
 }
