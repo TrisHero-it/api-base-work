@@ -21,11 +21,13 @@ class CommentController extends Controller
             $accountProfile = AccountProfile::query()->where('email', $account->id)->first();
             $comment['avatar'] = $accountProfile->avatar;
             $comment['full_name'] = $accountProfile->full_name;
+            $comment['task_id'] = $id;
             $replies = Comment::query()->where('comment_id', $comment->id)->orderByDesc('id')->get();
             foreach ($replies as $reply) {
                 $account2 = Account::query()->where('id', $reply->account_id)->first();
                 $accountProfile2 = AccountProfile::query()->where('email', $account2->id)->first();
                 $reply['avatar'] = $accountProfile2->avatar;
+                $reply['task_id'] = $id;
                 $reply['full_name'] = $accountProfile2->full_name;
             }
             $comment['children'] = $replies;
