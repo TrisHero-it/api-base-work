@@ -15,7 +15,7 @@ class CommentController extends Controller
     {
         $task = Task::query()->where('code', $id)->first();
 
-        $comments = Comment::query()->where('task_id', $task->id)->where('comment_id', null)->get();
+        $comments = Comment::query()->where('task_id', $task->id)->where('comment_id', null)->orderByDesc('id')->get();
         foreach ($comments as $comment) {
             $account = Account::query()->where('id', $comment->account_id)->first();
             $accountProfile = AccountProfile::query()->where('email', $account->id)->first();
