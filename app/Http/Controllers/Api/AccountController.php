@@ -62,7 +62,7 @@ class AccountController extends Controller
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-                'error' => 'Đã xảy ra lỗi'
+                'error' => 'Đã xảy ra lỗi'. $th->getMessage()
             ], 500);
         }
     }
