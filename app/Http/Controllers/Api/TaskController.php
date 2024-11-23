@@ -158,8 +158,10 @@ class TaskController extends Controller
 
                 if ($stage->name == 'Hoàn thành') {
                     if ($task->account_id != null) {
-                        preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
-                        $data['link_youtube'] = $matches[1];
+                        if (isset($request->link_youtube)){
+                            preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
+                            $data['link_youtube'] = $matches[1];
+                        }
                         $task->update($data);
                     } else {
                         return response()->json([

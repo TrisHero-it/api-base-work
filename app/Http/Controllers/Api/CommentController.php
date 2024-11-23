@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -18,7 +19,10 @@ class CommentController extends Controller
     public function store(Request $request)
     {
         try {
-            $comment = Comment::query()->create($request->all());
+            $data = $request->except('task_id');
+            $task = Task::query()->where('code', $request->task_id)->first();
+            $data['task_id'] = $task->id;
+            $comment = Comment::query()->create($data);
             return response()->json([
                 'success' => 'Thêm thành công'
             ]);
@@ -27,7 +31,6 @@ class CommentController extends Controller
                 'error' => 'Đã xảy ra lỗi'
             ]);
         }
-
     }
 
     public function destroy(int $id)
