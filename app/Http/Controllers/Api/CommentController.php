@@ -11,7 +11,8 @@ class CommentController extends Controller
 {
     public function index(int $id)
     {
-        $comments = Comment::query()->where('task_id', $id)->get();
+        $task = Task::query()->where('code', $id)->first();
+        $comments = Comment::query()->where('task_id', $task->id)->get();
 
         return response()->json($comments);
     }
