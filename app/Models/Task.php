@@ -20,7 +20,11 @@ class Task extends Model
         'expired',
         'status',
         'started_at',
-        'kpi'
+        'kpi',
+        'link_youtube',
+        'view_count',
+        'like_count',
+        'comment_count',
     ];
 
     public function stage()

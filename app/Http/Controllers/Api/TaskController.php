@@ -149,8 +149,17 @@ class TaskController extends Controller
 
                 $data['expired'] = null;
 
+                if ($task->stage->index == 1 && $task->stage_id != $stage->id) {
+                    $data['link_youtube'] = null;
+                    $data['view_count'] = 0;
+                    $data['like_count'] = 0;
+                    $data['comment_count'] = 0;
+                }
+
                 if ($stage->name == 'Hoàn thành') {
                     if ($task->account_id != null) {
+                        preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
+                        $data['link_youtube'] = $matches[1];
                         $task->update($data);
                     } else {
                         return response()->json([
@@ -236,6 +245,10 @@ class TaskController extends Controller
                 'error' => 'Đã xảy ra lỗi : ' . $exception->getMessage()
             ]);
         }
+    }
+
+    public function completeTask() {
+
     }
 
     public function uploadImage(Request $request)
