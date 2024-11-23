@@ -103,6 +103,8 @@ class TaskController extends Controller
                     if ($stage->index != 0 && $stage->index != 1) {
                         $data['expired'] = $worker->expired_at;
                         $data['account_id'] = $worker!=null ? $worker->worker : null;
+                    }else {
+                        $data['expired'] = null;
                     }
                     if (isset($data['account_id'])) {
                         if ($data['account_id'] != null) {
@@ -147,8 +149,6 @@ class TaskController extends Controller
                        ]);
                    }
                 }
-
-                $data['expired'] = null;
 
                 if ($task->stage->index == 1 && $task->stage_id != $stage->id) {
                     $data['link_youtube'] = null;
@@ -210,7 +210,7 @@ class TaskController extends Controller
                     'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id,
                     'account_id'=> $request->account_id,
                 ]);
-                if ($task->stage->expired_after_hours != null && $data['expired'] == null) {
+                if ($task->stage->expired_after_hours != null && !isset($data['expired'])) {
                     $data['expired'] = now()->addHours($task->stage->expired_after_hours);
                 }
                 $task->update(
