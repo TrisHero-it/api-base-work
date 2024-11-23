@@ -101,7 +101,6 @@ class TaskController extends Controller
                 $data['started_at'] = null;
                     $worker = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $task->id)->where('worker', '!=', null)->first() ?? null;
                     if ($stage->index != 0 && $stage->index != 1) {
-                        $data['expired'] = $worker->expired_at ?? null;
                         $data['account_id'] = $worker!=null ? $worker->worker : null;
                     }else {
                         $data['expired'] = null;
@@ -110,6 +109,7 @@ class TaskController extends Controller
                     if (isset($data['account_id'])) {
                         if ($data['account_id'] != null) {
                             $data['started_at'] = $worker->started_at;
+                            $data['expired'] = $worker->expired_at ?? null;
                         }
                     }
                 if ($stage->index == 0) {
