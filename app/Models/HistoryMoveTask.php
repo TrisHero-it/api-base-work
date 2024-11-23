@@ -15,6 +15,7 @@ class HistoryMoveTask extends Model
         'old_stage',
         'new_stage',
         'started_at',
+        'expired_at',
         'worker'
     ];
 
