@@ -44,7 +44,7 @@ class CommentController extends Controller
             $token = $a[1];
             $account = Account::query()->where('remember_token', $token)->first();
             $data['account_id'] = $account->id;
-            $task = Task::query()->where('id', $request->task_id)->first();
+            $task = Task::query()->where('code', $request->task_id)->first();
             $data['task_id'] = $task->id;
             $comment = Comment::query()->create($data);
 
