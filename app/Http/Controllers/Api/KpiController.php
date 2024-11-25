@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 class KpiController extends Controller
 {
     public function index(Request $request) {
-        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->where('index', '!=', '1')->where('index', '!=', '0')->get();
+        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->where('index', '!=', '1')->where('index', '!=', '0')->orderBy('index', 'desc')->get();
         $accounts = Account::query()->select('id')->get();
         foreach ($stages as $stage) {
             foreach ($accounts as $account) {
