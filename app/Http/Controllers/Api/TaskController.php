@@ -217,7 +217,7 @@ class TaskController extends Controller
                     ]);
                 }
             }else if (isset($request->account_id)){
-                $data = $request;
+                $data = $request->all();
                 $data['expired']= null;
                 $data['started_at'] = now();
                 Notification::query()->create([
