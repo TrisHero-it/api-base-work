@@ -213,6 +213,7 @@ class TaskController extends Controller
                 }
             }else if (isset($request->account_id)){
                 $data = $request->except('description');
+                $data['expired']= null;
                 $text = $request->description ;
                 $convertedText = $this->convertLinksToAnchors($text);
                 $data['description'] = $convertedText;
