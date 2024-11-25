@@ -40,6 +40,8 @@ class CommentController extends Controller
     {
         try {
             $data = $request->except('task_id', 'account_id');
+            $convertedText = $this->convertLinksToAnchors($data['content']);
+            $data['content'] = $convertedText;
             $a = explode(' ', $request->header('Authorization'));
             $token = $a[1];
             $account = Account::query()->where('remember_token', $token)->first();
@@ -86,5 +88,17 @@ class CommentController extends Controller
                 'error' => 'Đã xảy ra lỗi'
             ], 500);
         }
+    }
+
+    public function convertLinksToAnchors($text)
+    {
+        // Biểu thức chính quy tìm URL
+        $pattern = '/(https?:\/\/[^\s]+)/i';
+
+        // Thay thế URL bằng thẻ <a>
+        $replacement = '<a href="$1" target="_blank">$1</a>';
+
+        // Trả về chuỗi đã thay đổi
+        return preg_replace($pattern, $replacement, $text);
     }
 }

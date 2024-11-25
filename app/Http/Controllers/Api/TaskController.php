@@ -88,7 +88,11 @@ class TaskController extends Controller
             }
             if (!isset( $request->stage_id) && !isset($request->account_id) && !isset($request->expired)) {
                 $b = $request->except('expired');
-                $task->update($request->all());
+                $data = $request->except('description');
+                $text = $request->description ;
+                $convertedText = $this->convertLinksToAnchors($text);
+                $data['description'] = $convertedText;
+                $task->update($data);
                 return response()->json([
                     'success' => 'Chỉnh sửa thành công'
                 ]);
@@ -206,7 +210,10 @@ class TaskController extends Controller
                     ]);
                 }
             }else if (isset($request->account_id)){
-                $data = $request->all();
+                $data = $request->except('description');
+                $text = $request->description ;
+                $convertedText = $this->convertLinksToAnchors($text);
+                $data['description'] = $convertedText;
                 $data['started_at'] = now();
                 Notification::query()->create([
                     'title' => 'Nhiệm vụ mới cho bạn',
@@ -300,7 +307,64 @@ class TaskController extends Controller
         }
     }
 
-    public function uploadImageBase64() {
+    public function uploadImageBase64(Request $request) {
+
+        $htmlString = $request->input('html'); // Assumed key is 'html'
+
+        // Sử dụng regex để tìm dữ liệu base64 trong thẻ <img>
+        preg_match('/<img.*?src=[\'"](data:image\/.*?;base64,.*?)[\'"].*?>/i', $htmlString, $matches);
+
+        if (isset($matches[1])) {
+            $base64Image = $matches[1]; // Lấy dữ liệu base64
+
+            // Kiểm tra và giải mã dữ liệu base64
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                $type = strtolower($type[1]); // Lấy định dạng ảnh (jpg, png, gif, etc.)
+
+                if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    return response()->json(['error' => 'Invalid image type'], 400);
+                }
+
+                $base64Image = base64_decode($base64Image);
+
+                if ($base64Image === false) {
+                    return response()->json(['error' => 'Base64 decode failed'], 400);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid Base64 string'], 400);
+            }
+
+            // Tạo tên file duy nhất
+            $fileName = uniqid() . '.' . $type;
+
+            // Lưu file vào thư mục 'public/images'
+            $path = 'base64-images/' . $fileName;
+            Storage::disk('public')->put($path, $base64Image);
+
+            // Tạo URL dẫn đến file
+            $url = Storage::url($path);
+
+            // Tạo thẻ <img> mới
+            $imgTag = "<img src=".env('APP_URL')."{$url}' alt='Uploaded Image' />";
+
+            return response()->json(['urlImage' => $imgTag], 200);
+        }
+
+        return response()->json(['error' => 'No Base64 image found'], 400);
 
     }
+
+    public function convertLinksToAnchors($text)
+    {
+        // Biểu thức chính quy tìm URL
+        $pattern = '/(https?:\/\/[^\s]+)/i';
+
+        // Thay thế URL bằng thẻ <a>
+        $replacement = '<a href="$1" target="_blank">$1</a>';
+
+        // Trả về chuỗi đã thay đổi
+        return preg_replace($pattern, $replacement, $text);
+    }
+
 }

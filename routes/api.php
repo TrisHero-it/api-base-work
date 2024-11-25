@@ -64,6 +64,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'show']);
     Route::put('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'update']);
     Route::delete('tasks/{id}', [\App\Http\Controllers\Api\TaskController::class, 'destroy']);
+    Route::post('upload-base64', [\App\Http\Controllers\Api\TaskController::class, 'uploadImageBase64']);
 
 // Comments - Bình luận
     Route::get('comments/{id}/task', [\App\Http\Controllers\Api\CommentController::class, 'index']);
