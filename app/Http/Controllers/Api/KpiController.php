@@ -18,6 +18,7 @@ class KpiController extends Controller
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->where('index', '!=', '1')->where('index', '!=', '0')->orderBy('index', 'desc')->get();
         $accounts = Account::query()->select('id')->get();
             foreach ($accounts as $account) {
+                $account['full_name'] = AccountProfile::query()->where('email', $account->id)->value('full_name');
                 foreach ($stages as $stage) {
                     $account[$stage->name] = Kpi::query()->where('stage_id', $stage->id)->where('account_id', $account->id)->get()->count();
                 }
