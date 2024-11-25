@@ -69,7 +69,7 @@ class TaskController extends Controller
 
     public function update(Request $request, $id)
     {
-//        try {
+        try {
             $token = $request->header('Authorization');
             $token = explode(' ', $token)[1];
             $acc = Account::query()->where('remember_token', $token)->first() ?? null;
@@ -235,11 +235,11 @@ class TaskController extends Controller
                     'success' => 'Sửa thành công'
                 ]);
             }
-//        } catch (\Exception $exception) {
-//            return response()->json([
-//                'error' => 'Đã xảy ra lỗi : ' . $exception->getMessage()
-//            ]);
-//        }
+        } catch (\Exception $exception) {
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi : ' . $exception->getMessage()
+            ]);
+        }
     }
 
     public function show(int $id)
