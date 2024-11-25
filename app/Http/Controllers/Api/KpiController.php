@@ -17,15 +17,12 @@ class KpiController extends Controller
     public function index(Request $request) {
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->where('index', '!=', '1')->where('index', '!=', '0')->orderBy('index', 'desc')->get();
         $accounts = Account::query()->select('id')->get();
-        foreach ($stages as $stage) {
             foreach ($accounts as $account) {
-                $kpi =  Kpi::query()->where('stage_id', $stage->id)->where('account_id', $account->id)->get()->count();
-                $account['CompletedOnTime'] = $kpi;
-                $account['full_name'] = AccountProfile::query()->where('email', $account->id)->first()->full_name;
+                foreach ($stages as $stage) {
+                    $account[$stage->name] = Kpi::query()->where('stage_id', $stage->id)->where('account_id', $account->id)->get()->count();
+                }
             }
-            $stage['accounts'] = $accounts;
-        }
 
-        return response()->json($stages);
+        return response()->json($accounts);
     }
 }
