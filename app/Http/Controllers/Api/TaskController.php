@@ -89,6 +89,10 @@ class TaskController extends Controller
             if (!isset( $request->stage_id) && !isset($request->account_id) && !isset($request->expired)) {
                 $b = $request->except('expired');
                 $data = $request->except('description');
+                if (isset($request->link_youtube)){
+                    preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
+                    $data['code_youtube'] = $matches[1];
+                }
                 $text = $request->description ;
                 $convertedText = $this->convertLinksToAnchors($text);
                 $data['description'] = $convertedText;
@@ -167,10 +171,6 @@ class TaskController extends Controller
 
                 if ($stage->name == 'Hoàn thành') {
                     if ($task->account_id != null) {
-                        if (isset($request->link_youtube)){
-                            preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
-                            $data['link_youtube'] = $matches[1];
-                        }
                         $task->update($data);
                     } else {
                         return response()->json([
@@ -285,7 +285,7 @@ class TaskController extends Controller
         try {
             $tasks = Task::query()->where('link_youtube', '!=', null)->get();
             foreach ($tasks as $task) {
-                $videoId = $task->link_youtube; // Thay VIDEO_ID bằng ID của video YouTube
+                $videoId = $task->code_youtube; // Thay VIDEO_ID bằng ID của video YouTube
                 $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
 
                 $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";

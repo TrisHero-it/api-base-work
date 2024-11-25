@@ -25,6 +25,7 @@ class Task extends Model
         'view_count',
         'like_count',
         'comment_count',
+        'code_youtube'
     ];
 
     public function stage()
