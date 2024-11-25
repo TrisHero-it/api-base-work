@@ -91,14 +91,19 @@ class TaskController extends Controller
                 $data = $request->except('description');
                 if (isset($request->link_youtube)){
                     preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
-                    $data['code_youtube'] = $matches[1];
+                    if (strpos($request->link_youtube, 'shorts') !== false) {
+                        $aa = explode('/', $request->link_youtube);
+                        $data['code_youtube'] = end($aa);
+                    } else {
+                        $data['code_youtube'] = $matches[1];
+                    }
                 }
                 $text = $request->description ;
                 $convertedText = $this->convertLinksToAnchors($text);
                 $data['description'] = $convertedText;
                 $task->update($data);
                 return response()->json([
-                    'success' => 'Chỉnh sửa thành công'
+                    'success' => 'Chỉnh sửa thành công 106'
                 ]);
             }
 
@@ -181,7 +186,7 @@ class TaskController extends Controller
                     if ($task->account_id != null) {
                         $task->update($data);
                         return response()->json([
-                            'success' => 'Chỉnh sửa thành công'
+                            'success' => 'Chỉnh sửa thành công 189'
                         ]);
                     } else {
                         return response()->json([
@@ -208,7 +213,7 @@ class TaskController extends Controller
                         $data
                     );
                     return response()->json([
-                        'success' => 'Chỉnh sửa thành công'
+                        'success' => 'Chỉnh sửa thành công 216'
                     ]);
                 }
             }else if (isset($request->account_id)){
@@ -232,7 +237,7 @@ class TaskController extends Controller
                 );
 
                 return response()->json([
-                    'success' => 'Sửa thành công'
+                    'success' => 'Sửa thành công 241'
                 ]);
             }
         } catch (\Exception $exception) {
