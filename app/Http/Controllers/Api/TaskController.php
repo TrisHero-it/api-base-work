@@ -219,9 +219,7 @@ class TaskController extends Controller
             }else if (isset($request->account_id)){
                 $data = $request->except('description');
                 $data['expired']= null;
-                $text = $request->description ;
-                $convertedText = $this->convertLinksToAnchors($text);
-                $data['description'] = $convertedText;
+                $data['description'] = $request->description;
                 $data['started_at'] = now();
                 Notification::query()->create([
                     'title' => 'Nhiệm vụ mới cho bạn',
