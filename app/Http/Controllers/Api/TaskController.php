@@ -191,6 +191,8 @@ class TaskController extends Controller
                 } else {
 //  giao việc
                     if (isset($request->account_id)) {
+                        $data = $request->except('expired');
+                        $data['expired'] = null;
                         Notification::query()->create([
                             'title' => 'Nhiệm vụ mới cho bạn',
                             'message' => 'Nhiệm vụ <strong>' .$task->name. '</strong> được <strong>' . $acc->account_profile->full_name . '</strong> giao cho bạn',
