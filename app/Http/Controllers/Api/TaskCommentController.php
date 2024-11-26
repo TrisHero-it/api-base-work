@@ -1,0 +1,106 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CommentStoreRequest;
+use App\Http\Requests\CommentUpdateRequest;
+use App\Models\Account;
+use App\Models\AccountProfile;
+use App\Models\Comment;
+use App\Models\Task;
+use Illuminate\Http\Request;
+
+class TaskCommentController extends Controller
+{
+    public function index(int $codeTask)
+    {
+        $task = Task::query()->where('code', $codeTask)->first();
+
+        $comments = Comment::query()->where('task_id', $task->id)->where('comment_id', null)->orderByDesc('id')->get();
+        foreach ($comments as $comment) {
+            $account = Account::query()->where('id', $comment->account_id)->first();
+            $accountProfile = AccountProfile::query()->where('email', $account->id)->first();
+            $comment['avatar'] = $accountProfile->avatar;
+            $comment['full_name'] = $accountProfile->full_name;
+            $comment['task_id'] = $codeTask;
+            $replies = Comment::query()->where('comment_id', $comment->id)->orderByDesc('id')->get();
+            foreach ($replies as $reply) {
+                $account2 = Account::query()->where('id', $reply->account_id)->first();
+                $accountProfile2 = AccountProfile::query()->where('email', $account2->id)->first();
+                $reply['avatar'] = $accountProfile2->avatar;
+                $reply['task_id'] = $codeTask;
+                $reply['full_name'] = $accountProfile2->full_name;
+            }
+            $comment['children'] = $replies;
+        }
+
+        return response()->json($comments);
+    }
+
+    public function store(CommentStoreRequest $request)
+    {
+        try {
+            $data = $request->except('task_id', 'account_id');
+            $convertedText = $this->convertLinksToAnchors($data['content']);
+            $data['content'] = $convertedText;
+            $a = explode(' ', $request->header('Authorization'));
+            $token = $a[1];
+            $account = Account::query()->where('remember_token', $token)->first();
+            $data['account_id'] = $account->id;
+            $task = Task::query()->where('code', $request->task_id)->first();
+            $data['task_id'] = $task->id;
+            $comment = Comment::query()->create($data);
+
+            return response()->json([
+                'success' => 'Thêm thành công'
+            ]);
+        }catch (\Exception $exception){
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi'
+            ]);
+        }
+    }
+
+    public function destroy(int $id)
+    {
+        try {
+            $comment = Comment::query()->findOrFail($id);
+            $comment->delete();
+            return response()->json([
+                'success' => 'Xoá thành công'
+            ]);
+        }catch (\Exception $exception){
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi'
+            ], 500);
+        }
+    }
+
+    public function update(CommentUpdateRequest $request, int $id)
+    {
+        try {
+            $comment = Comment::query()->findOrFail($id);
+            $comment->update($request->all());
+            return response()->json([
+                'success' => 'Chỉnh sửa thành công'
+            ]);
+        }catch (\Exception $exception){
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi'
+            ], 500);
+        }
+    }
+
+    public function convertLinksToAnchors($text)
+    {
+        // Biểu thức chính quy tìm URL
+        $pattern = '/(https?:\/\/[^\s]+)/i';
+
+        // Thay thế URL bằng thẻ <a>
+        $replacement = '<a href="$1" target="_blank">$1</a>';
+
+        // Trả về chuỗi đã thay đổi
+        return preg_replace($pattern, $replacement, $text);
+    }
+}

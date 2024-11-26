@@ -55,9 +55,7 @@ class AccountController extends Controller
         }
     }
 
-    public function search(Request $request) {
-        $arrAccount = [];
-
+    public function index(Request $request) {
             $name = str_replace('@', '', $request->username);
 
             if (isset($request->category_id)) {
@@ -67,13 +65,9 @@ class AccountController extends Controller
                     $accounts[] = $item->account;
                 }
             }else {
-                $accounts = Account::query()->select('id', 'username', 'email')->where('username', 'like', "%$name%")->get()->toArray();
+                $accounts = Account::query()->where('username', 'like', "%$name%")->get()->toArray();
             }
-            foreach ($accounts as $account) {
-                $accountProfile = AccountProfile::query()->select('full_name', 'position')->where('email', $account['id'])->first()->toArray();
-                $arrAccount[] = array_merge($account, $accountProfile);
-            }
-        return response()->json($arrAccount);
+        return response()->json($accounts);
     }
 
     public function show(int $id) {
@@ -92,8 +86,6 @@ class AccountController extends Controller
         $token = explode(' ', $token);
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->select('email','username','id')->first();
-        $detailAccount = AccountProfile::query()->select('full_name', 'position', 'number_phone','address', 'birthday', 'manager_id','role_id', 'created_at', 'updated_at', 'avatar')->where('email', $account->id)->first();
-        $account = array_merge($account->toArray(), $detailAccount->toArray());
         return response()->json($account);
     }
 

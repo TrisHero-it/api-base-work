@@ -151,9 +151,7 @@ class WorkflowController extends Controller
         $members = AccountWorkflow::query()->where('workflow_id', $id)->get();
         foreach ($members as $member) {
             $arr1 = Account::query()->select('email', 'id','username')->where('id', $member->account_id)->first()->toArray();
-            $arr2 = AccountProfile::query()->select('full_name', 'position','avatar')->where('id', $member->account_id)->first()->toArray();
-            $arrMerge = array_merge($arr1, $arr2);
-            $arr[] = $arrMerge;
+            $arr[] = $arr1;
         }
 
         return response()->json($arr);
@@ -179,22 +177,13 @@ class WorkflowController extends Controller
 
     public function show($id, Request $request)
     {
-        if (isset($request->task)) {
-            $b = Notification::query()->where('id', $request->task)->where('account_id', Auth::id())->firstOrFail();
-            if ($b->seen != 'Đã seen') {
-                $b->update([
-                    'seen' => 'Đã seen'
-                ]);
-            }
-        }
         $arr = [];
         $arrMember= [];
-        $workflow = Workflow::query()->where('id', $id)->first()->toArray();
+        $workflow = Workflow::query()->findOrFail($id)->toArray();
         $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
         foreach ($members as $member) {
-            $tri = Account::query()->select('email', 'id', 'username','created_at', 'updated_at')->where('id', $member->account_id)->first()->toArray();
-            $tri2 = AccountProfile::query()->select('full_name', 'position', 'avatar')->where('email', $member->account_id)->first()->toArray();
-            $arrMember[] = array_merge($tri, $tri2);
+            $tri = Account::query()->where('id', $member->account_id)->first()->toArray();
+            $arrMember[] = $tri;
         }
         $a = array_merge($arr, $workflow);
         $a['members'] = $arrMember;
