@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ReportFieldStoreRequest;
+use App\Http\Requests\ReportFieldUpdateRequest;
 use App\Models\Field;
 use App\Models\FieldTask;
 use App\Models\Task;
@@ -10,7 +12,7 @@ use Illuminate\Http\Request;
 
 class ReportFieldController extends Controller
 {
-    public function store(Request $request)
+    public function store(ReportFieldStoreRequest $request)
     {
         try {
             $data = $request->except('options');
@@ -51,7 +53,7 @@ class ReportFieldController extends Controller
         return response()->json($reports);
     }
 
-    public function update(Request $request, $id)
+    public function update(ReportFieldUpdateRequest $request, $id)
     {
         try {
             $report = Field::query()->findOrFail($id);

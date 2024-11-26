@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CommentStoreRequest;
+use App\Http\Requests\CommentUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountProfile;
 use App\Models\Comment;
@@ -36,7 +38,7 @@ class CommentController extends Controller
         return response()->json($comments);
     }
 
-    public function store(Request $request)
+    public function store(CommentStoreRequest $request)
     {
         try {
             $data = $request->except('task_id', 'account_id');
@@ -75,7 +77,7 @@ class CommentController extends Controller
         }
     }
 
-    public function update(Request $request, int $id)
+    public function update(CommentUpdateRequest $request, int $id)
     {
         try {
             $comment = Comment::query()->findOrFail($id);

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TaskFieldStoreRequest;
+use App\Http\Requests\TaskFieldUpdateRequest;
 use App\Models\Account;
 use App\Models\Field;
 use App\Models\FieldTask;
@@ -62,10 +64,10 @@ class TaskReportController extends Controller
 
     }
 
-    public function store(Request $request, int $id)
+    public function store(TaskFieldStoreRequest $request, int $codeTask)
     {
         try {
-            $task = Task::query()->where('code', $id)->first();
+            $task = Task::query()->where('code', $codeTask)->first();
             if ($task == null) {
                 return response()->json([
                     'error' => 'Không tìm thấy nhiệm vụ'
@@ -96,7 +98,7 @@ class TaskReportController extends Controller
         }
     }
 
-    public function update($id, Request $request)
+    public function update(int $id, TaskFieldUpdateRequest $request)
     {
         try {
             $data = $request->all();
@@ -111,7 +113,7 @@ class TaskReportController extends Controller
         }
     }
 
-    public function destroy($id, Request $request)
+    public function destroy(int $id)
     {
         try {
             FieldTask::query()->where('id', $id)->delete();

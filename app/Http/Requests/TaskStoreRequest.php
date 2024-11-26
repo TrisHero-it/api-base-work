@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAccountRequest extends FormRequest
+class TaskStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,11 @@ class StoreAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-          
+            'code' => 'integer|unique:tasks,code',
+            'description' => 'string|nullable',
+            'account_id' => 'integer|exists:accounts,id',
+            'name' => 'string|nullable',
+            'link_youtube' => 'string|nullable|url',
         ];
     }
 }

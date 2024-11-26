@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StageStoreRequest;
 use App\Models\Stage;
 use App\Models\Task;
 use http\Client\Response;
@@ -23,7 +24,7 @@ class StageController extends Controller
         return response()->json($stages);
     }
 
-    public function store(Request $request) {
+    public function store(StageStoreRequest $request) {
         try {
             if (!isset($request->index)) {
                 $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();

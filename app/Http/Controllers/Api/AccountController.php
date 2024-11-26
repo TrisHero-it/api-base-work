@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AccountStoreRequest;
+use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountProfile;
 use App\Models\AccountWorkflowCategory;
@@ -13,30 +15,17 @@ use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {
-    public function store(Request $request) {
+    public function store(AccountStoreRequest $request) {
         try {
-            $validator = Validator::make($request->all(), [
-                'email' => 'required|string|email|max:255|unique:accounts', // Kiểm tra email không được trùng
-                'password' => 'required|string|min:6', // Xác nhận mật khẩu
-            ],
-        [
-            'email.unique' => 'Email đã được sử dụng',
-        ]);
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], 422);
-            }
-
             $email = $request->email;
             $result = explode('@', $email)[0];
             $account = Account::create([
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'username' => '@'.$result
-            ]);
-            AccountProfile::create([
-                'email'=> $account->id,
+                'username' => '@'.$result,
                 'full_name'=>$result,
             ]);
+
             return response()->json([
                 'success' => 'Đăng ký thành công'
             ]);
@@ -47,18 +36,17 @@ class AccountController extends Controller
         }
     }
 
-    public function update( int $id, Request $request) {
+    public function update(AccountUpdateRequest $request, int $id) {
         try {
             $account = Account::findOrFail($id);
-            $accountProfile = AccountProfile::where('email', $account->id)->first();
             $data = $request->except('avatar');
             if (isset($request->avatar)) {
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
                 $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
             }
-            $accountProfile->update($data);
+            $account->update($data);
             return response()->json([
-                'success' => 'Cập nhập thành kông'
+                'success' => 'Cập nhập thành công 49'
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -88,10 +76,9 @@ class AccountController extends Controller
         return response()->json($arrAccount);
     }
 
-    public function show(int $id, Request $request) {
-            $account = Account::query()->select('id', 'username')->where('id', $id)->first();
-            $detailAccount = AccountProfile::query()->where('email', $account->id)->first();
-            $account = array_merge($account->toArray(), $detailAccount->toArray());
+    public function show(int $id) {
+            $account = Account::query()->where('id', $id)->first();
+
             return response()->json($account);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WorkflowStoreRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
 use App\Models\Workflow;
@@ -36,7 +37,7 @@ class WorkflowCategoryController extends Controller
         return response()->json($abc);
     }
 
-    public function store(Request $request)
+    public function store(WorkflowStoreRequest $request)
     {
         try {
             $err = [];

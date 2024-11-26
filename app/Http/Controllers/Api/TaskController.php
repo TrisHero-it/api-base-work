@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TaskStoreRequest;
+use App\Http\Requests\UploadImageStoreRequest;
 use App\Models\Account;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
@@ -33,7 +35,7 @@ class TaskController extends Controller
         return response()->json($tasks);
     }
 
-    public function store(Request $request)
+    public function store(TaskStoreRequest $request)
     {
         try {
             $account = Account::query()->where('id', $request->account_id)->first() ?? null;
@@ -87,8 +89,7 @@ class TaskController extends Controller
                 ]);
             }
             if (!isset( $request->stage_id) && !isset($request->account_id) && !isset($request->expired)) {
-                $b = $request->except('expired');
-                $data = $request->except('description');
+                $data = $request->all();
                 if (isset($request->link_youtube)){
                     preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
                     if (strpos($request->link_youtube, 'shorts') !== false) {
@@ -98,9 +99,6 @@ class TaskController extends Controller
                         $data['code_youtube'] = $matches[1];
                     }
                 }
-                $text = $request->description ;
-                $convertedText = $this->convertLinksToAnchors($text);
-                $data['description'] = $convertedText;
                 $task->update($data);
                 return response()->json([
                     'success' => 'Chỉnh sửa thành công 106'
@@ -152,17 +150,13 @@ class TaskController extends Controller
                         'worker' => $task->account_id,
                         'expired_at'=> $task->expired ?? null,
                     ]);
-                    if ($task->expired > now() || $task->expired == null) {
-                        $j = 1;
-                    }else {
-                        $j =0;
-                    }
+
                    if ($task->account_id != null && $task->stage->index > $stage->index) {
                        Kpi::query()->create([
                            'account_id' => $task->account_id,
                            'stage_id' => $task->stage_id,
                            'task_id' => $task->id,
-                           'status' => $j
+                           'status' => 0
                        ]);
                    }
                 }
@@ -193,28 +187,6 @@ class TaskController extends Controller
                             'error' => 'Chưa có người nhận nhiệm vụ'
                         ]);
                     }
-                } else {
-//  giao việc
-                    if (isset($request->account_id)) {
-                        $data = $request->except('expired');
-                        $data['expired'] = null;
-                        Notification::query()->create([
-                            'title' => 'Nhiệm vụ mới cho bạn',
-                            'message' => 'Nhiệm vụ <strong>' .$task->name. '</strong> được <strong>' . $acc->account_profile->full_name . '</strong> giao cho bạn',
-                            'link' => 'https://work.1997.pro.vn/workflows/'.$task->stage->workflow->id,
-                            'account_id'=> $request->account_id,
-                        ]);
-                        $data['started_at'] = now();
-                    }
-                    if (isset($stage->expired_after_hours) && $data['expired'] == null) {
-                        $data['expired'] = now()->addHours($stage->expired_after_hours);
-                    }
-                    $task->update(
-                        $data
-                    );
-                    return response()->json([
-                        'success' => 'Chỉnh sửa thành công 216'
-                    ]);
                 }
             }else if (isset($request->account_id)){
                 $data = $request->all();
@@ -270,7 +242,7 @@ class TaskController extends Controller
 
     }
 
-    public function uploadImage(Request $request)
+    public function uploadImage(UploadImageStoreRequest $request)
     {
         try {
             $image = $request->file('image');
@@ -314,7 +286,7 @@ class TaskController extends Controller
 
     public function uploadImageBase64(Request $request) {
 
-        $htmlString = $request->input('html'); // Assumed key is 'html'
+        $htmlString = $request->input('image'); // Assumed key is 'html'
 
         // Sử dụng regex để tìm dữ liệu base64 trong thẻ <img>
         preg_match('/<img.*?src=[\'"](data:image\/.*?;base64,.*?)[\'"].*?>/i', $htmlString, $matches);

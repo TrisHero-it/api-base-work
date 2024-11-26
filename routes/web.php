@@ -16,3 +16,28 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+// Emoji - Cảm xúc
+Route::get('emojis/{id}/comment', [\App\Http\Controllers\Api\EmojiController::class, 'index']);
+Route::post('/emojis', [\App\Http\Controllers\Api\EmojiController::class, 'store']);
+Route::put('emojis/{id}', [\App\Http\Controllers\Api\EmojiController::class, 'update']);
+Route::delete('emojis/{id}', [\App\Http\Controllers\Api\EmojiController::class, 'destroy']);
+
+
+// Màu
+Route::get('colors', [\App\Http\Controllers\Api\ColorController::class, 'index']);
+Route::post('colors', [\App\Http\Controllers\Api\ColorController::class, 'store']);
+
+// Nhãn dán
+Route::get('stickers', [\App\Http\Controllers\Api\StickerController::class, 'index']);
+Route::post('stickers', [\App\Http\Controllers\Api\StickerController::class, 'store']);
+Route::delete('stickers/{id}', [\App\Http\Controllers\Api\StickerController::class, 'destroy']);
+
+
+// Sticker của từng nhiệm vụ
+Route::get('stickers/{id}/task', [TaskStickerController::class, 'index']); // không có biến truyền lên
+Route::post('data-stickers', [TaskStickerController::class, 'store']);
+Route::put('data-stickers/{id}', [TaskStickerController::class, 'update']);
+Route::get('data-stickers/{id}', [TaskStickerController::class, 'show']); // không có biến truyền lên
+Route::delete('data-stickers/{id}', [TaskStickerController::class, 'destroy']); // không có biến truyền lên

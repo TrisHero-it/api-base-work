@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FieldStoreRequest;
+use App\Http\Requests\TaskFieldStoreRequest;
+use App\Http\Requests\TaskFieldUpdateRequest;
 use App\Models\Field;
 use App\Models\FieldTask;
 use Illuminate\Http\Request;
@@ -27,7 +30,7 @@ class DataFieldController extends Controller
         return response()->json($fields);
     }
 
-    public function store(Request $request)
+    public function store(TaskFieldStoreRequest $request)
     {
         try {
             FieldTask::query()->create($request->all());
@@ -37,7 +40,7 @@ class DataFieldController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(TaskFieldUpdateRequest $request, $id)
     {
         try {
             $arr = $request->value;

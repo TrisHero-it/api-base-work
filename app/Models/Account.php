@@ -11,7 +11,16 @@ class Account extends Authenticatable
 {
     use HasFactory,Notifiable;
     protected $fillable = [
-        "username","email","password",
+        "username",
+        "email",
+        "password",
+        "full_name",
+        'position',
+        'phone',
+        'address',
+        'birthday',
+        'manager_id',
+        'avatar'
     ];
 
     public function account_profile(){

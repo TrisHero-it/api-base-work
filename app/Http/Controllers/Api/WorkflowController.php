@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WorkflowStoreRequest;
+use App\Http\Requests\WorkflowUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountProfile;
 use App\Models\AccountWorkflow;
@@ -81,7 +83,7 @@ class WorkflowController extends Controller
         );
     }
 
-    public function store(Request $request) {
+    public function store(WorkflowStoreRequest $request) {
         try {
             $error = [];
             $name =  Workflow::query()->where('workflow_category_id', $request->input('workflow_category_id'))->where('name', $request->name)->first();
@@ -157,18 +159,28 @@ class WorkflowController extends Controller
         return response()->json($arr);
     }
 
-    public function update(int $id, Request $request) {
-        $workflow = Workflow::query()->findOrFail($id);
-        $workflow->update([
-            'name' => $request->name,
-            'is_close' => $request->is_close
-        ]);
+    public function update(int $id, WorkflowUpdateRequest $request) {
+        try {
+            $workflow = Workflow::query()->findOrFail($id);
+            $data = $request->all();
+            $workflow->update([
+             $data
+            ]);
+
+            return response()->json([
+                'success' => 'Cập nhập thành công'
+            ]);
+        }catch (\Exception $exception){
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi '.$exception->getMessage()
+            ]);
+        }
     }
 
     public function show($id, Request $request)
     {
         if (isset($request->task)) {
-            $b = Notification::query()->where('id', $request->task)->where('account_id', Auth::id())->first();
+            $b = Notification::query()->where('id', $request->task)->where('account_id', Auth::id())->firstOrFail();
             if ($b->seen != 'Đã seen') {
                 $b->update([
                     'seen' => 'Đã seen'

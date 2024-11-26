@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FieldStoreRequest;
+use App\Http\Requests\FieldUpdateRequest;
 use App\Models\Field;
 use Illuminate\Http\Request;
 
@@ -15,7 +17,7 @@ class FieldController extends Controller
         return response()->json($yields);
     }
 
-    public function store(Request $request)
+    public function store(FieldStoreRequest $request)
     {
         try {
             $data =  $request->except('options');
@@ -27,7 +29,7 @@ class FieldController extends Controller
         }
     }
 
-    public function update(Request $request, int $id)
+    public function update(FieldUpdateRequest $request, int $id)
     {
         try {
             $yield = Field::query()->findOrFail($id);
