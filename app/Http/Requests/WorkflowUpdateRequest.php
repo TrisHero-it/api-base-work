@@ -29,12 +29,4 @@ class WorkflowUpdateRequest extends FormRequest
         ];
     }
 
-    public function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(
-            response()->json(
-                $validator->errors()
-                , 422)
-        );
-    }
 }

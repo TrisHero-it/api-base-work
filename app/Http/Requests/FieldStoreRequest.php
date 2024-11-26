@@ -29,13 +29,4 @@ class FieldStoreRequest extends FormRequest
             'stage_id' => 'required|exists:stages,id',
         ];
     }
-
-    public function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(
-            response()->json(
-                $validator->errors()
-                , 422)
-        );
-    }
 }

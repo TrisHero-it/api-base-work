@@ -30,13 +30,4 @@ class ReportFieldStoreRequest extends FormRequest
             'account_id' => 'required | exists:accounts,id ',
         ];
     }
-
-    public function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(
-            response()->json(
-                $validator->errors()
-                , 422)
-        );
-    }
 }

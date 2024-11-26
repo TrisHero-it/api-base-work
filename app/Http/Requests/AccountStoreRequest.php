@@ -39,13 +39,4 @@ class AccountStoreRequest extends FormRequest
             'password.min' => 'Mật khẩu phải trên 6 kí tự'
         ];
     }
-
-    public function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(
-            response()->json(
-                $validator->errors()
-                , 422)
-        );
-    }
 }
