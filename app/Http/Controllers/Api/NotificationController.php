@@ -13,8 +13,12 @@ class NotificationController extends Controller
         {
             $a = explode(' ', $request->header('Authorization'));
             $token = $a[1];
-            $account = Account::where('remember_token', $token)->first();
-            $notifications = Notification::query()->orderBy('id','desc')->where('account_id', $account->id)->get();
+            $account = Account::where('remember_token', $token)
+                ->first();
+            $notifications = Notification::query()
+                ->orderBy('id','desc')
+                ->where('account_id', $account->id)
+                ->get();
 
             return response()->json($notifications);
         }

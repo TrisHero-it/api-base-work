@@ -37,4 +37,9 @@ class Task extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+    public function isNextStage($index) {
+
+        return $this->stage->index > $index;
+    }
 }

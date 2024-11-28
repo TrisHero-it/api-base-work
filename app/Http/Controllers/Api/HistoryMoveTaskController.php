@@ -9,10 +9,8 @@ use App\Models\HistoryMoveTask;
 use App\Models\Stage;
 use App\Models\Task;
 use Illuminate\Http\Request;
-use DateTime;
 
-
-class HistoryController extends Controller
+class HistoryMoveTaskController extends Controller
 {
     public function index(Request $request)
     {
@@ -29,7 +27,7 @@ class HistoryController extends Controller
         }
         foreach ($histories as $history) {
 
-            $name = AccountProfile::query()->where('id', $history->account_id)->first();
+            $name = Account::query()->where('id', $history->account_id)->first();
             $name = $name->full_name;
             $history['full_name'] = $name;
             $stage = Stage::query()->find($history->old_stage);
@@ -49,42 +47,42 @@ class HistoryController extends Controller
             $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->first();
             if (isset($a)){
                 if ($a->worker != null) {
-                    $account = AccountProfile::query()->where('email', $a->worker)->first();
+                    $account = Account::query()->where('id', $a->worker)->first();
                 }
             }else {
                 $account = null;
             }
             if ($task->account_id != null && $task->stage->id == $stage->id) {
-                $account = AccountProfile::query()->where('email', $task->account_id)->first();
+                $account = Account::query()->where('id', $task->account_id)->first();
             }
             $stage['account'] = $account ?? null;
-           if ($stage->index != 0 && $stage->index != 1) {
-               $histories = HistoryMoveTask::query()->where('task_id', $idTask)->where('old_stage', $stage->id)->orderBy('id', 'desc')->get();
-               $totalHours = 0;
-               $totalMinutes = 0;
-               foreach ($histories as $history) {
-                   $oldDate = null;
-                   $newDate = null;
-                   $diff = null;
-                   $hours = null;
-                   $minutes = null;
-                   if ($history->started_at != null) {
-                       $oldDate = new DateTime($history->started_at);
-                       $newDate = new DateTime($history->created_at);
-                       $diff = $newDate->diff($oldDate);
-                       $hours = $diff->h;
-                       $minutes = $diff->i;
-                   }
-                   $totalHours += $hours;
-                   $totalMinutes += $minutes;
-               }
-               $minutesForHours = floor($totalMinutes/60);
-               $minutes = $totalMinutes - $minutesForHours*60;
-               $hours = $totalHours + $minutesForHours;
-               $stage['hours'] = $hours;
-               $stage['minutes'] = $minutes;
-               $data[] = $stage;
-           }
+            if ($stage->index != 0 && $stage->index != 1) {
+                $histories = HistoryMoveTask::query()->where('task_id', $idTask)->where('old_stage', $stage->id)->orderBy('id', 'desc')->get();
+                $totalHours = 0;
+                $totalMinutes = 0;
+                foreach ($histories as $history) {
+                    $oldDate = null;
+                    $newDate = null;
+                    $diff = null;
+                    $hours = null;
+                    $minutes = null;
+                    if ($history->started_at != null) {
+                        $oldDate = new DateTime($history->started_at);
+                        $newDate = new DateTime($history->created_at);
+                        $diff = $newDate->diff($oldDate);
+                        $hours = $diff->h;
+                        $minutes = $diff->i;
+                    }
+                    $totalHours += $hours;
+                    $totalMinutes += $minutes;
+                }
+                $minutesForHours = floor($totalMinutes/60);
+                $minutes = $totalMinutes - $minutesForHours*60;
+                $hours = $totalHours + $minutesForHours;
+                $stage['hours'] = $hours;
+                $stage['minutes'] = $minutes;
+                $data[] = $stage;
+            }
         }
 
         return response()->json($data);

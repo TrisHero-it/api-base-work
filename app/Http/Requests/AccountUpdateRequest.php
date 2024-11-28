@@ -31,6 +31,9 @@ class AccountUpdateRequest extends FormRequest
             'position' => 'max:20',
             'phone'=> 'unique:accounts,phone | regex:/^(\+84|0)(\d{9})$/',
             'birthday' => 'date',
+            'address' => 'max:100',
+            'manager_id'=> 'exists:account,id',
+            'avatar' => 'image|mimes:jpeg,jpg,png,gif|max:2048'
         ];
     }
 

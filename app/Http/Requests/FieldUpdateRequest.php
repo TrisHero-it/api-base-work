@@ -26,6 +26,10 @@ class FieldUpdateRequest extends FormRequest
         return [
             'workflow_id' => 'exists:workflows,id',
             'stage_id' => 'exists:stages,id',
+            'description' => 'nullable|string',
+            'name' => 'nullable|string',
+            'type'=> 'nullable|string',
+            'require' => 'boolean',
         ];
     }
 

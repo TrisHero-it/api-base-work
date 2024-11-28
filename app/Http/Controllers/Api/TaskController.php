@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\HistoryMoveTaskEvent;
+use App\Events\KpiEvent;
+use App\Events\NotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskStoreRequest;
-use App\Http\Requests\UploadImageStoreRequest;
 use App\Models\Account;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
@@ -17,19 +19,177 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
+    public function index(Request $request)
+    {
+        $tasks = Task::query()->where('stage_id', $request->stage_id)->orderBy('updated_at', 'desc')->get();
+        foreach ($tasks as $task) {
+            $task['id'] = $task->code;
+            if ($task->expired != null) {
+                $deadLine = new \DateTime($task->expired);
+                $now = new \DateTime();
+                if ($deadLine < $now) {
+                    $task->update([
+                        'status' => 'Nhiệm vụ quá hạn'
+                    ]);
+                }
+            }
+        }
 
-    public function uploadImage(UploadImageStoreRequest $request)
+        return response()->json($tasks);
+    }
+
+    public function store(TaskStoreRequest $request)
+    {
+            $account = Account::query()->where('id', $request->account_id)->first() ?? null;
+            $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();
+            if ($stage->isSuccessStage()) {
+                return response()->json([
+                    'errors' => 'Chưa có giai đoạn'
+                ], 500);
+            }
+            $task = Task::query()->create([
+                'code' => rand(10000000, 99999999),
+                'name' => $request->name,
+                'description' => $request->description ?? null,
+                'account_id' => $account->id ?? null,
+                'stage_id' => $stage->id,
+            ]);
+            if (isset($account)) {
+                if (isset($stage->expired_after_hours)) {
+                    $dateTime = Carbon::parse($request->created_at);
+                    $task = Task::query()->where('id', $task->id)->first() ?? null;
+                    $task->update([
+                        'expired' => $dateTime->addHour($stage->expired_after_hours),
+                        'started_at' => $dateTime
+                    ]);
+                }
+            }
+            $task['id'] = $task->code;
+            return response()->json($task);
+    }
+
+    public function update($id, TaskStoreRequest $request)
+    {
+        $token = explode(' ', $request->header('Authorization'));
+        $token = $token[1];
+        $account = Account::query()->where('remember_token', $token)->first() ?? null;
+        $task = Task::query()->where('code' , $id)->first();
+    if (isset($request->stage_id)) {
+    //  Lấy ra thứ tự của stage maf mình muốn chuyển đến
+    $stage = Stage::query()->where('id', $request->stage_id)->first();
+    }
+        // Cập nhập thông tin nhiệm vụ
+        $data = $request->all();
+        if (isset($request->link_youtube)){
+//          Nếu có link youtube thì lấy ra mã code của link đó
+            preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
+//          Phân biệt youtube shorts
+            if (strpos($request->link_youtube, 'shorts') !== false) {
+                $aa = explode('/', $request->link_youtube);
+                $data['code_youtube'] = end($aa);
+            } else {
+                $data['code_youtube'] = $matches[1];
+            }
+        }
+
+// Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
+            if ($task->account_id != $request->account_id && $request->account_id != null) {
+                $data['started_at'] = now();
+                $data['expired'] = now()->addHours($task->stage->expired_after_hours);
+                    event(new NotificationEvent([
+                        'full_name' => $account->full_name,
+                        'task_name' => $task->name,
+                        'workflow_id' => $task->stage->workflow_id,
+                        'account_id' => $request->account_id
+                    ]));
+            }
+
+//  Nếu có tồn tại stage_id thì là chuyển giai đoạn
+        if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
+
+//  Chuyển đến giai đọan hoàn thành, thất bại phải có người làm mới chuyển được
+            if ($stage->isSuccessStage() || $stage->isFailStage()) {
+                if ($task->account_id == null) {
+                    return response()->json([
+                        'errors' => 'Nhiệm vụ chưa được giao'
+                    ], 500);
+                }
+            }
+
+            if ($task->stage->isSuccessStage()) {
+                $data['link_youtube'] = null;
+                $data['view_count'] = 0;
+                $data['like_count'] = 0;
+                $data['comment_count'] = 0;
+            }
+
+//  Laasy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
+            $worker = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->orderBy('id', 'desc')->first() ?? null;
+            if ($worker !== null) {
+                $data['expired'] = $worker->expired_at ;
+                $data['account_id'] = $worker->worker;
+                $data['started_at'] = $worker->started_at;
+            }else {
+                $data['expired'] = null;
+                $data['account_id'] = null;
+                $data['started_at'] = null;
+            }
+
+            //  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
+            if (isset($stage->expired_after_hours) && $data['expired'] === null && $data['account_id'] !== null) {
+                $data['expired'] = now()->addHours($stage->expired_after_hours);
+            }
+//  Thêm lịch sử kéo thả nhiệm vụ
+            event(new HistoryMoveTaskEvent([
+                'account_id' => $account->id,
+                'task_id' => $task->id,
+                'old_stage' => $task->stage_id,
+                'new_stage' => $request->stage_id,
+                'started_at' => $task->started_at ?? null,
+                'worker' => $task->account_id ?? null,
+                'expired_at'=> $task->expired ?? null,
+            ]));
+
+//      nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
+            if ($task->isNextStage($stage->index)){
+                event(new KpiEvent([
+                    'account_id' => $task->account_id,
+                    'task_id' => $task->id,
+                    'stage_id' => $task->stage_id,
+                    'status' => 0
+                ]));
+            } else {
+               $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
+               if ($kpi !== null) {
+                   $kpi->delete();
+               }
+            };
+        }
+
+        $task->update($data);
+
+        return $task;
+    }
+
+    public function show(int $id)
+    {
+        $task = Task::query()->where('code', $id)->first();
+
+        return response()->json($task);
+    }
+
+    public function destroy($id)
     {
         try {
-            $image = $request->file('image');
-            if (!isset($image)) {
-                return response()->json(['error' => 'file ảnh không tồn tại'], 500);
-            }
-            $imageUrl = Storage::put('/public/images', $image);
-            $imageUrl = Storage::url($imageUrl);
-            return response()->json(['urlImage' => 'https://work.1997.pro.vn' . $imageUrl]);
+            $task = Task::query()->where('code', $id)->first();
+            $task->delete();
+            return response()->json([
+                'success' => 'Xoá thành công'
+            ]);
         } catch (\Exception $exception) {
-            return response()->json(['error' => $exception->getMessage()], 500);
+            return response()->json([
+                'error' => 'Đã xảy ra lỗi : ' . $exception->getMessage()
+            ]);
         }
     }
 
@@ -60,7 +220,7 @@ class TaskController extends Controller
         }
     }
 
-    public function uploadImageBase64(Request $request) {
+    public function imageBase64(Request $request) {
 
         $htmlString = $request->input('image'); // Assumed key is 'html'
 
@@ -108,16 +268,5 @@ class TaskController extends Controller
 
     }
 
-    public function convertLinksToAnchors($text)
-    {
-        // Biểu thức chính quy tìm URL
-        $pattern = '/(https?:\/\/[^\s]+)/i';
-
-        // Thay thế URL bằng thẻ <a>
-        $replacement = '<a href="$1" target="_blank">$1</a>';
-
-        // Trả về chuỗi đã thay đổi
-        return preg_replace($pattern, $replacement, $text);
-    }
 
 }

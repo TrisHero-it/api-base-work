@@ -22,9 +22,4 @@ class Account extends Authenticatable
         'manager_id',
         'avatar'
     ];
-
-    public function account_profile(){
-
-        return $this->hasOne(AccountProfile::class, 'email','id');
-    }
 }

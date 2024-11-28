@@ -15,53 +15,44 @@ use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {
-    public function store(AccountStoreRequest $request) {
-        try {
-            $email = $request->email;
+    public function store(AccountStoreRequest $request)
+    {
+            $email = $request->safe()->email;
             $result = explode('@', $email)[0];
             $account = Account::create([
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'email' => $request->safe()->email,
+                'password' => Hash::make($request->safe()->password),
                 'username' => '@'.$result,
                 'full_name'=>$result,
             ]);
 
-            return response()->json([
-                'success' => 'Đăng ký thành công'
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'error' => 'Đã xảy ra lỗi'
-            ], 500);
-        }
+            return response()->json($account);
     }
 
-    public function update(AccountUpdateRequest $request, int $id) {
-        try {
-            $account = Account::findOrFail($id);
-            $data = $request->except('avatar');
+    public function update(int $id, AccountUpdateRequest $request) {
+            $account = Account::query()
+                ->findOrFail($id);
+            $data = $request->validated()
+                ->except('avatar');
             if (isset($request->avatar)) {
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
                 $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
             }
             $account->update($data);
-            return response()->json([
-                'success' => 'Cập nhập thành công 49'
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'error' => 'Đã xảy ra lỗi'. $th->getMessage()
-            ], 500);
-        }
+
+            return response()->json($account);
     }
 
     public function index(Request $request) {
+        // Lấy tên từ username đẩy lên
             $name = str_replace('@', '', $request->username);
-
+        // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
             if (isset($request->category_id)) {
                 $accounts = [];
-                $a = AccountWorkflowCategory::query()->where('workflow_category_id', $request->category_id)->get();
-                foreach ($a as $item) {
+                $accountWorkflowCategories = AccountWorkflowCategory::query()
+                    ->where('workflow_category_id', $request->category_id)
+                    ->get();
+                foreach ($accountWorkflowCategories as $item) {
                     $accounts[] = $item->account;
                 }
             }else {
@@ -85,7 +76,7 @@ class AccountController extends Controller
         }
         $token = explode(' ', $token);
         $token = $token[1];
-        $account = Account::query()->where('remember_token', $token)->select('email','username','id')->first();
+        $account = Account::query()->where('remember_token', $token)->first();
         return response()->json($account);
     }
 

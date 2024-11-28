@@ -25,8 +25,8 @@ class CommentStoreRequest extends FormRequest
     {
         return [
             'content' => 'required|string',
-            'account_id' => 'required|integer|exists:accounts,id',
-            'task_id' => 'required|integer|exists:tasks,id',
+            'account_id' => 'nullable|integer|exists:accounts,id',
+            'task_id' => 'required|integer|exists:tasks,code',
             'comment_id' => 'integer|exists:comments,id',
         ];
     }

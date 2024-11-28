@@ -23,11 +23,6 @@ class ReportFieldStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'fields_id' => 'required |  exists:fields,id',
-            'task_id' => 'required | exists:tasks,id ',
-            'value' => 'required',
-            'account_id' => 'required | exists:accounts,id ',
-        ];
+
     }
 }

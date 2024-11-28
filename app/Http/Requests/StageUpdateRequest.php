@@ -24,9 +24,9 @@ class StageUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'regex:/^[a-zA-Z0-9\s]+$/',
-            'workflow_id'=> 'integer|exists:workflow,id',
-            'expired_after_hours' => 'integer|between:1,60',
+            'name' => 'string',
+            'workflow_id'=> 'nullable|integer|exists:workflows,id',
+            'expired_after_hours' => 'nullable|integer|between:1,60',
         ];
     }
 

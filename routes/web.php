@@ -17,7 +17,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route::post('upload-image-base64', [\App\Http\Controllers\Api\TaskController::class, 'uploadImageBase64']);
 
 //  Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
 //Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store'); //đã validate

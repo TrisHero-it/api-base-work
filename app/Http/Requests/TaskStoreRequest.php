@@ -24,7 +24,7 @@ class TaskStoreRequest extends FormRequest
         return [
             'code' => 'integer|unique:tasks,code',
             'description' => 'string|nullable',
-            'account_id' => 'integer|exists:accounts,id',
+            'account_id' => 'nullable|integer|exists:accounts,id',
             'name' => 'string|nullable',
             'link_youtube' => 'string|nullable|url',
         ];

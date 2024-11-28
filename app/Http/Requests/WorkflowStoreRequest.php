@@ -24,8 +24,8 @@ class WorkflowStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|regex:/^[a-zA-Z0-9\s]+$/',
-            'description' => 'required|string|regex:/^[a-zA-Z0-9\s]+$/',
+            'name' => 'required|string',
+            'description' => 'string',
             'workflow_category_id' => 'required|integer|exists:workflow_categories,id',
         ];
     }

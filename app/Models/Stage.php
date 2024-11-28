@@ -17,6 +17,16 @@ class Stage extends Model
         'expired_after_hours'
     ];
 
+    public function isSuccessStage()
+    {
+        return $this->index == 1;
+    }
+
+    public function isFailStage()
+    {
+        return $this->index == 0;
+    }
+
     public function tasks() {
         return $this->hasMany(Task::class);
     }

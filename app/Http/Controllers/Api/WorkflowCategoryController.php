@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WorkflowCategoryStoreRequest;
 use App\Http\Requests\WorkflowStoreRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
@@ -18,7 +19,6 @@ class WorkflowCategoryController extends Controller
 
     public function index() {
         $categories = WorkflowCategory::get()->toArray();
-        $arr =[] ;
         $abc = [];
         foreach ($categories as $category) {
             $arrMembers = [];
@@ -37,12 +37,10 @@ class WorkflowCategoryController extends Controller
         return response()->json($abc);
     }
 
-    public function store(WorkflowStoreRequest $request)
+    public function store(WorkflowCategoryStoreRequest $request)
     {
-        try {
             $err = [];
             $arrs = explode('@', $request->members);
-
             $categories = WorkflowCategory::all();
             foreach ($categories as $category) {
                 $te = WorkflowCategory::query()->where('name', $request->name)->first();
@@ -59,7 +57,7 @@ class WorkflowCategoryController extends Controller
                 }
             }
             if ($err) {
-                return response()->json(['error' => $err], 422);
+                return response()->json(['errors' => $err], 422);
             }
            $workflow = WorkflowCategory::create(
                 [
@@ -78,11 +76,7 @@ class WorkflowCategoryController extends Controller
                     }
                 }
             }
-            return response()->json(['success' => 'Thêm thành công',
-                'id' => $workflow->id]);
-        }catch (\Exception $exception){
-            return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
-        }
+            return response()->json($workflow);
     }
 
     public function destroy($id) {

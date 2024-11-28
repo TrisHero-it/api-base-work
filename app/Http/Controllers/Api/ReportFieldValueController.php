@@ -11,14 +11,44 @@ use App\Models\FieldTask;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
-class WorkflowTaskReportController extends Controller
+class ReportFieldValueController extends Controller
 {
-    public function index($idStage, Request $request)
+
+    public function store(Request $request)
+    {
+            $task = Task::query()->where('code', $request->task_id)->first();
+            if ($task == null) {
+                return response()->json([
+                    'error' => 'Không tìm thấy nhiệm vụ'
+                ]);
+            }
+            $data = $request->except('account_id', 'task_id');
+            foreach ($data as $field => $value) {
+                $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $task->id)->first();
+                if (isset($a)) {
+                    $a->update([
+                        'value' => $value,
+                    ]);
+                }else {
+                    FieldTask::query()->create([
+                        'value' => $value,
+                        'model' => 'report-field',
+                        'fields_id' => $field,
+                        'task_id' => $task->id,
+                        'account_id'=> $task->account_id,
+                    ]);
+                }
+            }
+            return response()->json(['success' => 'Thêm thành công']);
+
+    }
+
+    public function index(Request $request)
     {
         $arrTask = [];
         $arrCondition = [];
 //      Lấy ra các trường thuộc giai đoạn í
-        $field = Field::query()->where('stage_id', $idStage)->first();
+        $field = Field::query()->where('stage_id', $request->stage_id)->first();
         while (true) {
             if (!isset($g))
             {
@@ -58,44 +88,7 @@ class WorkflowTaskReportController extends Controller
             $arrTask[] = $b;
         }
 
-
         return response()->json($arrTask);
-
-
-    }
-
-    public function store(TaskFieldStoreRequest $request, int $codeTask)
-    {
-        try {
-            $task = Task::query()->where('code', $codeTask)->first();
-            if ($task == null) {
-                return response()->json([
-                    'error' => 'Không tìm thấy nhiệm vụ'
-                ]);
-            }
-            $data = $request->except('account_id');
-            foreach ($data as $field => $value) {
-                $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $task->id)->first();
-                if (isset($a)) {
-                    $a->update([
-                        'value' => $value,
-                    ]);
-                }else {
-                    $b = explode(' ', $request->header('Authorization'));
-                    $acc = Account::query()->where('remember_token', $b[1])->first();
-                    FieldTask::query()->create([
-                        'value' => $value,
-                        'model' => 'report-field',
-                        'fields_id' => $field,
-                        'task_id' => $task->id,
-                        'account_id'=> $task->account_id,
-                    ]);
-                }
-            }
-            return response()->json(['success' => 'Thêm thành công']);
-        } catch (\Exception $exception) {
-            return response()->json(['error' => $exception->getMessage()], 500);
-        }
     }
 
     public function update(int $id, TaskFieldUpdateRequest $request)

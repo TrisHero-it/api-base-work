@@ -6,16 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\WorkflowStoreRequest;
 use App\Http\Requests\WorkflowUpdateRequest;
 use App\Models\Account;
-use App\Models\AccountProfile;
 use App\Models\AccountWorkflow;
-use App\Models\AccountWorkflowCategory;
-use App\Models\Notification;
 use App\Models\Stage;
 use App\Models\Task;
 use App\Models\Workflow;
-use App\Models\WorkflowCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class WorkflowController extends Controller
 {
@@ -47,7 +42,6 @@ class WorkflowController extends Controller
             foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
-            $arr =  [];
             $stageFailed = Stage::query()->where('workflow_id', $workflow['id'])->where('index', 0)->first();
             if (isset($stageFailed)) {
                 $countTaskFailed = Task::query()->where('stage_id', $stageFailed->id)->count();
@@ -70,9 +64,8 @@ class WorkflowController extends Controller
             $arrMember = [];
             $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
             foreach ($members as $member) {
-                $tri = Account::query()->select('email', 'id', 'username','created_at', 'updated_at')->where('id', $member->account_id)->first()->toArray();
-                $tri2 = AccountProfile::query()->select('full_name', 'position', 'avatar')->where('email', $member->account_id)->first()->toArray();
-                $arrMember[] = array_merge($tri, $tri2);
+                $tri = Account::query()->where('id', $member->account_id)->first()->toArray();
+                $arrMember[] = $tri;
             }
             $a = array_merge($arr, $workflow);
             $a['members'] = $arrMember;
@@ -114,7 +107,6 @@ class WorkflowController extends Controller
                    }
                }
             }
-
             Stage::query()->create([
                 'name' => 'Thất bại',
                 'workflow_id' => $workflow->id,
@@ -127,8 +119,7 @@ class WorkflowController extends Controller
                 'description' => 'Đánh dấu hoàn thành công việc',
                 'index' => 1
             ]);
-            return response()->json(['success' => 'Thêm thành công',
-                'id'=> $workflow->id]);
+            return response()->json($workflow);
         }catch (\Exception $exception){
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'

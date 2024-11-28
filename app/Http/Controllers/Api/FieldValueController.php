@@ -9,11 +9,11 @@ use App\Models\Field;
 use App\Models\FieldTask;
 use Illuminate\Http\Request;
 
-class WorkflowTaskFieldController extends Controller
+class FieldValueController extends Controller
 {
-    public function index($idWorkflow, Request $request)
+    public function index(Request $request)
     {
-        $fields = Field::query()->select('id', 'name', 'type', 'require','options')->where('workflow_id', $id)->where('model', 'field')->get();
+        $fields = Field::query()->select('id', 'name', 'type', 'require','options')->where('workflow_id', $request->workflow_id)->where('model', 'field')->get();
         foreach ($fields as $field) {
             $a = FieldTask::query()->select('value')->where('data_yield_id', $field->id)->where('task_id', $request->task_id)->first();
             $field['value'] = null;

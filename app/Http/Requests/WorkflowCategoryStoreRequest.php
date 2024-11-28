@@ -24,7 +24,7 @@ class WorkflowCategoryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|regex:/^[a-zA-Z0-9\s]+$/|unique:workflow_categories,name',
+            'name' => 'required|string|unique:workflow_categories,name',
         ];
     }
 
