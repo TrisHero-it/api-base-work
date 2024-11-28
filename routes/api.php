@@ -50,7 +50,10 @@ Route::middleware(['check.login'])->group(function () {
         'report-fields' => ReportFieldController::class,
         'report-field-values' => ReportFieldValueController::class,
         'kpis' => KpiController::class,
+        'tags' => \App\Http\Controllers\Api\StickerController::class
     ]);
+
+    // Nhãn dán
 
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('image-base64', [\App\Http\Controllers\Api\TaskController::class, 'imageBase64']);

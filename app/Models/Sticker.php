@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Sticker extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'title',
+        'workflow_id'
+    ];
 }

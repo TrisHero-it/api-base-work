@@ -17,6 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/vnpay-payment', [\App\Http\Controllers\VNPayController::class, 'createPayment']);
+Route::get('/vnpay-return', [\App\Http\Controllers\VNPayController::class, 'returnPayment']);
 
 //  Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
 //Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store'); //đã validate
@@ -32,10 +34,7 @@ Route::get('/', function () {
 //Route::get('colors', [\App\Http\Controllers\Api\ColorController::class, 'index']);
 //Route::post('colors', [\App\Http\Controllers\Api\ColorController::class, 'store']);
 //
-//// Nhãn dán
-//Route::get('stickers', [\App\Http\Controllers\Api\StickerController::class, 'index']);
-//Route::post('stickers', [\App\Http\Controllers\Api\StickerController::class, 'store']);
-//Route::delete('stickers/{id}', [\App\Http\Controllers\Api\StickerController::class, 'destroy']);
+
 //
 //
 //// Sticker của từng nhiệm vụ

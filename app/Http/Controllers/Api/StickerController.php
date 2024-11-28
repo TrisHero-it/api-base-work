@@ -17,12 +17,8 @@ class StickerController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            Sticker::query()->create($request->all());
-            return response()->json(['success'=> 'Thêm thành công']);
-        }catch (\Exception $exception){
-            return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
-        }
+           $tag =  Sticker::query()->create($request->all());
+            return response()->json($tag);
     }
 
     public function destroy(Request $request, int $id)

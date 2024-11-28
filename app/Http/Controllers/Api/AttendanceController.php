@@ -14,13 +14,20 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         $a = explode(' ', $request->header('Authorization'));
-        $token = $a[1];
-        $attendance = Attendance::all();
+        $attendance = Attendance::query();
+//  Loc theo ngày
+        if (isset($request->start) && isset($request->end)) {
+            $attendance->where('created_at', '>=', $request->start)->where('created_at', '<=', $request->end);
+        }
+//  Lọc theo thsang
+        if (isset($request->month)) {
+            $attendance->whereMonth('created_at', $request->month);
+        }
+        $attendance = $attendance->get();
         if (isset($request->me)) {
             $account = Account::query()->where('remember_token', $a[1])->first();
             $attendance = Attendance::query()->where('account_id', $account->id)->whereDate('checkin', Carbon::today())->orderBy('id')->first();
         }
-
 
         return response()->json($attendance);
     }

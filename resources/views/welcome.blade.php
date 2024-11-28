@@ -8,6 +8,10 @@
     <title>Document</title>
 </head>
 <body>
-    Đây là trang chủ
+<form action="/vnpay-payment" method="GET">
+    <label for="amount">Số tiền thanh toán (VNĐ):</label>
+    <input type="number" name="amount" required>
+    <button type="submit">Thanh toán với VNPay</button>
+</form>
 </body>
 </html>
