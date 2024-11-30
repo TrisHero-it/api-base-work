@@ -9,6 +9,8 @@ use App\Models\AccountWorkflow;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
 use App\Models\Stage;
+use App\Models\Sticker;
+use App\Models\StickerTask;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,21 +40,25 @@ class KpiController extends Controller
             foreach ($accounts as $account) {
                 $account['Người thực thi'] = Account::query()->where('id', $account->account_id)->value('full_name');
                 foreach ($stages as $stage) {
-                    $kpi = Kpi::query()
-                        ->where('stage_id', $stage->id)
-                        ->where('account_id', $account->account_id)
-                        ->whereYear('updated_at', $year)
-                        ->whereMonth('updated_at', $month)
-                        ->where('status', 0)
-                        ->get()->count();
-                    $failedKpi = Kpi::query()
-                        ->where('stage_id', $stage->id)
-                        ->where('account_id', $account->account_id)
-                        ->whereYear('updated_at', $year)
-                        ->whereMonth('updated_at', $month)
-                        ->where('status', 1)->get()
-                        ->count();
-                    $account[$stage->name] = $kpi - $failedKpi;
+                    if (isset($request->tag_id)) {
+
+                    }else {
+                        $kpi = Kpi::query()
+                            ->where('stage_id', $stage->id)
+                            ->where('account_id', $account->account_id)
+                            ->whereYear('updated_at', $year)
+                            ->whereMonth('updated_at', $month)
+                            ->where('status', 0)
+                            ->get()->count();
+                        $failedKpi = Kpi::query()
+                            ->where('stage_id', $stage->id)
+                            ->where('account_id', $account->account_id)
+                            ->whereYear('updated_at', $year)
+                            ->whereMonth('updated_at', $month)
+                            ->where('status', 1)->get()
+                            ->count();
+                        $account[$stage->name] = $kpi - $failedKpi;
+                    }
                 }
                 unset($account['account_id']);
             }

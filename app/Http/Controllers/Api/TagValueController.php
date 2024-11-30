@@ -20,7 +20,21 @@ class TagValueController extends Controller
                 'sticker_id' => $tagId
             ]);
         }
-        return ['success' => true];
+        return [$tag];
+    }
+
+    public function update(int $id, Request $request) {
+        $arrTag = $request->tag_id;
+        $task = Task::query()->where('code', $id)->first();
+        StickerTask::query()->where('task_id', $task->id)->delete();
+        $tag = [];
+        foreach ($arrTag as $tagId) {
+            $tag[] = StickerTask::query()->create([
+                'task_id' => $task->id,
+                'sticker_id' => $tagId
+            ]);
+        }
+        return $tag;
     }
 
 }

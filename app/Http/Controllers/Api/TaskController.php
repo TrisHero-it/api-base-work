@@ -12,6 +12,7 @@ use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
 use App\Models\Notification;
 use App\Models\Stage;
+use App\Models\StickerTask;
 use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class TaskController extends Controller
         $tasks = Task::query()->where('stage_id', $request->stage_id)->orderBy('updated_at', 'desc')->get();
         foreach ($tasks as $task) {
               $task['id'] = $task->code;
+              $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
         }
 
         return response()->json($tasks);
@@ -190,6 +192,7 @@ class TaskController extends Controller
     public function show(int $id)
     {
         $task = Task::query()->where('code', $id)->first();
+        $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
 
         return response()->json($task);
     }

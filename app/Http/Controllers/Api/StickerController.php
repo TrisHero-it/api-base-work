@@ -15,6 +15,13 @@ class StickerController extends Controller
         return response()->json($stickers);
     }
 
+    public function update(int $id, Request $request)
+    {
+        $sticker = Sticker::query()->findOrFail($id);
+        $sticker->update($request->all());
+        return response()->json($sticker);
+    }
+
     public function store(Request $request)
     {
            $tag =  Sticker::query()->create($request->all());

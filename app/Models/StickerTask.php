@@ -13,4 +13,9 @@ class StickerTask extends Model
         'task_id',
         'sticker_id'
     ];
+
+    public function sticker() {
+
+        return $this->belongsTo(Sticker::class);
+    }
 }

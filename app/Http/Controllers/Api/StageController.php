@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StageStoreRequest;
 use App\Http\Requests\StageUpdateRequest;
 use App\Models\Stage;
+use App\Models\StickerTask;
 use App\Models\Task;
 use http\Client\Response;
 use Illuminate\Http\Request;
@@ -18,8 +19,22 @@ class StageController extends Controller
         foreach ($stages as $stage) {
             if ($stage->isSuccessStage() || $stage->isFailStage()) {
                 $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereMonth('updated_at', date('m'))->get();
+                foreach ($tasks as $task) {
+                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
+                    foreach ($stickers as $sticker) {
+                        $sticker['name'] = $sticker->sticker->title;
+                    }
+                    $task['sticker'] = $stickers;
+                }
             }else {
                 $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
+                foreach ($tasks as $task) {
+                   $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
+                    foreach ($stickers as $sticker) {
+                        $sticker['name'] = $sticker->sticker->title;
+                    }
+                    $task['sticker'] = $stickers;
+                }
             }
             foreach ($tasks as $task) {
 //   thay id bằng mã code của nhiệm vụ khi trả cho client
