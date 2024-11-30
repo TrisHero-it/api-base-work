@@ -20,8 +20,11 @@ class AttendanceController extends Controller
             $attendance->where('created_at', '>=', $request->start)->where('created_at', '<=', $request->end);
         }
 //  Lọc theo thsang
-        if (isset($request->month)) {
-            $attendance->whereMonth('created_at', $request->month);
+        if (isset($request->date)) {
+            $date = explode('-', $request->date);
+            $month = $date[1];
+            $year = $date[0];
+            $attendance->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
         $attendance = $attendance->get();
         if (isset($request->me)) {

@@ -16,7 +16,11 @@ class StageController extends Controller
     {
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
-            $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
+            if ($stage->isSuccessStage() || $stage->isFailStage()) {
+                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereMonth('updated_at', date('m'))->get();
+            }else {
+                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
+            }
             foreach ($tasks as $task) {
 //   thay id bằng mã code của nhiệm vụ khi trả cho client
                 $task['id'] = $task->code;
@@ -27,7 +31,6 @@ class StageController extends Controller
 
         return response()->json($stages);
     }
-
 
     public function store(StageStoreRequest $request) {
             if (!isset($request->index)) {

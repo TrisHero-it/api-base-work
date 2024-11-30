@@ -15,7 +15,7 @@ class FieldValueController extends Controller
     {
         $fields = Field::query()->select('id', 'name', 'type', 'require','options')->where('workflow_id', $request->workflow_id)->where('model', 'field')->get();
         foreach ($fields as $field) {
-            $a = FieldTask::query()->select('value')->where('data_yield_id', $field->id)->where('task_id', $request->task_id)->first();
+            $a = FieldTask::query()->select('value')->where('fields_id', $field->id)->where('task_id', $request->task_id)->first();
             $field['value'] = null;
             if (isset($a)) {
                 if ($field->type == 'list') {

@@ -24,6 +24,9 @@ class ReportFieldValueController extends Controller
             }
             $data = $request->except('account_id', 'task_id');
             foreach ($data as $field => $value) {
+                if ($value == null) {
+                    continue;
+                }
                 $a = FieldTask::query()->where('fields_id', $field)->where('task_id', $task->id)->first();
                 if (isset($a)) {
                     $a->update([
@@ -50,6 +53,9 @@ class ReportFieldValueController extends Controller
 //      Lấy ra các trường thuộc giai đoạn í
         $field = Field::query()->where('stage_id', $request->stage_id)->first();
         while (true) {
+            if ($field == null) {
+                break;
+            }
             if (!isset($g))
             {
                 $g = $field->id;

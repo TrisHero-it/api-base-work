@@ -20,6 +20,28 @@ Route::get('/', function () {
 Route::get('/vnpay-payment', [\App\Http\Controllers\VNPayController::class, 'createPayment']);
 Route::get('/vnpay-return', [\App\Http\Controllers\VNPayController::class, 'returnPayment']);
 
+Route::get('/get-youtube', function () {
+    $client = new \GuzzleHttp\Client();
+    try {
+        $videoId = 'vrcjoqeLeJI'; // Thay VIDEO_ID bằng ID của video YouTube
+        $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
+
+        $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
+
+        $response = file_get_contents($url);
+        $data = json_decode($response, true);
+
+// Hiển thị dữ liệu video
+        dd($data['items'][0]['snippet']['publishedAt']);
+    } catch (\Exception $e) {
+        // Xử lý lỗi
+        return [
+            'error' => $e->getMessage(),
+        ];
+    }
+});
+
+
 //  Route::post('/send-email', [\App\Http\Controllers\Api\MailController::class, 'sendMail']);
 //Route::post('accounts', [AccountController::class, 'store'])->name('api.accounts.store'); //đã validate
 

@@ -23,16 +23,7 @@ class TaskController extends Controller
     {
         $tasks = Task::query()->where('stage_id', $request->stage_id)->orderBy('updated_at', 'desc')->get();
         foreach ($tasks as $task) {
-            $task['id'] = $task->code;
-            if ($task->expired != null) {
-                $deadLine = new \DateTime($task->expired);
-                $now = new \DateTime();
-                if ($deadLine < $now) {
-                    $task->update([
-                        'status' => 'Nhiệm vụ quá hạn'
-                    ]);
-                }
-            }
+              $task['id'] = $task->code;
         }
 
         return response()->json($tasks);
@@ -95,7 +86,11 @@ class TaskController extends Controller
 // Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
             if ($task->account_id != $request->account_id && $request->account_id != null) {
                 $data['started_at'] = now();
-                $data['expired'] = now()->addHours($task->stage->expired_after_hours);
+                if($task->stage->expired_after_hours != null) {
+                    $data['expired'] = now()->addHours($task->stage->expired_after_hours);
+                }else {
+                    $data['expired'] = null;
+                }
                     event(new NotificationEvent([
                         'full_name' => $account->full_name,
                         'task_name' => $task->name,
@@ -108,7 +103,7 @@ class TaskController extends Controller
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
 
 //  Chuyển đến giai đọan hoàn thành, thất bại phải có người làm mới chuyển được
-            if ($stage->isSuccessStage() || $stage->isFailStage()) {
+            if ($stage->isSuccessStage()) {
                 if ($task->account_id == null) {
                     return response()->json([
                         'errors' => 'Nhiệm vụ chưa được giao'
@@ -121,6 +116,7 @@ class TaskController extends Controller
                 $data['view_count'] = 0;
                 $data['like_count'] = 0;
                 $data['comment_count'] = 0;
+                $data['date_posted'] = null;
             }
 
 //  Laasy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
@@ -150,8 +146,28 @@ class TaskController extends Controller
                 'expired_at'=> $task->expired ?? null,
             ]));
 
+//  Nếu như nhiệm vụ đã thành công mà bị chuyển sang thất bại, thì sẽ xóa tát cả kpi của những người làm nhiệm vụ đó
+    if ($task->stage->isSuccessStage() && $stage->isFailStage()) {
+        $a = Kpi::query()->where('task_id', $task->id)->get();
+        $date = new \DateTime($task->created_at);
+        $now = new \DateTime();
+        foreach ($a as $item) {
+            if ($date->format('Y-m') == $now->format('Y-m')) {
+                $item->delete();
+            }else {
+                Kpi::query()->create([
+                    'status' => 1,
+                    'task_id' => $item->task_id,
+                    'stage_id' => $item->stage_id,
+                    'account_id' => $item->account_id,
+                ]);
+            }
+        }
+
+    }
+
 //      nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
-            if ($task->isNextStage($stage->index) && $task->account_id != null) {
+            if ($task->isNextStage($stage->index) && $task->account_id != null && !$stage->isFailStage()) {
                 event(new KpiEvent([
                     'account_id' => $task->account_id,
                     'task_id' => $task->id,
@@ -193,10 +209,15 @@ class TaskController extends Controller
         }
     }
 
-    public function loadYoutube()
+    public function loadYoutube(Request $request)
     {
-        try {
-            $tasks = Task::query()->where('link_youtube', '!=', null)->get();
+            $a = [];
+            $tasks = Task::query()->where('link_youtube', '!=', null)->whereMonth('updated_at', date('m'));
+            $stages = Stage::query()->where('workflow_id', $request->workflow_id)->get();
+            foreach ($stages as $stage) {
+                $a[] = $stage->id;
+            }
+            $tasks = $tasks->whereIn('stage_id', $a)->get();
             foreach ($tasks as $task) {
                 $videoId = $task->code_youtube; // Thay VIDEO_ID bằng ID của video YouTube
                 $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
@@ -205,19 +226,19 @@ class TaskController extends Controller
 
                 $response = file_get_contents($url);
                 $data = json_decode($response, true);
-                $task->update([
+                $valueData = [
                     'view_count' => $data['items'][0]['statistics']['viewCount'],
                     'like_count' => $data['items'][0]['statistics']['likeCount'],
                     'comment_count' => $data['items'][0]['statistics']['commentCount'],
-                ]);
+                    'date_posted' => new \DateTime($data['items'][0]['snippet']['publishedAt']),
+                ];
+                $task->update($valueData);
             }
 
             return response()->json([
                 'success' => 'Cập nhập thành công'
             ]);
-        }catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()], 500);
-        }
+
     }
 
     public function imageBase64(Request $request) {

@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class StickerTask extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'task_id',
+        'sticker_id'
+    ];
 }

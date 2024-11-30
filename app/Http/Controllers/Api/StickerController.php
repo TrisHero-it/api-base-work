@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 
 class StickerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $stickers = Sticker::all();
+        $stickers = Sticker::query()->where('workflow_id', $request->workflow_id)->get();
 
         return response()->json($stickers);
     }
@@ -18,7 +18,8 @@ class StickerController extends Controller
     public function store(Request $request)
     {
            $tag =  Sticker::query()->create($request->all());
-            return response()->json($tag);
+
+           return response()->json($tag);
     }
 
     public function destroy(Request $request, int $id)

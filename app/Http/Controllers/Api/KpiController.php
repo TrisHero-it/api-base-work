@@ -17,12 +17,42 @@ class KpiController extends Controller
 {
     public function index(Request $request) {
 
-        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->where('index', '!=', '1')->where('index', '!=', '0')->orderBy('index', 'desc')->get();
-        $accounts = AccountWorkflow::query()->select('id', 'account_id')->where('workflow_id', $request->workflow_id)->get();
+        if (isset($request->date)) {
+           $date = explode('-', $request->date);
+           $month = $date[1];
+           $year = $date[0];
+        }else {
+            $month = date('m');
+            $year = date('Y');
+        }
+        $stages = Stage::query()
+            ->where('workflow_id', $request->workflow_id)
+            ->where('index', '!=', '1')
+            ->where('index', '!=', '0')
+            ->orderBy('index', 'desc')
+            ->get();
+        $accounts = AccountWorkflow::query()
+            ->select('id', 'account_id')
+            ->where('workflow_id', $request->workflow_id)
+            ->get();
             foreach ($accounts as $account) {
                 $account['Người thực thi'] = Account::query()->where('id', $account->account_id)->value('full_name');
                 foreach ($stages as $stage) {
-                    $account[$stage->name] = Kpi::query()->where('stage_id', $stage->id)->where('account_id', $account->account_id)->get()->count();
+                    $kpi = Kpi::query()
+                        ->where('stage_id', $stage->id)
+                        ->where('account_id', $account->account_id)
+                        ->whereYear('updated_at', $year)
+                        ->whereMonth('updated_at', $month)
+                        ->where('status', 0)
+                        ->get()->count();
+                    $failedKpi = Kpi::query()
+                        ->where('stage_id', $stage->id)
+                        ->where('account_id', $account->account_id)
+                        ->whereYear('updated_at', $year)
+                        ->whereMonth('updated_at', $month)
+                        ->where('status', 1)->get()
+                        ->count();
+                    $account[$stage->name] = $kpi - $failedKpi;
                 }
                 unset($account['account_id']);
             }

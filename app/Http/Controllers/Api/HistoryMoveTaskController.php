@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
-use App\Models\AccountProfile;
 use App\Models\HistoryMoveTask;
 use App\Models\Stage;
 use App\Models\Task;
@@ -67,8 +66,8 @@ class HistoryMoveTaskController extends Controller
                     $hours = null;
                     $minutes = null;
                     if ($history->started_at != null) {
-                        $oldDate = new DateTime($history->started_at);
-                        $newDate = new DateTime($history->created_at);
+                        $oldDate = new \DateTime($history->started_at);
+                        $newDate = new \DateTime($history->created_at);
                         $diff = $newDate->diff($oldDate);
                         $hours = $diff->h;
                         $minutes = $diff->i;
