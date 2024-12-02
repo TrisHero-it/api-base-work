@@ -15,11 +15,11 @@ class AttendanceController extends Controller
     {
         $a = explode(' ', $request->header('Authorization'));
         $attendance = Attendance::query();
-//  Loc theo ngày
+        //  Loc theo ngày
         if (isset($request->start) && isset($request->end)) {
             $attendance->where('created_at', '>=', $request->start)->where('created_at', '<=', $request->end);
         }
-//  Lọc theo thsang
+        //  Lọc theo tháng
         if (isset($request->date)) {
             $date = explode('-', $request->date);
             $month = $date[1];

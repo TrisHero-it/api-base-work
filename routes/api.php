@@ -30,7 +30,10 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 
+Route::apiResource('accounts', AccountController::class);
+
 Route::middleware(['check.login'])->group(function () {
+
     Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
 
 //  Upload ảnh
@@ -38,7 +41,6 @@ Route::middleware(['check.login'])->group(function () {
 
     Route::apiResources([
         'notifications' => NotificationController::class,
-        'accounts' => AccountController::class,
         'workflows' => WorkflowController::class,
         'stages' => StageController::class,
         'tasks' => TaskController::class,
@@ -54,17 +56,15 @@ Route::middleware(['check.login'])->group(function () {
         'tag-task' => \App\Http\Controllers\Api\TagValueController::class,
     ]);
 
-//
-
     // Nhãn dán
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('image-base64', [\App\Http\Controllers\Api\TaskController::class, 'imageBase64']);
 
-// Điểm danh
+    // Điểm danh
     Route::get('/attendances', [AttendanceController::class, 'index']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
 
-// Thời gian của nhiệm vụ trong từng giai đoạn
+    // Thời gian của nhiệm vụ trong từng giai đoạn
     Route::get('time-stage/{idTask}', [\App\Http\Controllers\Api\HistoryMoveTaskController::class, 'timeStage']);
 });

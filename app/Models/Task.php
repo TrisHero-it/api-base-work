@@ -34,6 +34,12 @@ class Task extends Model
         return $this->belongsTo(Stage::class);
     }
 
+    public function tags()
+    {
+
+        return $this->belongsToMany(Sticker::class, 'sticker_task','task_id', 'sticker_id');
+    }
+
     public function account()
     {
         return $this->belongsTo(Account::class);

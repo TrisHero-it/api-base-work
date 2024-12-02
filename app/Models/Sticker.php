@@ -13,4 +13,10 @@ class Sticker extends Model
         'title',
         'workflow_id'
     ];
+
+    public function tasks()
+    {
+
+        return $this->belongsToMany(Task::class, 'task_tag', 'sticker_id', 'task_id');
+    }
 }
