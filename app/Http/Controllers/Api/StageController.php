@@ -17,16 +17,16 @@ class StageController extends Controller
     {
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
-            if ($stage->isSuccessStage() || $stage->isFailStage()) {
-                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereMonth('updated_at', date('m'))->get();
-                foreach ($tasks as $task) {
-                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
-                    foreach ($stickers as $sticker) {
-                        $sticker['name'] = $sticker->sticker->title;
-                    }
-                    $task['sticker'] = $stickers;
-                }
-            }else {
+//            if ($stage->isSuccessStage() || $stage->isFailStage()) {
+//                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereMonth('updated_at', date('m'))->get();
+//                foreach ($tasks as $task) {
+//                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
+//                    foreach ($stickers as $sticker) {
+//                        $sticker['name'] = $sticker->sticker->title;
+//                    }
+//                    $task['sticker'] = $stickers;
+//                }
+//            }else {
                 $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
                 foreach ($tasks as $task) {
                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
@@ -42,7 +42,7 @@ class StageController extends Controller
             }
 //   Hiển thị danh sách nhiệm vụ của stages
             $stage['tasks'] = $tasks;
-        }
+//        }
 
         return response()->json($stages);
     }
