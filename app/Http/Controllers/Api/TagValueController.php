@@ -23,6 +23,7 @@ class TagValueController extends Controller
             }
             return [$tag];
         }
+        return ['success' => true];
     }
 
     public function update(int $id, Request $request) {
