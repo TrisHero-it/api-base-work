@@ -26,6 +26,10 @@ class AttendanceController extends Controller
             $year = $date[0];
             $attendance->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
+
+        if (!isset($request->start) && !isset($request->date)) {
+            $attendance->whereMonth('created_at', date('m'));
+        }
         $attendance = $attendance->get();
         if (isset($request->me)) {
             $account = Account::query()->where('remember_token', $a[1])->first();
