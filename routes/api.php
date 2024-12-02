@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FieldController;
 use App\Http\Controllers\Api\FieldValueController;
-use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\Api\LoginController;
