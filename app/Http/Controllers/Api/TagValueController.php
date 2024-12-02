@@ -10,17 +10,19 @@ use Illuminate\Http\Request;
 class TagValueController extends Controller
 {
     public function store(Request $request) {
-        $data = [];
-        $task_id = Task::query()->where('code', $request->task_id)->first()->id;
-        $data['sticker_id'] = $request->tag_id;
-        $tag = [];
-        foreach ($data['sticker_id'] as $tagId) {
-            $tag[] = StickerTask::query()->create([
-                'task_id' => $task_id,
-                'sticker_id' => $tagId
-            ]);
+        if (isset($request->tag_id)) {
+            $data = [];
+            $task_id = Task::query()->where('code', $request->task_id)->first()->id;
+            $data['sticker_id'] = $request->tag_id;
+            $tag = [];
+            foreach ($data['sticker_id'] as $tagId) {
+                $tag[] = StickerTask::query()->create([
+                    'task_id' => $task_id,
+                    'sticker_id' => $tagId
+                ]);
+            }
+            return [$tag];
         }
-        return [$tag];
     }
 
     public function update(int $id, Request $request) {
