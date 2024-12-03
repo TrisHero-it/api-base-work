@@ -37,7 +37,7 @@ class Task extends Model
     public function tags()
     {
 
-        return $this->belongsToMany(Sticker::class, 'sticker_task','task_id', 'sticker_id');
+        return $this->belongsToMany(Sticker::class, 'sticker_tasks','task_id', 'sticker_id');
     }
 
     public function account()

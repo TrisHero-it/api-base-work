@@ -36,8 +36,6 @@ Route::middleware(['check.login'])->group(function () {
 
     Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
 
-//  Upload ảnh
-
     Route::apiResources([
         'images' => ImageController::class,
         'notifications' => NotificationController::class,

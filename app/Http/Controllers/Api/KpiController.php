@@ -36,15 +36,34 @@ class KpiController extends Controller
                 $account['Người thực thi'] = Account::query()->where('id', $account->account_id)->value('full_name');
                 foreach ($stages as $stage) {
                     if (isset($request->tag_id)) {
-                    $arrTag = explode(',', $stage->tag_id);
-                    foreach ($arrTag as $tag) {
-                        $kpi = Task::whereHas('tags', function ($query) {
-                            $query->where('sticker_id', 1);
-                        })
-                            ->count();
-                        $account[$stage->name] = $kpi;
-                    }
-                    }else {
+                        $arrTag = explode(',', $request->tag_id);
+                        $tasks = Task::whereHas('tags', function($query) use ($arrTag) {
+                            $query->whereIn('stickers.id', $arrTag);
+                        })->get();
+                        $totalA = 0;
+                        $totalB = 0;
+                        foreach ($tasks as $task) {
+                            $kpi = Kpi::query()
+                                ->where('stage_id', $stage->id)
+                                ->where('account_id', $account->account_id)
+                                ->whereYear('updated_at', $year)
+                                ->whereMonth('updated_at', $month)
+                                ->where('status', 0)
+                                ->where('task_id', $task->id)
+                                ->get()->count();
+                            $totalA += $kpi;
+                            $failedKpi = Kpi::query()
+                                ->where('stage_id', $stage->id)
+                                ->where('account_id', $account->account_id)
+                                ->whereYear('updated_at', $year)
+                                ->whereMonth('updated_at', $month)
+                                ->where('status', 1)->get()
+                                ->where('task_id', $task->id)
+                                ->count();
+                            $totalB += $failedKpi;
+                        };
+                        $account[$stage->name] = $totalA - $totalB;
+                     }else {
                         $kpi = Kpi::query()
                             ->where('stage_id', $stage->id)
                             ->where('account_id', $account->account_id)
