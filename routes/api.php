@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FieldController;
 use App\Http\Controllers\Api\FieldValueController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
+use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
@@ -36,9 +37,9 @@ Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
 
 //  Upload ảnh
-    Route::post('images', [\App\Http\Controllers\Api\ImageController::class, 'store']);
 
     Route::apiResources([
+        'images' => ImageController::class,
         'notifications' => NotificationController::class,
         'workflows' => WorkflowController::class,
         'stages' => StageController::class,

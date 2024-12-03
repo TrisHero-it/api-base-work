@@ -68,7 +68,7 @@ class TaskController extends Controller
         $account = Account::query()->where('remember_token', $token)->first() ?? null;
         $task = Task::query()->where('code' , $id)->first();
     if (isset($request->stage_id)) {
-    //  Lấy ra thứ tự của stage maf mình muốn chuyển đến
+    //  Lấy ra stage mà mình muốn chuyển đến
     $stage = Stage::query()->where('id', $request->stage_id)->first();
     }
         // Cập nhập thông tin nhiệm vụ
@@ -85,7 +85,7 @@ class TaskController extends Controller
             }
         }
 
-// Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
+//  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
             if ($task->account_id != $request->account_id && $request->account_id != null) {
                 $data['started_at'] = now();
                 if($task->stage->expired_after_hours != null) {
@@ -167,7 +167,7 @@ class TaskController extends Controller
 
     }
 
-//      nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
+//  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
             if ($task->isNextStage($stage->index) && $task->account_id != null && !$stage->isFailStage()) {
                 event(new KpiEvent([
                     'account_id' => $task->account_id,
@@ -213,8 +213,12 @@ class TaskController extends Controller
 
     public function loadYoutube(Request $request)
     {
-            $a = [];
-            $tasks = Task::query()->where('link_youtube', '!=', null)->whereMonth('updated_at', date('m'));
+        $a = [];
+        // Tuần này
+        $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();        
+        // Tuần trước
+        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString(); 
+            $tasks = Task::query()->where('link_youtube', '!=', null)->whereBetween('created_at', [$startOfLastWeek, $endOfThisWeek]);
             $stages = Stage::query()->where('workflow_id', $request->workflow_id)->get();
             foreach ($stages as $stage) {
                 $a[] = $stage->id;

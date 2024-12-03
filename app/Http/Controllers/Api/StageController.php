@@ -8,6 +8,7 @@ use App\Http\Requests\StageUpdateRequest;
 use App\Models\Stage;
 use App\Models\StickerTask;
 use App\Models\Task;
+use Carbon\Carbon;
 use http\Client\Response;
 use Illuminate\Http\Request;
 
@@ -15,18 +16,25 @@ class StageController extends Controller
 {
     public function index(Request $request)
     {
+
+        // Tuần này
+        $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();        
+
+        // Tuần trước
+        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString(); 
+        
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
-//            if ($stage->isSuccessStage() || $stage->isFailStage()) {
-//                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereMonth('updated_at', date('m'))->get();
-//                foreach ($tasks as $task) {
-//                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
-//                    foreach ($stickers as $sticker) {
-//                        $sticker['name'] = $sticker->sticker->title;
-//                    }
-//                    $task['sticker'] = $stickers;
-//                }
-//            }else {
+           if ($stage->isSuccessStage() || $stage->isFailStage()) {
+               $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereBetween('updated_at', [$startOfLastWeek, $endOfThisWeek])->get();
+               foreach ($tasks as $task) {
+                   $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
+                   foreach ($stickers as $sticker) {
+                       $sticker['name'] = $sticker->sticker->title;
+                   }
+                   $task['sticker'] = $stickers;
+               }
+           }else {
                 $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
                 foreach ($tasks as $task) {
                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
@@ -35,7 +43,7 @@ class StageController extends Controller
                     }
                     $task['sticker'] = $stickers;
                 }
-//            }
+           }
             foreach ($tasks as $task) {
 //   thay id bằng mã code của nhiệm vụ khi trả cho client
                 $task['id'] = $task->code;
