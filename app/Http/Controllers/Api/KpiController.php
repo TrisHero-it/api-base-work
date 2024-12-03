@@ -53,6 +53,8 @@ class KpiController extends Controller
                                 ->first();
                             if ($kpi != null) {
                                 $kpi['failed'] = false;
+                                $kpi['created_at'] = Task::query()->where('id', $kpi->task_id)->value('created_at');
+                                $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage->name;
                                 $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
                                 $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
                                 $arrStage[] = $kpi;
@@ -85,6 +87,7 @@ class KpiController extends Controller
                         foreach ($kpis as $kpi) {
                            $kpi['failed'] = false;
                             $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
+                            $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage->name;
                             $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
                         }
                         $kpis = $kpis->toArray();
