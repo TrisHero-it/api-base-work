@@ -40,8 +40,8 @@ class KpiController extends Controller
                         $tasks = Task::whereHas('tags', function($query) use ($arrTag) {
                             $query->whereIn('stickers.id', $arrTag);
                         })->get();
-                        $totalA = 0;
-                        $totalB = 0;
+                        $arrStage = [];
+                        $arrFailedStage = [];
                         foreach ($tasks as $task) {
                             $kpi = Kpi::query()
                                 ->where('stage_id', $stage->id)
@@ -50,35 +50,57 @@ class KpiController extends Controller
                                 ->whereMonth('updated_at', $month)
                                 ->where('status', 0)
                                 ->where('task_id', $task->id)
-                                ->get()->count();
-                            $totalA += $kpi;
+                                ->first();
+                            if ($kpi != null) {
+                                $kpi['failed'] = false;
+                                $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
+                                $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
+                                $arrStage[] = $kpi;
+                            }
                             $failedKpi = Kpi::query()
                                 ->where('stage_id', $stage->id)
                                 ->where('account_id', $account->account_id)
                                 ->whereYear('updated_at', $year)
                                 ->whereMonth('updated_at', $month)
-                                ->where('status', 1)->get()
+                                ->where('status', 1)
                                 ->where('task_id', $task->id)
-                                ->count();
-                            $totalB += $failedKpi;
+                                ->first();
+                            if ($failedKpi != null) {
+                                $failedKpi['failed'] = false;
+                                $failedKpi['task_name'] = Task::query()->where('id', $failedKpi->task_id)->value('name');
+                                $failedKpi['task_id'] = Task::query()->where('id', $failedKpi->task_id)->value('code');
+                                $arrFailedStage[] = $failedKpi;
+
+                            }
                         };
-                        $account[$stage->name] = $totalA - $totalB;
+                        $account[$stage->name] =array_merge($arrStage, $arrFailedStage);
                      }else {
-                        $kpi = Kpi::query()
+                        $kpis = Kpi::query()
                             ->where('stage_id', $stage->id)
                             ->where('account_id', $account->account_id)
                             ->whereYear('updated_at', $year)
                             ->whereMonth('updated_at', $month)
                             ->where('status', 0)
-                            ->get()->count();
-                        $failedKpi = Kpi::query()
+                            ->get();
+                        foreach ($kpis as $kpi) {
+                           $kpi['failed'] = false;
+                            $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
+                            $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
+                        }
+                        $kpis = $kpis->toArray();
+                        $failedKpis = Kpi::query()
                             ->where('stage_id', $stage->id)
                             ->where('account_id', $account->account_id)
                             ->whereYear('updated_at', $year)
                             ->whereMonth('updated_at', $month)
-                            ->where('status', 1)->get()
-                            ->count();
-                        $account[$stage->name] = $kpi - $failedKpi;
+                            ->where('status', 1)->get();
+                        foreach ($failedKpis as $failedKpi) {
+                            $failedKpi['failed'] = false;
+                            $failedKpi['task_name'] = Task::query()->where('id', $failedKpi->task_id)->value('name');
+                            $failedKpi['task_id'] = Task::query()->where('id', $failedKpi->task_id)->value('code');
+                        }
+                        $failedKpis = $failedKpis->toArray();
+                        $account[$stage->name] = array_merge($kpis, $failedKpis);
                     }
                 }
                 unset($account['account_id']);

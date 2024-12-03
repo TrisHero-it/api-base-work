@@ -43,7 +43,7 @@ class HistoryMoveTaskController extends Controller
         $stages = Stage::query()->where('workflow_id', $task->stage->workflow_id)->orderByDesc('index')->get();
         $data = [];
         foreach ($stages as $stage) {
-            $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->first();
+            $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->orderBy('id', 'desc')->first();
             if (isset($a)){
                 if ($a->worker != null) {
                     $account = Account::query()->where('id', $a->worker)->first();
