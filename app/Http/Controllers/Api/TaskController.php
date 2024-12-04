@@ -90,7 +90,10 @@ class TaskController extends Controller
                 if ($task->account_id != null) {
                     if (!$account->isAdmin()) {
                         return response()->json([
-                            'errors' => 'Nhiệm vụ này đã có người nhận'
+                            'message' => 'Nhiệm vụ này đã có người nhận',
+                            'errors' => [
+                                'task' => 'Nhiệm vụ này đã có người nhận'
+                            ],
                         ], 500);
                     }
                 }
