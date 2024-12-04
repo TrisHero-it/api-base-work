@@ -78,7 +78,9 @@ class ReportFieldValueController extends Controller
             $b =[];
             $c =0;
             foreach ($tasks as $task) {
-                $date = ['Ngày tạo' => $task->created_at];
+                $date2 = new \DateTime($task->created_at);
+                $formattedDate = $date2->format('d/m/Y H:i:s');
+                $date = ['Ngày tạo' => $formattedDate];
                 if ($c ==0) {
                     $d = [
                         'Người thực thi' => $task->account->username,
