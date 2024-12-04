@@ -86,15 +86,31 @@ class TaskController extends Controller
         }
 
 //  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
+//  Nếu account_id == null thì là gỡ người làm nhiệm vụ
+        if ( $request->account_id == null)
+        {
+            if ($task->account_id != $account->id) {
+                if (!$account->isAdmin()) {
+                    return response()->json([
+                        'message' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi man',
+                        'errors' => [
+                            'task' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi man'
+                        ],
+                    ], 403);
+                }
+            }
+
+        }
             if ($task->account_id != $request->account_id && $request->account_id != null) {
+//  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
                 if ($task->account_id != null) {
                     if (!$account->isAdmin()) {
                         return response()->json([
-                            'message' => 'Nhiệm vụ này đã có người nhận',
+                            'message' => 'Nhiệm vụ này đã có người nhận, load lại đi man',
                             'errors' => [
-                                'task' => 'Nhiệm vụ này đã có người nhận'
+                                'task' => 'Nhiệm vụ này đã có người nhận, load lại đi man'
                             ],
-                        ], 500);
+                        ], 403);
                     }
                 }
                 $data['started_at'] = now();
@@ -115,6 +131,7 @@ class TaskController extends Controller
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
             if ($task->stage->isSuccessStage()) {
                 $data['link_youtube'] = null;
+                $data['code_youtube'] = null;
                 $data['view_count'] = 0;
                 $data['like_count'] = 0;
                 $data['comment_count'] = 0;
@@ -174,7 +191,6 @@ class TaskController extends Controller
                 ]);
             }
         }
-
     }
 
 //  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi

@@ -77,7 +77,6 @@ class WorkflowController extends Controller
     }
 
     public function store(WorkflowStoreRequest $request) {
-        try {
             $error = [];
             $name =  Workflow::query()->where('workflow_category_id', $request->input('workflow_category_id'))->where('name', $request->name)->first();
             if (isset($name)){
@@ -91,7 +90,7 @@ class WorkflowController extends Controller
                 }
             }
             if ($error) {
-                return response()->json(['error'=>$error], 422);
+                return response()->json(['errors'=>$error], c);
             }
 
             $workflow = Workflow::query()->create($request->all());
@@ -120,21 +119,13 @@ class WorkflowController extends Controller
                 'index' => 1
             ]);
             return response()->json($workflow);
-        }catch (\Exception $exception){
-            return response()->json([
-                'error' => 'Đã xảy ra lỗi'
-            ], 500);
-        }
     }
 
     public function destroy($id) {
-        try {
             $workflow = Workflow::query()->findOrFail($id);
             $workflow->delete();
             return response()->json(['success'=> 'Xoá thành công']);
-        }catch (\Exception $exception){
-            return response()->json(['error', 'Đã xảy ra lỗi'], 500);
-        }
+
     }
 
     public function showMember($id) {
@@ -149,7 +140,6 @@ class WorkflowController extends Controller
     }
 
     public function update(int $id, WorkflowUpdateRequest $request) {
-        try {
             $workflow = Workflow::query()->findOrFail($id);
             $data = $request->all();
             $workflow->update([
@@ -159,11 +149,6 @@ class WorkflowController extends Controller
             return response()->json([
                 'success' => 'Cập nhập thành công'
             ]);
-        }catch (\Exception $exception){
-            return response()->json([
-                'error' => 'Đã xảy ra lỗi '.$exception->getMessage()
-            ]);
-        }
     }
 
     public function show($id, Request $request)

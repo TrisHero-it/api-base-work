@@ -78,6 +78,7 @@ class ReportFieldValueController extends Controller
             $b =[];
             $c =0;
             foreach ($tasks as $task) {
+                $date = $task->created_at;
                 if ($c ==0) {
                     $d = [
                         'Người thực thi' => $task->account->username,
@@ -91,7 +92,7 @@ class ReportFieldValueController extends Controller
                 ];
                 $b = array_merge($b, $task);
             }
-            $arrTask[] = $b;
+            $arrTask[] = array_merge($b, $date);
         }
 
         return response()->json($arrTask);
