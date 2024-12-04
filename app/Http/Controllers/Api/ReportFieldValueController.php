@@ -78,7 +78,7 @@ class ReportFieldValueController extends Controller
             $b =[];
             $c =0;
             foreach ($tasks as $task) {
-                $date = ['Ngày tạo' => $task->created_at];
+                $date = ['Ngày tạo' => (new \DateTime($a->created_at))->setTimezone(new \DateTimeZone('Asia/Ho_Chi_Minh'))];
                 if ($c ==0) {
                     $d = [
                         'Người thực thi' => $task->account->username,
