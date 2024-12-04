@@ -199,13 +199,15 @@ class TaskController extends Controller
                 $date1 = new \DateTime($a->started_at);
                 $date2 = new \DateTime($a->created_at);
                 $interval = $date1->diff($date2);
-                $total_time =  $interval->format('%H giờ %I phút');
+                $totalSeconds = ($interval->days * 24 * 3600) + ($interval->h * 3600) + ($interval->i * 60) + $interval->s;
+                $totalMinutes = $totalSeconds / 60;
+                $totalHours = $totalMinutes / 60;
                 event(new KpiEvent([
                     'account_id' => $task->account_id,
                     'task_id' => $task->id,
                     'stage_id' => $task->stage_id,
                     'status' => 0,
-                    'total_time' => $total_time,
+                    'total_time' => $totalHours,
                 ]));
             } else {
                $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
