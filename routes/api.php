@@ -37,6 +37,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
 
     Route::apiResources([
+        'roles' => \App\Http\Controllers\Api\RoleController::class,
         'images' => ImageController::class,
         'notifications' => NotificationController::class,
         'workflows' => WorkflowController::class,

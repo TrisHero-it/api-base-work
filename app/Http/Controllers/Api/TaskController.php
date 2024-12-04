@@ -87,6 +87,13 @@ class TaskController extends Controller
 
 //  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
             if ($task->account_id != $request->account_id && $request->account_id != null) {
+                if ($task->account_id != null) {
+                    if (!$account->isAdmin()) {
+                        return response()->json([
+                            'errors' => 'Nhiệm vụ này đã có người nhận'
+                        ]);
+                    }
+                }
                 $data['started_at'] = now();
                 if($task->stage->expired_after_hours != null) {
                     $data['expired'] = now()->addHours($task->stage->expired_after_hours);

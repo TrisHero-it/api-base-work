@@ -20,6 +20,13 @@ class Account extends Authenticatable
         'address',
         'birthday',
         'manager_id',
-        'avatar'
+        'avatar',
+        'role_id',
     ];
+
+    public function isAdmin()
+    {
+
+        return $this->role_id == 1;
+    }
 }
