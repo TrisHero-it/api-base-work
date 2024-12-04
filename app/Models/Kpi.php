@@ -13,7 +13,8 @@ class Kpi extends Model
         'account_id',
         'stage_id',
         'task_id',
-        'status'
+        'status',
+        'total_time'
     ];
 
     const STATUS =  [
@@ -24,5 +25,14 @@ class Kpi extends Model
     public function getStatus2Attribute()
     {
         return self::STATUS[$this->status] ;
+    }
+
+    public function stage()
+    {
+        return $this->belongsTo(Stage::class);
+    }
+
+    public function task() {
+        return $this->belongsTo(Task::class);
     }
 }
