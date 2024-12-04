@@ -207,7 +207,7 @@ class TaskController extends Controller
                     'task_id' => $task->id,
                     'stage_id' => $task->stage_id,
                     'status' => 0,
-                    'total_time' => $totalHours,
+                    'total_time' => $totalHours .'h',
                 ]));
             } else {
                $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
