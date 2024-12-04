@@ -97,7 +97,9 @@ class ReportFieldValueController extends Controller
             $arrTask[] = array_merge($b, $date);
         }
         usort($arrTask, function($a, $b) {
-            return $b['Ngày tạo'] <=> $a['Ngày tạo'];
+            $dateA = \DateTime::createFromFormat('d/m/Y H:i:s', $a['Ngày tạo']);
+            $dateB = \DateTime::createFromFormat('d/m/Y H:i:s', $b['Ngày tạo']);
+            return $dateB <=> $dateA;
         });
 
         return response()->json($arrTask);
