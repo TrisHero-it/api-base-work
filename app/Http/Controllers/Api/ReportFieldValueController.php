@@ -72,7 +72,7 @@ class ReportFieldValueController extends Controller
                 break;
             }
 //          Lấy ra tất cả nhiệm vụ từ giá trị mình vừa lấy ở trên
-            $tasks = FieldTask::query()->where('task_id', $a->task_id)->orderBy('id', 'desc')->get();
+            $tasks = FieldTask::query()->where('task_id', $a->task_id)->get();
 //          Thêm giá trị vừa rôồi vào để lọc cho vòng lặp sau
             $arrCondition[] = $a->task_id;
             $b =[];
@@ -96,6 +96,9 @@ class ReportFieldValueController extends Controller
             }
             $arrTask[] = array_merge($b, $date);
         }
+        usort($arrTask, function($a, $b) {
+            return $b['Ngày tạo'] <=> $a['Ngày tạo'];
+        });
 
         return response()->json($arrTask);
     }
