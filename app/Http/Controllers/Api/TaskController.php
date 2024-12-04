@@ -91,7 +91,7 @@ class TaskController extends Controller
                     if (!$account->isAdmin()) {
                         return response()->json([
                             'errors' => 'Nhiệm vụ này đã có người nhận'
-                        ]);
+                        ], 500);
                     }
                 }
                 $data['started_at'] = now();
