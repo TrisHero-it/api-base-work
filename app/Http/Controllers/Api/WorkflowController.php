@@ -121,7 +121,6 @@ class WorkflowController extends Controller
                $stage =  Stage::query()->create([
                     'name' => $stageRule->name,
                     'workflow_id' => $workflow->id,
-                    'description' => 'Đánh dấu những công việc không hoàn thành',
                     'index' => $numberIndex
                 ]);
                 $numberIndex--;
