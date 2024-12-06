@@ -11,7 +11,7 @@ class WorkflowCategory extends Model
 
     protected $fillable = [
         'name',
-        'image'
+        'image',
     ];
 
     public function workflows()

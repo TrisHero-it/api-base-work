@@ -8,6 +8,7 @@ use App\Http\Requests\TaskFieldUpdateRequest;
 use App\Models\Account;
 use App\Models\Field;
 use App\Models\FieldTask;
+use App\Models\Stage;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -72,7 +73,7 @@ class ReportFieldValueController extends Controller
                 break;
             }
 //          Lấy ra tất cả nhiệm vụ từ giá trị mình vừa lấy ở trên
-            $tasks = FieldTask::query()->where('task_id', $a->task_id)->get();
+            $tasks = FieldTask::query()->where('task_id', $a->task_id)->where('fields_id', $g)->get();
 //          Thêm giá trị vừa rôồi vào để lọc cho vòng lặp sau
             $arrCondition[] = $a->task_id;
             $b =[];
@@ -118,6 +119,28 @@ class ReportFieldValueController extends Controller
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 500);
         }
+    }
+
+    public function show(int $id) {
+        $task = Task::query()->where('code', $id)->first();
+        $stages = Stage::query()->select('id', 'name')->where('workflow_id', $task->stage->workflow_id)->where('index', '!=', 0)->where('index', '!=', 1 )->orderBy('index', 'asc')->get();
+        foreach ($stages as $stage) {
+            $a = [];
+            $fields = Field::query()->select('id', 'name')->where('stage_id', $stage->id)->get();
+            foreach ($fields as $field) {
+                $report = FieldTask::query()->select('id', 'value', 'fields_id')->where('fields_id', $field->id)->where('task_id', $task->id)->first();
+                if (isset($report)) {
+                    $report['name_field'] = $field->name;
+                    unset($report['field']);
+                    unset($report['fields_id']);
+                    $a[] = $report;
+                }
+            }
+            $stage['fields'] = $a;
+        }
+
+        return response()->json($stages);
+
     }
 
     public function destroy(int $id)

@@ -31,9 +31,5 @@ class KpiEventListener
             'status' => 0,
             'total_time' => $data['total_time'],
         ]);
-
-        $reportDaily = ReportDaily::query()->create([
-            'kpi_id' => $kpi->id,
-        ]);
     }
 }

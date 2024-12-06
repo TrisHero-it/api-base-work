@@ -66,7 +66,7 @@ class AccountController extends Controller
     }
 
     public function myAccount(Request $request) {
-        $token =  $request->header('Authorization');
+        $token = $request->header('Authorization');
         if ($token==null) {
             return response()->json([
                 'error' => 'Bạn chưa đăng nhập'

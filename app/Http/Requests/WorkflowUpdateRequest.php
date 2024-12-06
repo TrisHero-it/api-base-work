@@ -24,7 +24,7 @@ class WorkflowUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'regex:/^[a-zA-Z0-9\s]+$/',
+            'name' => 'string',
             'workflow_category_id' => 'integer|exists:workflow_categories,id',
         ];
     }

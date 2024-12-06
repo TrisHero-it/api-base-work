@@ -7,9 +7,13 @@ use App\Http\Requests\WorkflowStoreRequest;
 use App\Http\Requests\WorkflowUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflow;
+use App\Models\Field;
+use App\Models\FieldTask;
 use App\Models\Stage;
 use App\Models\Task;
 use App\Models\Workflow;
+use App\Models\WorkflowCategoryStage;
+use App\Models\WorkflowCategoryStageReport;
 use Illuminate\Http\Request;
 
 class WorkflowController extends Controller
@@ -56,11 +60,13 @@ class WorkflowController extends Controller
                 $countTask = Task::query()->where('stage_id', $row['id'])->count();
                 $totalTask += $countTask;
             }
+
             $arr = [
                 'totalTask' => $totalTask,
                 'totalSuccessTask' => $countTaskSuccess ?? 0,
                 'totalFailedTask' => $countTaskFailed ?? 0,
             ];
+
             $arrMember = [];
             $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
             foreach ($members as $member) {
@@ -84,7 +90,7 @@ class WorkflowController extends Controller
             }
             $accounts = explode(' ', $request->manager);
             foreach ($accounts as $account) {
-                $acc = Account::query()->where('username', $accounts)->first();
+                $acc = Account::query()->where('username', $account)->first();
                 if (!$acc) {
                    $error['manager'] = 'Tài khoản không tồn tại';
                 }
@@ -106,6 +112,34 @@ class WorkflowController extends Controller
                    }
                }
             }
+
+//  Truy cập vào bảng workflow_category_stages để lấy ra cac stage được quy định sẵn từ workflow_category
+            $stageRules =  WorkflowCategoryStage::query()->where('workflow_category_id', $workflow->workflow_category_id)->get();
+            $numberIndex = $stageRules->count()+2;
+            $index = 2;
+            foreach ($stageRules as $stageRule) {
+               $stage =  Stage::query()->create([
+                    'name' => $stageRule->name,
+                    'workflow_id' => $workflow->id,
+                    'description' => 'Đánh dấu những công việc không hoàn thành',
+                    'index' => $numberIndex
+                ]);
+                $numberIndex--;
+
+                foreach ($stageRule->reports as $field) {
+                    Field::query()->create([
+                        'name' => $field->name,
+                        'workflow_id' => $workflow->id,
+                        'stage_id' => $stage->id,
+                        'type' => $field->type ?? 'paragraph',
+                        'require' => 1,
+                        'options' => $field->options ?? null,
+                        'model' => 'report-field',
+                        'report_rule_id' => $field->id ?? null,
+                ]);
+                }
+            }
+
             Stage::query()->create([
                 'name' => 'Thất bại',
                 'workflow_id' => $workflow->id,
@@ -124,8 +158,8 @@ class WorkflowController extends Controller
     public function destroy($id) {
             $workflow = Workflow::query()->findOrFail($id);
             $workflow->delete();
-            return response()->json(['success'=> 'Xoá thành công']);
 
+            return response()->json(['success'=> 'Xoá thành công']);
     }
 
     public function showMember($id) {
@@ -142,13 +176,22 @@ class WorkflowController extends Controller
     public function update(int $id, WorkflowUpdateRequest $request) {
             $workflow = Workflow::query()->findOrFail($id);
             $data = $request->all();
-            $workflow->update([
-             $data
-            ]);
+            if (isset($data['manager'])) {
+                AccountWorkflow::query()->where('workflow_id', $id)->delete();
+                $arrManager = explode(' ', $data['manager']);
+                foreach ($arrManager as $account) {
+                    $acc = Account::query()->where('username', $account)->first();
+                    if (isset($acc)) {
+                        AccountWorkflow::query()->create([
+                            'account_id' => $acc->id,
+                            'workflow_id' => $id,
+                        ]);
+                    }
+                }
+            }
+            $workflow->update($data);
 
-            return response()->json([
-                'success' => 'Cập nhập thành công'
-            ]);
+            return response()->json($workflow);
     }
 
     public function show($id, Request $request)

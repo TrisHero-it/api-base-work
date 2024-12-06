@@ -19,4 +19,9 @@ class Workflow extends Model
     public function stages() {
         return $this->hasMany(Stage::class);
     }
+
+    public function category() {
+
+        return $this->belongsTo(WorkflowCategory::class, 'workflow_category_id', 'id');
+    }
 }

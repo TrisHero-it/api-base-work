@@ -9,6 +9,8 @@ use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
 use App\Models\Workflow;
 use App\Models\WorkflowCategory;
+use App\Models\WorkflowCategoryStage;
+use App\Models\WorkflowCategoryStageReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -42,12 +44,6 @@ class WorkflowCategoryController extends Controller
             $err = [];
             $arrs = explode('@', $request->members);
             $categories = WorkflowCategory::all();
-            foreach ($categories as $category) {
-                $te = WorkflowCategory::query()->where('name', $request->name)->first();
-                if ($te) {
-                    $err['name'] = 'Danh mục đã tồn tại';
-                }
-            }
             foreach ($arrs as $arr) {
                 if (trim($arr)!= '') {
                     $acc = Account::query()->where('username', '@'.trim($arr))->first();
@@ -64,6 +60,7 @@ class WorkflowCategoryController extends Controller
                     'name' => $request->name,
                 ]
             );
+//  Thêm thanh vien cho workflow
             foreach ($arrs as $arr) {
                 if (trim($arr) != ''){
                     $acc = Account::query()->where('username', '@'.trim($arr))->first();
@@ -76,6 +73,26 @@ class WorkflowCategoryController extends Controller
                     }
                 }
             }
+
+//  Thêm stage mặc định cho các workflow con ở trong
+        $arrStage = $request->rules;
+        foreach ($arrStage as $stage) {
+           $a = WorkflowCategoryStage::query()->create([
+                'workflow_category_id' => $workflow->id,
+                'name' => $stage['stage_name'],
+            ]);
+            $reports =$stage['reports'];
+            if (!empty($reports)) {
+                foreach ($reports as $report) {
+                    WorkflowCategoryStageReport::query()->create([
+                        'report_stage_id' => $a->id,
+                        'name' => $report['name'],
+                        'type' => $report['type'],
+                    ]);
+                }
+            }
+        }
+
             return response()->json($workflow);
     }
 
@@ -87,6 +104,27 @@ class WorkflowCategoryController extends Controller
         }catch (\Exception $exception){
             return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
         }
+    }
+
+    public function show($id) {
+        $category = WorkflowCategory::query()->findOrFail($id);
+        $a = [];
+        $stages = WorkflowCategoryStage::query()->where('workflow_category_id', $id)->get();
+        foreach ($stages as $stage) {
+            $reports = WorkflowCategoryStageReport::query()->select('name','type')->where('report_stage_id', $stage->id)->get();
+            $a[] = [
+                'stage_name' => $stage->name,
+                'report' => $reports,
+            ];
+        }
+        $category['rules'] = $a;
+        $b = [];
+        $members = AccountWorkflowCategory::query()->where('workflow_category_id', $category->id)->get();
+        foreach ($members as $member) {
+            $b[] = $member->account;
+        }
+        $category['members'] = $b;
+        return response()->json($category);
     }
 
 }

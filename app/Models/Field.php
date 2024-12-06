@@ -16,10 +16,16 @@ class Field extends Model
         'require',
         'type',
         'options',
-        'model'
+        'model',
+        'report_rule_id'
     ];
 
     protected $casts = [
         'options' => 'array'
     ];
+
+    public function stage()
+    {
+        return $this->belongsTo(Stage::class);
+    }
 }
