@@ -74,9 +74,9 @@ class TaskController extends Controller
         // Cập nhập thông tin nhiệm vụ
         $data = $request->all();
         if (isset($request->link_youtube)){
-//          Nếu có link youtube thì lấy ra mã code của link đó
+        // Nếu có link youtube thì lấy ra mã code của link đó
             preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
-//          Phân biệt youtube shorts
+        // Phân biệt youtube shorts
             if (strpos($request->link_youtube, 'shorts') !== false) {
                 $aa = explode('/', $request->link_youtube);
                 $data['code_youtube'] = end($aa);
@@ -85,8 +85,8 @@ class TaskController extends Controller
             }
         }
 
-//  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
-//  Nếu account_id == null thì là gỡ người làm nhiệm vụ
+        //  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
+        //  Nếu account_id == null thì là gỡ người làm nhiệm vụ
         if (isset($request->account_id) && $request->account_id == null)
         {
             if ($task->account_id != $account->id) {
@@ -102,7 +102,7 @@ class TaskController extends Controller
 
         }
             if ($task->account_id != $request->account_id && $request->account_id != null) {
-//  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
+        //  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
                 if ($task->account_id != null) {
                     if (!$account->isAdmin()) {
                         return response()->json([
@@ -113,9 +113,16 @@ class TaskController extends Controller
                         ], 403);
                     }
                 }
-                $data['started_at'] = now();
+                $hasAcceptTask = $this->hasAcceptedTaskToday($request->account_id);
+                if ($hasAcceptTask != null) {
+                    $data['started_at'] = $hasAcceptTask->expired;
+                }else {
+                    $data['started_at'] = now();
+                }
                 if($task->stage->expired_after_hours != null) {
-                    $data['expired'] = now()->addHours($task->stage->expired_after_hours);
+                    $dateTime = new \DateTime($data['started_at']);
+                    $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
                 }else {
                     $data['expired'] = null;
                 }
@@ -127,7 +134,7 @@ class TaskController extends Controller
                     ]));
             }
 
-//  Nếu có tồn tại stage_id thì là chuyển giai đoạn
+        //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
             if ($task->stage->isSuccessStage()) {
                 $data['link_youtube'] = null;
@@ -138,7 +145,7 @@ class TaskController extends Controller
                 $data['date_posted'] = null;
             }
 
-//  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
+        //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
                 if ($task->account_id == null) {
                     return response()->json([
@@ -147,8 +154,12 @@ class TaskController extends Controller
                 }
             }
 
-//  Lấy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
-            $worker = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->orderBy('id', 'desc')->first() ?? null;
+        //  Lấy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
+            $worker = HistoryMoveTask::query()
+                ->where('task_id', $task->id)
+                ->where('old_stage', $request->stage_id)
+                ->orderBy('id', 'desc')
+                ->first() ?? null;
             if ($worker !== null) {
                 $data['expired'] = $worker->expired_at ;
                 $data['account_id'] = $worker->worker;
@@ -159,11 +170,13 @@ class TaskController extends Controller
                 $data['started_at'] = null;
             }
 
-//  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
+        //  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
             if (isset($stage->expired_after_hours) && $data['expired'] === null && $data['account_id'] !== null) {
-                $data['expired'] = now()->addHours($stage->expired_after_hours);
+                $dateTime = new \DateTime($data['started_at']);
+                $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                $data['expired'] = $dateTime->format('Y-m-d H:i:s');
             }
-//  Thêm lịch sử kéo thả nhiệm vụ
+        //  Thêm lịch sử kéo thả nhiệm vụ
             event(new HistoryMoveTaskEvent([
                 'account_id' => $account->id,
                 'task_id' => $task->id,
@@ -174,7 +187,7 @@ class TaskController extends Controller
                 'expired_at'=> $task->expired ?? null,
             ]));
 
-//  Nếu như nhiệm vụ đã thành công mà bị chuyển sang thất bại, thì sẽ xóa tát cả kpi của những người làm nhiệm vụ đó
+        //  Nếu như nhiệm vụ đã thành công mà bị chuyển sang thất bại, thì sẽ xóa tát cả kpi của những người làm nhiệm vụ đó
     if ($stage->isFailStage()) {
         $a = Kpi::query()->where('task_id', $task->id)->get();
         $date = new \DateTime($task->created_at);
@@ -193,9 +206,12 @@ class TaskController extends Controller
         }
     }
 
-//  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
+        //  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
             if ($task->isNextStage($stage->index) && $task->account_id != null && !$stage->isFailStage()) {
-                $a = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $task->stage_id)->orderBy('id','desc')->first();
+                $a = HistoryMoveTask::query()->where('task_id', $task->id)
+                    ->where('old_stage', $task->stage_id)
+                    ->orderBy('id','desc')
+                    ->first();
                 $date1 = new \DateTime($a->started_at);
                 $date2 = new \DateTime($a->created_at);
                 $interval = $date1->diff($date2);
@@ -245,6 +261,15 @@ class TaskController extends Controller
         }
     }
 
+//  hàm check xem người này đã nhận nv này hay chưa
+    public function hasAcceptedTaskToday($accountId) {
+        return Task::query()->where('account_id', $accountId)
+            ->where('expired', '!=', null)
+            ->whereDate('created_at', Carbon::today())
+            ->orderBy('started_at', 'desc')
+            ->first();
+    }
+
     public function loadYoutube(Request $request)
     {
         $a = [];
@@ -282,54 +307,5 @@ class TaskController extends Controller
             ]);
 
     }
-
-    public function imageBase64(Request $request) {
-
-        $htmlString = $request->input('image'); // Assumed key is 'html'
-
-        // Sử dụng regex để tìm dữ liệu base64 trong thẻ <img>
-        preg_match('/<img.*?src=[\'"](data:image\/.*?;base64,.*?)[\'"].*?>/i', $htmlString, $matches);
-
-        if (isset($matches[1])) {
-            $base64Image = $matches[1]; // Lấy dữ liệu base64
-
-            // Kiểm tra và giải mã dữ liệu base64
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-                $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-                $type = strtolower($type[1]); // Lấy định dạng ảnh (jpg, png, gif, etc.)
-
-                if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
-                    return response()->json(['error' => 'Invalid image type'], 400);
-                }
-
-                $base64Image = base64_decode($base64Image);
-
-                if ($base64Image === false) {
-                    return response()->json(['error' => 'Base64 decode failed'], 400);
-                }
-            } else {
-                return response()->json(['error' => 'Invalid Base64 string'], 400);
-            }
-
-            // Tạo tên file duy nhất
-            $fileName = uniqid() . '.' . $type;
-
-            // Lưu file vào thư mục 'public/images'
-            $path = 'base64-images/' . $fileName;
-            Storage::disk('public')->put($path, $base64Image);
-
-            // Tạo URL dẫn đến file
-            $url = Storage::url($path);
-
-            // Tạo thẻ <img> mới
-            $imgTag = "<img src=".env('APP_URL')."{$url}' alt='Uploaded Image' />";
-
-            return response()->json(['urlImage' => $imgTag], 200);
-        }
-
-        return response()->json(['error' => 'No Base64 image found'], 400);
-
-    }
-
 
 }

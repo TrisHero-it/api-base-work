@@ -25,7 +25,11 @@ class StageController extends Controller
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
            if ($stage->isSuccessStage() || $stage->isFailStage()) {
-               $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->whereBetween('updated_at', [$startOfLastWeek, $endOfThisWeek])->get();
+               $tasks = Task::query()
+                   ->where('stage_id', $stage['id'])
+                   ->orderBy('updated_at', 'desc')
+                   ->whereBetween('updated_at', [$startOfLastWeek, $endOfThisWeek])
+                   ->get();
                foreach ($tasks as $task) {
                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
                    foreach ($stickers as $sticker) {

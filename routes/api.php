@@ -55,11 +55,11 @@ Route::middleware(['check.login'])->group(function () {
         'tags'=> \App\Http\Controllers\Api\StickerController::class,
         'tag-task' => \App\Http\Controllers\Api\TagValueController::class,
         'general-report' => \App\Http\Controllers\Api\GeneralReportController::class,
+        'schedule' => \App\Http\Controllers\ScheduleWorkController::class
     ]);
 
     // Nhãn dán
     Route::get('my-account', [AccountController::class, 'myAccount']);
-    Route::post('image-base64', [\App\Http\Controllers\Api\TaskController::class, 'imageBase64']);
 
     // Điểm danh
     Route::get('/attendances', [AttendanceController::class, 'index']);

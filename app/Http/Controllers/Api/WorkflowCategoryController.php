@@ -44,15 +44,34 @@ class WorkflowCategoryController extends Controller
         $category->update($request->all());
         if (isset($request->members)) {
             $members = explode(' ', $request->members);
-            AccountWorkflowCategory::query()->where('workflow_cateogry_id', $id)->delete();
+            AccountWorkflowCategory::query()->where('workflow_category_id', $id)->delete();
             foreach ($members as $member) {
-                $accountId = AccountWorkflowCategory::query()->where('username', $member)->value('id');
+                $accountId = Account::query()->where('username', $member)->value('id');
                 AccountWorkflowCategory::query()->create([
                     'workflow_category_id' => $id,
                     'account_id' => $accountId
                 ]);
             }
         }
+
+//        if (isset($request->rules)) {
+//            foreach ($request->rules as $rule) {
+//             $workflowCategory = WorkflowCategoryStage::query()->where('workflow_category_id', $id)->delete();
+//                Workflow::query()->create([
+//                    'workflow_category_id' => $id,
+//                    'name' => $rule->stage_name
+//                ]);
+//            foreach($rule->reports as $report) {
+//                WorkflowCategoryStageReport::query()->create([
+//                    'report_stage_id' => $workflowCategory->id,
+//                    'name' => $report->name,
+//                    'type' => $report->type,
+//                ]);
+//            }
+//            }
+//        }
+
+        return $category;
     }
 
     public function store(WorkflowCategoryStoreRequest $request)
