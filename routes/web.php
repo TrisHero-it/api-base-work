@@ -17,11 +17,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/vnpay-payment', [\App\Http\Controllers\VNPayController::class, 'createPayment']);
-Route::get('/vnpay-return', [\App\Http\Controllers\VNPayController::class, 'returnPayment']);
+Route::get('/vnpay/create', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.create');
+Route::get('/vnpay/return', [\App\Http\Controllers\VNPayController::class, 'returnPayment'])->name('vnpay.return');
 
 Route::get('/get-youtube', function () {
-    $client = new \GuzzleHttp\Client();
     try {
         $videoId = 'vrcjoqeLeJI'; // Thay VIDEO_ID bằng ID của video YouTube
         $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn

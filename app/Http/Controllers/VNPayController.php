@@ -3,63 +3,69 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class VNPayController extends Controller
 {
-    protected $vnpayService;
-
-    public function __construct(Request $vnpayService)
-    {
-        $this->vnpayService = $vnpayService;
-    }
-
-    // Hàm tạo mã QR thanh toán
     public function createPayment(Request $request)
     {
-        $order_id = time(); // Sử dụng thời gian làm order ID
-        $amount = $request->input('amount'); // Số tiền thanh toán
-        $order_desc = 'Thanh toán đơn hàng #' . $order_id; // Mô tả đơn hàng
+        $vnp_TmnCode = env('VNP_TMNCODE');
+        $vnp_HashSecret = env('VNP_HASHSECRET');
+        $vnp_Url = env('VNP_URL');
+        $vnp_Returnurl = env('VNP_RETURNURL');
 
-        // Tạo URL thanh toán VNPay
-        $paymentUrl = $this->vnpayService->createPaymentUrl($order_id, $amount, $order_desc);
+        $vnp_TxnRef = uniqid();
+        $vnp_OrderInfo = "Thanh toán đơn hàng";
+        $vnp_OrderType = "billpayment";
+        $vnp_Amount = $request->amount * 100;
+        $vnp_Locale = "vn";
+        $vnp_IpAddr = $request->ip();
 
-        // Tạo mã QR từ URL thanh toán
-        $qrCode = QrCode::size(200)->generate($paymentUrl);
+        $inputData = array(
+            "vnp_Version" => "2.1.0",
+            "vnp_TmnCode" => $vnp_TmnCode,
+            "vnp_Amount" => $vnp_Amount,
+            "vnp_Command" => "pay",
+            "vnp_CreateDate" => date('YmdHis'),
+            "vnp_CurrCode" => "VND",
+            "vnp_IpAddr" => $vnp_IpAddr,
+            "vnp_Locale" => $vnp_Locale,
+            "vnp_OrderInfo" => $vnp_OrderInfo,
+            "vnp_OrderType" => $vnp_OrderType,
+            "vnp_ReturnUrl" => $vnp_Returnurl,
+            "vnp_TxnRef" => $vnp_TxnRef,
+        );
 
-        // Trả về mã QR cho người dùng
-        return view('payment.qrcode', compact('qrCode', 'paymentUrl'));
+        ksort($inputData);
+        $query = http_build_query($inputData);
+        $vnp_Url = $vnp_Url . "?" . $query;
+
+        $hashdata = urldecode(http_build_query($inputData));
+        $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+        $vnp_Url .= '&vnp_SecureHash=' . $vnpSecureHash;
+
+        return redirect($vnp_Url);
     }
 
-    // Hàm xử lý callback từ VNPay
-    public function handleCallback(Request $request)
+    public function returnPayment(Request $request)
     {
-        $vnp_TmnCode = config('vnpay.vnp_TmnCode');
-        $vnp_HashSecret = config('vnpay.vnp_HashSecret');
-
-        // Kiểm tra mã phản hồi từ VNPay
-        $vnp_SecureHash = $request->input('vnp_SecureHash');
-        $vnp_ResponseCode = $request->input('vnp_ResponseCode');
-        $vnp_TxnRef = $request->input('vnp_TxnRef');
-
-        // Tạo lại mã SecureHash từ các tham số và so sánh với mã SecureHash nhận được
-        // Nếu SecureHash hợp lệ, thực hiện các hành động cần thiết như cập nhật trạng thái đơn hàng
+        $vnp_HashSecret = env('VNP_HASHSECRET');
         $inputData = $request->all();
+        $vnp_SecureHash = $inputData['vnp_SecureHash'];
+        unset($inputData['vnp_SecureHash']);
+        unset($inputData['vnp_SecureHashType']);
         ksort($inputData);
-        $hashData = urldecode(http_build_query($inputData));
-        $calculatedSecureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
 
-        if ($vnp_SecureHash === $calculatedSecureHash) {
-            if ($vnp_ResponseCode == '00') {
-                // Thanh toán thành công
-                return "Thanh toán thành công!";
+        $hashData = urldecode(http_build_query($inputData));
+        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
+        if ($secureHash === $vnp_SecureHash) {
+            if ($inputData['vnp_ResponseCode'] == '00') {
+                return "Giao dịch thành công!";
             } else {
-                // Thanh toán thất bại
-                return "Thanh toán thất bại!";
+                return "Giao dịch thất bại!";
             }
         } else {
-            // Lỗi xác thực SecureHash
-            return "Lỗi xác thực!";
+            return "Chữ ký không hợp lệ!";
         }
     }
 }

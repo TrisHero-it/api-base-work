@@ -32,6 +32,19 @@ class AttendanceController extends Controller
         }
 
         $attendance = $attendance->get();
+
+        foreach ($attendance as $value) {
+
+            $dateTime = new \DateTime($value->checkin);
+            $nineAM = clone $dateTime;
+            $nineAM->setTime(9, 0, 0);
+            if ($dateTime > $nineAM) {
+                $value['onTime'] = False;
+            }else {
+                $value['onTime'] = True;
+            }
+        }
+
         if (isset($request->me)) {
             $account = Account::query()->where('remember_token', $a[1])->first();
             $attendance = Attendance::query()->where('account_id', $account->id)->whereDate('checkin', Carbon::today())->orderBy('id')->first();

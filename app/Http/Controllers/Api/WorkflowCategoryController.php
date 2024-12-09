@@ -39,11 +39,26 @@ class WorkflowCategoryController extends Controller
         return response()->json($abc);
     }
 
+    public function update(int $id, Request $request) {
+        $category = WorkflowCategory::query()->findOrFail($id);
+        $category->update($request->all());
+        if (isset($request->members)) {
+            $members = explode(' ', $request->members);
+            AccountWorkflowCategory::query()->where('workflow_cateogry_id', $id)->delete();
+            foreach ($members as $member) {
+                $accountId = AccountWorkflowCategory::query()->where('username', $member)->value('id');
+                AccountWorkflowCategory::query()->create([
+                    'workflow_category_id' => $id,
+                    'account_id' => $accountId
+                ]);
+            }
+        }
+    }
+
     public function store(WorkflowCategoryStoreRequest $request)
     {
             $err = [];
             $arrs = explode('@', $request->members);
-            $categories = WorkflowCategory::all();
             foreach ($arrs as $arr) {
                 if (trim($arr)!= '') {
                     $acc = Account::query()->where('username', '@'.trim($arr))->first();
@@ -75,20 +90,22 @@ class WorkflowCategoryController extends Controller
             }
 
 //  Thêm stage mặc định cho các workflow con ở trong
-        $arrStage = $request->rules;
-        foreach ($arrStage as $stage) {
-           $a = WorkflowCategoryStage::query()->create([
-                'workflow_category_id' => $workflow->id,
-                'name' => $stage['stage_name'],
-            ]);
-            $reports =$stage['reports'];
-            if (!empty($reports)) {
-                foreach ($reports as $report) {
-                    WorkflowCategoryStageReport::query()->create([
-                        'report_stage_id' => $a->id,
-                        'name' => $report['name'],
-                        'type' => $report['type'],
-                    ]);
+        if (isset($request->rules)) {
+            $arrStage = $request->rules;
+            foreach ($arrStage as $stage) {
+                $a = WorkflowCategoryStage::query()->create([
+                    'workflow_category_id' => $workflow->id,
+                    'name' => $stage['stage_name'],
+                ]);
+                $reports =$stage['reports'];
+                if (!empty($reports)) {
+                    foreach ($reports as $report) {
+                        WorkflowCategoryStageReport::query()->create([
+                            'report_stage_id' => $a->id,
+                            'name' => $report['name'],
+                            'type' => $report['type'],
+                        ]);
+                    }
                 }
             }
         }

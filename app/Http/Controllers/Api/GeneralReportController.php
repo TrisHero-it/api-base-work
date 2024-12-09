@@ -19,10 +19,10 @@ class GeneralReportController extends Controller
             if ($report->task->stage->workflow->category->id == $request->category_id){
 
                 $a[] =[
-                    $report->field->name => $report->value,
-                    'Giai đoạn' => $report->task->stage->name,
-                    'Quy trình' => $report->task->stage->workflow->name,
                     'Người thực thi' => $report->account->full_name,
+                    'Quy trình' => $report->task->stage->workflow->name,
+                    'Giai đoạn' => $report->task->stage->name,
+                    $report->field->name => $report->value,
                 ];
             }
         }

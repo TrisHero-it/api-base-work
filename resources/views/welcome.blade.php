@@ -8,7 +8,7 @@
     <title>Document</title>
 </head>
 <body>
-<form action="/vnpay-payment" method="GET">
+<form action="/vnpay/create" method="GET">
     <label for="amount">Số tiền thanh toán (VNĐ):</label>
     <input type="number" name="amount" required>
     <button type="submit">Thanh toán với VNPay</button>

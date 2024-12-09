@@ -18,11 +18,10 @@ class StageController extends Controller
     {
 
         // Tuần này
-        $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();        
-
+        $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
         // Tuần trước
-        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString(); 
-        
+        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
+
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
            if ($stage->isSuccessStage() || $stage->isFailStage()) {
