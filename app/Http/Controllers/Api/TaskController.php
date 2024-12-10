@@ -205,7 +205,6 @@ class TaskController extends Controller
             }
         }
     }
-
         //  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
             if ($task->isNextStage($stage->index) && $task->account_id != null && !$stage->isFailStage()) {
                 $a = HistoryMoveTask::query()->where('task_id', $task->id)
