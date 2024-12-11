@@ -31,14 +31,23 @@ class ScheduleWorkController extends Controller
                      if (isset($request->account_id)) {
                          $a->where('account_id', $request->account_id);
                      }
-
+//                    array_rand(['in_progress'=>'đang làm', 'failed'=>'Thất bại', 'completed'=>'Thành công'])
                      $a = $a->get();
                      if (!empty($a)) {
                          foreach ($a as $task) {
                              $task['account_name']= $task->account->full_name;
                              $task['avatar'] = $task->account->avatar;
                              $task['stage_name'] = $task->stage->name;
-                             $task->status = array_rand(['in_progress'=>'đang làm', 'failed'=>'Thất bại', 'completed'=>'Thành công']);
+                             if ($task->expired === null) {
+                                 $d = 'in_progress';
+                             }else {
+                                 if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
+                                     $d = 'in_progress';
+                                 }else {
+                                     $d = 'failed';
+                                 }
+                             }
+                             $task->status = $d;
                              unset($task->account);
                              unset($task->stage_id);
                              unset($task->stage);
@@ -59,20 +68,24 @@ class ScheduleWorkController extends Controller
 
                      foreach ($b as $task) {
                          $c = Task::query()->select('name as name_task','account_id', 'started_at', 'expired')->where('id', $task->task_id)->first();
+                         $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
+                             ->where('old_stage', $task->old_stage)
+                             ->where('worker', $task->worker)
+                             ->orderBy('id', 'desc')
+                             ->first();
                          $acc = Account::query()->where('id', $task->worker)->first();
                          $task->name_task= $c->name_task;
                          $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;
                          $task->account_name= $acc->full_name;
                          $task->avatar= $acc->avatar;
-                         $task->started_at= HistoryMoveTask::query()->where('task_id', $task->task_id)
-                         ->where('old_stage', $task->old_stage)
-                         ->where('worker', $task->worker)
-                         ->first()->started_at;
-                         $task->expired_at = HistoryMoveTask::query()->where('task_id', $task->task_id)
-                             ->where('old_stage', $task->old_stage)
-                             ->where('worker', $task->worker)
-                             ->first()->expired_at;
-                         $task->status = array_rand(['in_progress'=>'đang làm', 'failed'=>'Thất bại', 'completed'=>'Thành công']);
+                         $task->started_at= $his->started_at;
+                         $task->expired_at = $his->expired_at;
+                         if ($his->started_at < $his->expired_at) {
+                             $d = 'success';
+                         }else {
+                             $d = 'failed';
+                         }
+                         $task->status = $d;
                          unset($task->worker);
                          unset($task->old_stage);
                      }

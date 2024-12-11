@@ -26,8 +26,6 @@ class LoadYoutubeCommand extends Command
      */
     public function handle()
     {
-        $client = new \GuzzleHttp\Client();
-
         $tasks = Task::query()->where('link_youtube', '!=', null)->get();
         foreach ($tasks as $task) {
             $videoId = $task->link_youtube; // Thay VIDEO_ID bằng ID của video YouTube
