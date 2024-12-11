@@ -67,7 +67,7 @@ class TaskController extends Controller
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->first() ?? null;
         $task = Task::query()->where('code' , $id)->first();
-        if ($account->id != $task->account_id  && !$account->isAdmin()) {
+        if ($account->id != $task->account_id  && $account->role_id != 1) {
             return response()->json([
                 'errors' => 'Nhiệm vụ này không phải của bạn'
             ]);
