@@ -23,9 +23,12 @@ class ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired', 'stage_id')
+            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired', 'stage_id', 'code')
                 ->whereDate('expired', $date)
-                ->OrwhereDate('started_at', $date)
+                ->orWhere(function ($query) use ($date) {
+                    $query->whereDate('created_at', $date)
+                        ->whereDate('expired', null);
+                })
                 ->orderBy('expired');
             if (isset($request->account_id)) {
                 $a->where('account_id', $request->account_id);
@@ -63,7 +66,7 @@ class ScheduleWorkController extends Controller
             }
             $b = $b->get();
             foreach ($b as $task) {
-                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired')->where('id', $task->task_id)->first();
+                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired', 'code')->where('id', $task->task_id)->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
                     ->where('old_stage', $task->old_stage)
                     ->where('worker', $task->worker)
@@ -71,6 +74,7 @@ class ScheduleWorkController extends Controller
                     ->first();
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
+                $task->code = $c->code;
                 $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;
                 $task->account_name = $acc->full_name;
                 $task->avatar = $acc->avatar;

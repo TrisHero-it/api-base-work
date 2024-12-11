@@ -67,6 +67,11 @@ class TaskController extends Controller
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->first() ?? null;
         $task = Task::query()->where('code' , $id)->first();
+        if ($account->id != $task->account_id  && !$account->isAdmin()) {
+            return response()->json([
+                'errors' => 'Nhiệm vụ này không phải của bạn'
+            ]);
+        }
     if (isset($request->stage_id)) {
     //  Lấy ra stage mà mình muốn chuyển đến
     $stage = Stage::query()->where('id', $request->stage_id)->first();
@@ -92,33 +97,28 @@ class TaskController extends Controller
             if ($task->account_id != $account->id) {
                 if (!$account->isAdmin()) {
                     return response()->json([
-                        'message' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi man',
+                        'message' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi men',
                         'errors' => [
-                            'task' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi man'
+                            'task' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi men'
                         ],
                     ], 403);
                 }
             }
-
         }
             if ($task->account_id != $request->account_id && $request->account_id != null) {
         //  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
                 if ($task->account_id != null) {
                     if (!$account->isAdmin()) {
                         return response()->json([
-                            'message' => 'Nhiệm vụ này đã có người nhận, load lại đi man',
+                            'message' => 'Nhiệm vụ này đã có người nhận, load lại đi men',
                             'errors' => [
-                                'task' => 'Nhiệm vụ này đã có người nhận, load lại đi man'
+                                'task' => 'Nhiệm vụ này đã có người nhận, load lại đi men'
                             ],
                         ], 403);
                     }
                 }
-                $hasAcceptTask = $this->hasAcceptedTaskToday($request->account_id);
-                if ($hasAcceptTask != null) {
-                    $data['started_at'] = $hasAcceptTask->expired;
-                }else {
-                    $data['started_at'] = now();
-                }
+                $data['started_at'] = now();
+
                 if($task->stage->expired_after_hours != null) {
                     $dateTime = new \DateTime($data['started_at']);
                     $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
@@ -258,15 +258,6 @@ class TaskController extends Controller
                 'error' => 'Đã xảy ra lỗi : ' . $exception->getMessage()
             ]);
         }
-    }
-
-//  hàm check xem người này đã nhận nv này hay chưa
-    public function hasAcceptedTaskToday($accountId) {
-        return Task::query()->where('account_id', $accountId)
-            ->where('expired', '!=', null)
-            ->whereDate('created_at', Carbon::today())
-            ->orderBy('started_at', 'desc')
-            ->first();
     }
 
     public function loadYoutube(Request $request)

@@ -34,6 +34,7 @@ class MyJobController extends Controller
     public function store(Request $request)
     {
         $data = $request->except('stage_id');
+        $data['started_at'] = now();
         $task = Task::query()->create($data);
 
         return response()->json($task);
