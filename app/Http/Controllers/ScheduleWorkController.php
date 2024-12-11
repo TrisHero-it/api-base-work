@@ -36,14 +36,16 @@ class ScheduleWorkController extends Controller
                 foreach ($a as $task) {
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
-                    $task['stage_name'] = $task->stage->name;
-                    if ($task->expired === null) {
-                        $d = 'in_progress';
-                    } else {
-                        if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
+                    if ($task->stage_id != null) {
+                        $task['stage_name'] = $task->stage->name;
+                        if ($task->expired === null) {
                             $d = 'in_progress';
                         } else {
-                            $d = 'failed';
+                            if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
+                                $d = 'in_progress';
+                            } else {
+                                $d = 'failed';
+                            }
                         }
                     }
                     $task->status = $d;
@@ -74,8 +76,8 @@ class ScheduleWorkController extends Controller
                 $task->avatar = $acc->avatar;
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
-                if (($his->started_at < $his->expired_at) || ($his->expired_at === null)) {
-                    $d = 'success';
+                if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
+                    $d = 'completed';
                 } else {
                     $d = 'failed';
                 }
