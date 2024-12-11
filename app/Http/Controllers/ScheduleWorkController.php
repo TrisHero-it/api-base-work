@@ -80,7 +80,7 @@ class ScheduleWorkController extends Controller
                          $task->avatar= $acc->avatar;
                          $task->started_at= $his->started_at;
                          $task->expired_at = $his->expired_at;
-                         if ($his->started_at < $his->expired_at) {
+                         if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
                              $d = 'success';
                          }else {
                              $d = 'failed';
