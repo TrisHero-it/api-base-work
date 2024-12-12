@@ -31,10 +31,10 @@ class ScheduleWorkController extends Controller
                 })
                 ->orderBy('expired');
             if (isset($request->account_id)) {
-                $a->where('account_id', $request->account_id);
-            }else {
-                $a->where('account_id', '!=',null);
+                $a = $a->where('account_id', $request->account_id);
             }
+                $a = $a->where('account_id', '!=',null);
+
             $a = $a->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
