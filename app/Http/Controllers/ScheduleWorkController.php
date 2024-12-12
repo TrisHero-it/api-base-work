@@ -44,7 +44,7 @@ class ScheduleWorkController extends Controller
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
-                        if ($task->expired === null) {
+                        if ($task->expired_at === null) {
                             $d = 'in_progress';
                         } else {
                             if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
