@@ -116,15 +116,16 @@ class WorkflowCategoryController extends Controller
                     'workflow_category_id' => $workflow->id,
                     'name' => $stage['stage_name'],
                 ]);
-                $reports =$stage['reports'];
-                if (!empty($reports)) {
-                    foreach ($reports as $report) {
-                        WorkflowCategoryStageReport::query()->create([
-                            'report_stage_id' => $a->id,
-                            'name' => $report['name'],
-                            'type' => $report['type'],
-                        ]);
-                    }
+                if (isset($stage['reports']))
+                {
+                    $reports = $stage['reports'];
+                        foreach ($reports as $report) {
+                            WorkflowCategoryStageReport::query()->create([
+                                'report_stage_id' => $a->id,
+                                'name' => $report['name'],
+                                'type' => $report['type'],
+                            ]);
+                        }
                 }
             }
         }

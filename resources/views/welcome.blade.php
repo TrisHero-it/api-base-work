@@ -8,10 +8,18 @@
     <title>Document</title>
 </head>
 <body>
-<form action="/vnpay/create" method="GET">
-    <label for="amount">Số tiền thanh toán (VNĐ):</label>
-    <input type="number" name="amount" required>
-    <button type="submit">Thanh toán với VNPay</button>
+<form action="{{ url('/payment/create') }}" method="GET">
+    <label for="amount">Số tiền (VND):</label>
+    <input type="number" id="amount" name="amount" required>
+    <label for="bank_code">Ngân hàng:</label>
+    <select id="bank_code" name="bank_code">
+        <option value="">Không chọn</option>
+        <option value="NCB">Ngân hàng NCB</option>
+        <option value="AGRIBANK">Ngân hàng Agribank</option>
+        <!-- Thêm các ngân hàng khác -->
+    </select>
+    <button type="submit">Thanh toán</button>
 </form>
+
 </body>
 </html>

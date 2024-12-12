@@ -17,8 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/vnpay/create', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.create');
-Route::get('/vnpay/return', [\App\Http\Controllers\VNPayController::class, 'returnPayment'])->name('vnpay.return');
+Route::get('/payment/create', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.create');
+Route::get('/payment/return', [\App\Http\Controllers\VNPayController::class, 'returnPayment'])->name('vnpay.return');
 
 Route::get('/get-youtube', function () {
     try {
