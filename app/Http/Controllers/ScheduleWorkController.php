@@ -36,8 +36,11 @@ class ScheduleWorkController extends Controller
                 $a->where('account_id', '!=',null);
             }
             $a = $a->get();
-            if ($a!=null) {
+            if (!empty($a)) {
                 foreach ($a as $task) {
+                    if ($task->account == null) {
+                        return $task;
+                    }
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
                     if ($task->stage_id != null) {
