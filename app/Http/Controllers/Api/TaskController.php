@@ -175,7 +175,7 @@ class TaskController extends Controller
 
         //  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
             if (isset($stage->expired_after_hours) && $data['expired'] === null && $data['account_id'] !== null) {
-                $dateTime = new \DateTime($data['started_at']);
+                $dateTime = new \DateTime(now());
                 $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
                 $data['expired'] = $dateTime->format('Y-m-d H:i:s');
             }
