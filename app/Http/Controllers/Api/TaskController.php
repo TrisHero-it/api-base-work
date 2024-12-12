@@ -67,6 +67,14 @@ class TaskController extends Controller
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->first() ?? null;
         $task = Task::query()->where('code' , $id)->first();
+        if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
+            return response()->json([
+                'message' => 'Nhiệm vụ này không phải của bạn',
+                'errors' => [
+                    'task' => 'Nhiệm vụ này không phải của bạn'
+                ]
+            ], 403);
+        }
     if (isset($request->stage_id)) {
     //  Lấy ra stage mà mình muốn chuyển đến
     $stage = Stage::query()->where('id', $request->stage_id)->first();
@@ -156,7 +164,7 @@ class TaskController extends Controller
                 ->orderBy('id', 'desc')
                 ->first() ?? null;
             if ($worker !== null) {
-                $data['expired'] = $worker->expired_at ;
+                $data['expired'] = $worker->expired_at;
                 $data['account_id'] = $worker->worker;
                 $data['started_at'] = $worker->started_at;
             }else {

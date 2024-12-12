@@ -23,15 +23,17 @@ class ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired', 'stage_id', 'code')
+            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code')
                 ->whereDate('expired', $date)
                 ->orWhere(function ($query) use ($date) {
-                    $query->whereDate('created_at', $date)
-                        ->whereDate('expired', null);
+                    $query->whereDate('started_at', $date)
+                        ->where('expired', null);
                 })
                 ->orderBy('expired');
             if (isset($request->account_id)) {
                 $a->where('account_id', $request->account_id);
+            }else {
+                $a->where('account_id', '!=',null);
             }
 //                    array_rand(['in_progress'=>'đang làm', 'failed'=>'Thất bại', 'completed'=>'Thành công'])
             $a = $a->get();
@@ -41,6 +43,7 @@ class ScheduleWorkController extends Controller
                     $task['avatar'] = $task->account->avatar;
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
+                    }
                         if ($task->expired === null) {
                             $d = 'in_progress';
                         } else {
@@ -50,23 +53,25 @@ class ScheduleWorkController extends Controller
                                 $d = 'failed';
                             }
                         }
-                    }
                     $task->status = $d;
                     unset($task->account);
                     unset($task->stage_id);
                     unset($task->stage);
                 }
             }
-            $b = DB::table('history_move_tasks')->whereDate('started_at', $date)
+            $b = DB::table('history_move_tasks')->whereDate('expired_at', $date)
                 ->select('task_id', 'old_stage', 'worker')
-                ->orWhereDate('expired_at', $date)
+                ->orWhere(function ($query) use ($date) {
+                    $query->whereDate('started_at', $date)
+                        ->where('expired_at', null);
+                })
                 ->groupBy('task_id', 'old_stage', 'worker');
             if (isset($request->account_id)) {
                 $b->where('worker', $request->account_id);
             }
             $b = $b->get();
             foreach ($b as $task) {
-                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired', 'code')->where('id', $task->task_id)->first();
+                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')->where('id', $task->task_id)->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
                     ->where('old_stage', $task->old_stage)
                     ->where('worker', $task->worker)
