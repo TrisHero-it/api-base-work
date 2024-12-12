@@ -41,7 +41,7 @@ class TaskController extends Controller
                 ], 500);
             }
             $task = Task::query()->create([
-                'code' => rand(10000000, 99999999),
+                'code' => rand(100000000, 99999999999),
                 'name' => $request->name,
                 'description' => $request->description ?? null,
                 'account_id' => $account->id ?? null,

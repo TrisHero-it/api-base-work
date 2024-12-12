@@ -35,7 +35,6 @@ class ScheduleWorkController extends Controller
             }else {
                 $a->where('account_id', '!=',null);
             }
-//                    array_rand(['in_progress'=>'đang làm', 'failed'=>'Thất bại', 'completed'=>'Thành công'])
             $a = $a->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
