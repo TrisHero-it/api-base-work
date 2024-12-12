@@ -31,15 +31,14 @@ class ScheduleWorkController extends Controller
                 })
                 ->orderBy('expired');
             if (isset($request->account_id)) {
-                $a = $a->where('account_id', $request->account_id);
+                $a->where('account_id', $request->account_id);
             }
-                $a = $a->where('account_id', '!=',null);
-
-            $a = $a->get();
+                $a->where('account_id', '!=',null);
+            $a = $a->toRawSql();
             if (!empty($a)) {
                 foreach ($a as $task) {
                     if ($task->account == null) {
-                        return $task;
+                        return $a;
                     }
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
