@@ -54,7 +54,7 @@ Route::middleware(['check.login'])->group(function () {
         'kpis' => KpiController::class,
         'tags'=> \App\Http\Controllers\Api\StickerController::class,
         'tag-task' => \App\Http\Controllers\Api\TagValueController::class,
-        'general-report' => \App\Http\Controllers\Api\GeneralReportController::class,
+//        'general-report' => \App\Http\Controllers\Api\GeneralReportController::class,
         'schedule' => \App\Http\Controllers\ScheduleWorkController::class,
         'my-tasks' => \App\Http\Controllers\Api\MyJobController::class,
     ]);

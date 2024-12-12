@@ -85,9 +85,9 @@ class KpiController extends Controller
                             ->where('status', 0)
                             ->get();
                         foreach ($kpis as $kpi) {
-                           $kpi['failed'] = false;
+                            $kpi['failed'] = false;
                             $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
-                            $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage->name;
+                            $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage ? Task::query()->where('id', $kpi->task_id)->first()->stage->name : null ;
                             $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
                         }
                         $kpis = $kpis->toArray();
