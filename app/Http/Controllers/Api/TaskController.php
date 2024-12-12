@@ -67,11 +67,6 @@ class TaskController extends Controller
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->first() ?? null;
         $task = Task::query()->where('code' , $id)->first();
-        if ($account->id != $task->account_id  && $account->role_id != 1) {
-            return response()->json([
-                'errors' => 'Nhiệm vụ này không phải của bạn'
-            ]);
-        }
     if (isset($request->stage_id)) {
     //  Lấy ra stage mà mình muốn chuyển đến
     $stage = Stage::query()->where('id', $request->stage_id)->first();

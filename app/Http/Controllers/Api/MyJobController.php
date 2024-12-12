@@ -33,7 +33,9 @@ class MyJobController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->except('stage_id');
+        $data = $request->except('stage_id', 'expired');
+        $data['expired'] = new \DateTime($request->expired);
+        $data['code'] =  rand(10000000, 99999999);
         $data['started_at'] = now();
         $task = Task::query()->create($data);
 
