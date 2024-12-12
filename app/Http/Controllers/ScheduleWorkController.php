@@ -34,7 +34,7 @@ class ScheduleWorkController extends Controller
                 $a->where('account_id', $request->account_id);
             }
                 $a->where('account_id', '!=',null);
-            $a = $a->toRawSql();
+            $a = $a->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
                     if ($task->account == null) {
