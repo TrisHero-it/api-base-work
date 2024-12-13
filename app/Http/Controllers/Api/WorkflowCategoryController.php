@@ -26,7 +26,7 @@ class WorkflowCategoryController extends Controller
             $arrMembers = [];
             $members = AccountWorkflowCategory::query()->where('workflow_category_id', $category['id'])->get();
             foreach ($members as $member) {
-            $arrMembers[]  = Account::query()->select('id','email','created_at','updated_at','username')->find($member->account_id);
+            $arrMembers[]  = Account::query()->select('id','email','created_at','updated_at','username','full_name')->find($member->account_id);
             }
             $a = [];
             $a['members'] = $arrMembers;
