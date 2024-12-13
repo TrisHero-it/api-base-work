@@ -110,7 +110,8 @@ class KpiController extends Controller
                 }
                 $account['Việc đơn'] = Task::query()
                     ->where('account_id', $account->account_id)
-                    ->where('stage_id', null)->where('status', 'completed')
+                    ->where('stage_id', null)
+                    ->where('status', 'completed')
                     ->get();
                 unset($account['account_id']);
             }

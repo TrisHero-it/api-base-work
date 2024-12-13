@@ -27,7 +27,7 @@ class ScheduleWorkController extends Controller
             if (isset($request->account_id)) {
                 $abc = explode(',', $request->account_id);
                 foreach ($abc as $id) {
-                    $a->where('account_id', $id);
+                    $a->orWhere('account_id', $id);
                 }
             } else {
                 $a->where('account_id', '!=', null);
@@ -68,15 +68,23 @@ class ScheduleWorkController extends Controller
                 }
             }
             $b = DB::table('history_move_tasks')->whereDate('expired_at', $date)
-                ->select('task_id', 'old_stage', 'worker')
-                ->orWhere(function ($query) use ($date) {
+                ->select('task_id', 'old_stage', 'worker');
+
+            if (isset($request->account_id)) {
+                $abc = explode(',', $request->account_id);
+                foreach ($abc as $id) {
+                    $b->orWhere('account_id', $id);
+                }
+            } else {
+                $b->where('account_id', '!=', null);
+            }
+
+                $b->orWhere(function ($query) use ($date) {
                     $query->whereDate('started_at', $date)
                         ->where('expired_at', null);
                 })
                 ->groupBy('task_id', 'old_stage', 'worker');
-            if (isset($request->account_id)) {
-                $b->where('worker', $request->account_id);
-            }
+
             $b = $b->get();
             foreach ($b as $task) {
                 $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')->where('id', $task->task_id)->first();
