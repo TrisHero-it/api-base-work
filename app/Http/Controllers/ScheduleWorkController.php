@@ -55,7 +55,7 @@ class ScheduleWorkController extends Controller
                     if ($task->expired_at === null) {
                         $d = 'in_progress';
                     } else {
-                        if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
+                        if (carbon::parse($task->expired_at)->greaterThan(Carbon::now())) {
                             $d = 'in_progress';
                         } else {
                             $d = 'failed';
@@ -87,7 +87,9 @@ class ScheduleWorkController extends Controller
 
             $b = $b->get();
             foreach ($b as $task) {
-                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')->where('id', $task->task_id)->first();
+                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
+                    ->where('id', $task->task_id)
+                    ->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
                     ->where('old_stage', $task->old_stage)
                     ->where('worker', $task->worker)
