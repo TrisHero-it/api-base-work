@@ -23,37 +23,44 @@ class ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code')
-                ->whereDate('expired', $date)
-                ->orWhere(function ($query) use ($date) {
+            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code');
+            if (isset($request->account_id)) {
+                $abc = explode(',', $request->account_id);
+                foreach ($abc as $id) {
+                    $a->where('account_id', $id);
+                }
+            } else {
+                $a->where('account_id', '!=', null);
+            }
+            $a->whereDate('expired', $date)
+                ->orWhere(function ($query) use ($date, $request) {
                     $query->whereDate('started_at', $date)
                         ->where('expired', null);
+                    if(isset($request->account_id)) {
+                        $query->where('account_id', $request->account_id);
+                    }else {
+                        $query->where('account_id', '!=', null);
+                    }
                 })
-                ->orderBy('expired');
-            if (isset($request->account_id)) {
-                $a->where('account_id', $request->account_id);
-            }
-                $a->where('account_id', '!=',null);
+                ->orderBy('expired_at');
+
             $a = $a->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
-                    if ($task->account == null) {
-                        return $a;
-                    }
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
-                        if ($task->expired_at === null) {
+                    if ($task->expired_at === null) {
+                        $d = 'in_progress';
+                    } else {
+                        if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
                             $d = 'in_progress';
                         } else {
-                            if (carbon::parse($task->expired)->greaterThan(Carbon::now())) {
-                                $d = 'in_progress';
-                            } else {
-                                $d = 'failed';
-                            }
+                            $d = 'failed';
                         }
+                    }
                     $task->status = $d;
                     unset($task->account);
                     unset($task->stage_id);

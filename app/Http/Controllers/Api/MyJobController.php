@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kpi;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -45,7 +46,14 @@ class MyJobController extends Controller
     public function update(int $id, Request $request)
     {
         $task = Task::query()->find($id);
+        if (isset($request->success)) {
+            Kpi::query()->create([
+                'task_id' => $id,
+                'account_id'=> $task->account_id
+            ]);
+        }
         $data = $request->except('stage_id');
+        $data['status'] = 'completed';
         $task->update($data);
 
         return response()->json($task);

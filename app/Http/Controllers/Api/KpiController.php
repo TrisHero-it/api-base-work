@@ -87,7 +87,9 @@ class KpiController extends Controller
                         foreach ($kpis as $kpi) {
                             $kpi['failed'] = false;
                             $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
-                            $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage ? Task::query()->where('id', $kpi->task_id)->first()->stage->name : null ;
+                            $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage ? Task::query()
+                                ->where('id', $kpi->task_id)
+                                ->first()->stage->name : null ;
                             $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
                         }
                         $kpis = $kpis->toArray();
@@ -106,6 +108,10 @@ class KpiController extends Controller
                         $account[$stage->name] = array_merge($kpis, $failedKpis);
                     }
                 }
+                $account['Việc đơn'] = Task::query()
+                    ->where('account_id', $account->account_id)
+                    ->where('stage_id', null)->where('status', 'completed')
+                    ->get();
                 unset($account['account_id']);
             }
 

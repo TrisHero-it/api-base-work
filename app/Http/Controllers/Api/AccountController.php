@@ -75,6 +75,14 @@ class AccountController extends Controller
         $token = explode(' ', $token);
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->first();
+            if ($account->role_id == 1 ){
+                $account['role'] = 'Admin';
+            }else if ($account->role_id == 2 ){
+                $account['role'] = 'Admin lv2';
+            }else {
+                $account['role'] = 'User';
+            }
+            unset($account->role_id);
         return response()->json($account);
     }
 
