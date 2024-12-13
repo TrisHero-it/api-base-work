@@ -15,9 +15,14 @@ class ScheduleWorkController extends Controller
     public function index(Request $request)
     {
         // Tuần này
-        $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
-        // Tuần trước
-        $startOfLastWeek = Carbon::now()->startOfWeek()->toDateString();
+        if (isset($request->end)) {
+            $startOfLastWeek = Carbon::parse($request->start)->toDateString();
+            $endOfThisWeek = Carbon::parse($request->end)->toDateString();
+        }else {
+            $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
+            $startOfLastWeek = Carbon::now()->startOfWeek()->toDateString();
+        }
+
         $startDate = Carbon::parse($startOfLastWeek);
         $endDate = Carbon::parse($endOfThisWeek);
         // Lặp qua từng ngày
