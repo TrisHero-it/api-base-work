@@ -70,17 +70,15 @@ class WorkflowController extends Controller
             $arrMember = [];
             $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
             foreach ($members as $member) {
-                $tri = Account::query()->where('id', $member->account_id)->first()->get();
-                foreach ($tri as $t) {
-                    if ($t->role_id == 1 ){
-                        $t['role'] = 'Admin';
-                    }else if ($t->role_id == 2 ){
-                        $t['role'] = 'Admin lv2';
+                $tri = Account::query()->where('id', $member->account_id)->first();
+                    if ($tri->role_id == 1 ){
+                        $tri['role'] = 'Admin';
+                    }else if ($tri->role_id == 2 ){
+                        $tri['role'] = 'Admin lv2';
                     }else {
-                        $t['role'] = 'User';
+                        $tri['role'] = 'User';
                     }
-                    unset($t->role_id);
-                }
+                    unset($tri->role_id);
                 $tri = $tri->toArray();
                 $arrMember[] = $tri;
             }
