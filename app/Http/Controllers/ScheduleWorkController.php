@@ -90,8 +90,7 @@ class ScheduleWorkController extends Controller
                 })
                 ->groupBy('task_id', 'old_stage', 'worker');
 
-            $b = $b->toRawSql();
-            return $b;
+            $b = $b->get();
             foreach ($b as $task) {
                 $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
                     ->where('id', $task->task_id)
