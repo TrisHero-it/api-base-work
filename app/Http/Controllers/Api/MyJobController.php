@@ -46,13 +46,15 @@ class MyJobController extends Controller
     public function update(int $id, Request $request)
     {
         $task = Task::query()->find($id);
+        $data = $request->except('stage_id');
         if (isset($request->success)) {
             Kpi::query()->create([
                 'task_id' => $id,
                 'account_id'=> $task->account_id
             ]);
+            $data['expired'] = null;
+            $data['started_at'] = null;
         }
-        $data = $request->except('stage_id');
         $data['status'] = 'completed';
         $task->update($data);
 

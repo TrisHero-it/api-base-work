@@ -90,7 +90,8 @@ class ScheduleWorkController extends Controller
                 })
                 ->groupBy('task_id', 'old_stage', 'worker');
 
-            $b = $b->get();
+            $b = $b->toRawSql();
+            return $b;
             foreach ($b as $task) {
                 $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
                     ->where('id', $task->task_id)
@@ -108,11 +109,11 @@ class ScheduleWorkController extends Controller
                 $task->avatar = $acc->avatar;
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
-                if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
-                    $d = 'completed';
-                } else {
-                    $d = 'failed';
-                }
+                    if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
+                        $d = 'completed';
+                    } else {
+                        $d = 'failed';
+                    }
                 $task->status = $d;
                 unset($task->worker);
                 unset($task->old_stage);
