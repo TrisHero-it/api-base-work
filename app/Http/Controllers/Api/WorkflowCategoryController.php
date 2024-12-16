@@ -7,6 +7,7 @@ use App\Http\Requests\WorkflowCategoryStoreRequest;
 use App\Http\Requests\WorkflowStoreRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
+use App\Models\Department;
 use App\Models\Workflow;
 use App\Models\WorkflowCategory;
 use App\Models\WorkflowCategoryStage;
@@ -26,7 +27,15 @@ class WorkflowCategoryController extends Controller
             $arrMembers = [];
             $members = AccountWorkflowCategory::query()->where('workflow_category_id', $category['id'])->get();
             foreach ($members as $member) {
-            $arrMembers[]  = Account::query()->select('id','email','created_at','updated_at','username','full_name')->find($member->account_id);
+            if (isset($member->account_id)) {
+                $arrMembers[]  = Account::query()->select('id','email','created_at','updated_at','username','full_name')->find($member->account_id);
+            }else {
+                $b = Department::query()->where('id', $member->department_id)->first();
+                $arrMembers[]  = [
+                    'username' => "$member->department_id",
+                    'full_name' => $b->name,
+                ];
+            }
             }
             $a = [];
             $a['members'] = $arrMembers;
@@ -76,19 +85,8 @@ class WorkflowCategoryController extends Controller
 
     public function store(WorkflowCategoryStoreRequest $request)
     {
-            $err = [];
-            $arrs = explode('@', $request->members);
-            foreach ($arrs as $arr) {
-                if (trim($arr)!= '') {
-                    $acc = Account::query()->where('username', '@'.trim($arr))->first();
-                    if (!$acc) {
-                        $err['members'] = 'Tài khoản không tồn tại';
-                    }
-                }
-            }
-            if ($err) {
-                return response()->json(['errors' => $err], 422);
-            }
+           $arrs = explode('@', $request->members);
+
            $workflow = WorkflowCategory::create(
                 [
                     'name' => $request->name,
@@ -98,10 +96,17 @@ class WorkflowCategoryController extends Controller
             foreach ($arrs as $arr) {
                 if (trim($arr) != ''){
                     $acc = Account::query()->where('username', '@'.trim($arr))->first();
-                    $work = AccountWorkflowCategory::query()->where('account_id', $acc->id)->where('workflow_category_id', $workflow->id)->first();
-                    if (!$work) {
+                    if (isset($acc)) {
+                        $work = AccountWorkflowCategory::query()->where('account_id', $acc->id)->where('workflow_category_id', $workflow->id)->first();
+                        if (!$work) {
+                            AccountWorkflowCategory::query()->create([
+                                'account_id' => $acc->id,
+                                'workflow_category_id' => $workflow->id,
+                            ]);
+                        }
+                    }else {
                         AccountWorkflowCategory::query()->create([
-                            'account_id' => $acc->id,
+                            'department_id' => $arr,
                             'workflow_category_id' => $workflow->id,
                         ]);
                     }

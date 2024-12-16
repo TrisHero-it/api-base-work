@@ -11,7 +11,8 @@ class AccountWorkflowCategory extends Model
 
     protected $fillable = [
         'account_id',
-        'workflow_category_id'
+        'workflow_category_id',
+        'department_id'
     ];
 
     public function account() {

@@ -61,6 +61,7 @@ class AccountController extends Controller
             foreach ($departments as $department) {
                 $department['type'] = 'department';
                 $department['username'] = $department->id;
+                $department['full_name'] = $department->name;
             }
             $accounts = array_merge($departments->toArray(), $accounts);
 

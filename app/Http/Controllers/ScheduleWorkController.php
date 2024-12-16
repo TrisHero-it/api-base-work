@@ -108,11 +108,11 @@ class ScheduleWorkController extends Controller
                 $task->avatar = $acc->avatar;
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
-                    if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
-                        $d = 'completed';
-                    } else {
-                        $d = 'failed';
-                    }
+                if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
+                    $d = 'completed';
+                } else {
+                    $d = 'failed';
+                }
                 $task->status = $d;
                 unset($task->worker);
                 unset($task->old_stage);
@@ -120,7 +120,6 @@ class ScheduleWorkController extends Controller
             $a = $a->toArray();
             $b = $b->toArray();
             $arr[$date->format('Y-m-d')] = array_merge($a, $b);
-            return $arr;
         }
 
         return $arr;
