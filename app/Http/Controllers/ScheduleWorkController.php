@@ -119,7 +119,8 @@ class ScheduleWorkController extends Controller
             }
             $a = $a->toArray();
             $b = $b->toArray();
-            $arr[$date->format('Y-m-d')] = $a + $b;
+            $arr[$date->format('Y-m-d')] = array_merge($a, $b);
+            return $arr;
         }
 
         return $arr;
