@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
+Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 Route::apiResource('accounts', AccountController::class);
 
 Route::middleware(['check.login'])->group(function () {
@@ -53,7 +53,6 @@ Route::middleware(['check.login'])->group(function () {
         'kpis' => KpiController::class,
         'tags'=> \App\Http\Controllers\Api\StickerController::class,
         'tag-task' => \App\Http\Controllers\Api\TagValueController::class,
-//        'general-report' => \App\Http\Controllers\Api\GeneralReportController::class,
         'schedule' => \App\Http\Controllers\ScheduleWorkController::class,
         'my-tasks' => \App\Http\Controllers\Api\MyJobController::class,
         'departments' => \App\Http\Controllers\Api\DepartmentController::class,

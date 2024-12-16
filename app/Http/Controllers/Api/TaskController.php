@@ -164,6 +164,8 @@ class TaskController extends Controller
                     return response()->json([
                         'errors' => 'Nhiệm vụ chưa được giao'
                     ], 500);
+                }else {
+                    $data['completed_at'] = now();
                 }
             }
 
@@ -280,7 +282,7 @@ class TaskController extends Controller
         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
         // Tuần trước
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
-            $tasks = Task::query()->where('link_youtube', '!=', null)->whereBetween('updated_at', [$startOfLastWeek, $endOfThisWeek]);
+            $tasks = Task::query()->where('link_youtube', '!=', null)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
             $stages = Stage::query()->where('workflow_id', $request->workflow_id)->get();
             foreach ($stages as $stage) {
                 $a[] = $stage->id;
