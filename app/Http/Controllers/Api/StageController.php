@@ -27,8 +27,8 @@ class StageController extends Controller
            if ($stage->isSuccessStage() || $stage->isFailStage()) {
                $tasks = Task::query()
                    ->where('stage_id', $stage['id'])
-                   ->orderBy('completed_at', 'desc')
-                   ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
+                   ->orderBy('updated_at', 'desc')
+                   ->whereBetween('updated_at', [$startOfLastWeek, $endOfThisWeek])
                    ->get();
                foreach ($tasks as $task) {
                    $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
