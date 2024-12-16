@@ -37,7 +37,7 @@ class AttendanceController extends Controller
 
             $dateTime = new \DateTime($value->checkin);
             $nineAM = clone $dateTime;
-            $nineAM->setTime(9, 0, 0);
+            $nineAM->setTime(9, 1, 0);
             if ($dateTime > $nineAM) {
                 $value['onTime'] = False;
             }else {

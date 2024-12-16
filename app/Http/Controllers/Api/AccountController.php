@@ -7,6 +7,7 @@ use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -56,6 +57,13 @@ class AccountController extends Controller
             }else {
                 $accounts = Account::query()->where('username', 'like', "%$name%")->get()->toArray();
             }
+            $departments = Department::query()->get();
+            foreach ($departments as $department) {
+                $department['type'] = 'department';
+                $department['username'] = $department->id;
+            }
+            $accounts = array_merge($departments->toArray(), $accounts);
+
         return response()->json($accounts);
     }
 

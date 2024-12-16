@@ -52,8 +52,6 @@ class MyJobController extends Controller
                 'task_id' => $id,
                 'account_id'=> $task->account_id
             ]);
-            $data['expired'] = null;
-            $data['started_at'] = null;
         }
         $data['status'] = 'completed';
         $task->update($data);
