@@ -22,30 +22,26 @@ class ScheduleWorkController extends Controller
             $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
             $startOfLastWeek = Carbon::now()->startOfWeek()->toDateString();
         }
-
         $startDate = Carbon::parse($startOfLastWeek);
         $endDate = Carbon::parse($endOfThisWeek);
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code');
-            if (isset($request->account_id)) {
-                $abc = explode(',', $request->account_id);
-                foreach ($abc as $id) {
-                    $a->orWhere('account_id', $id);
-                }
-            } else {
-                $a->where('account_id', '!=', null);
-            }
-            $a->whereDate('expired', $date)
-                ->orWhere(function ($query) use ($date, $request) {
-                    $query->whereDate('started_at', $date)
-                        ->where('expired', null);
-                    if(isset($request->account_id)) {
-                        $query->where('account_id', $request->account_id);
-                    }else {
-                        $query->where('account_id', '!=', null);
-                    }
+            $a1 = [];
+            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code', 'completed_at')->where('account_id', '!=', null);
+            $a->whereDate('started_at', '<=', $date)
+                ->where(function ($query) use ($date) {
+                    $query->where(function ($subQuery) use ($date) {
+                        $subQuery->whereNotNull('completed_at')
+                            ->whereDate('completed_at', '>=', $date);
+                    })
+                        ->orWhere(function ($subQuery) use ($date) {
+                            $subQuery->whereNull('completed_at')
+                                ->where(function ($subSubQuery) use ($date) {
+                                    $subSubQuery->whereDate('expired', '>=', $date)
+                                        ->orWhereNull('expired');
+                                });
+                        });
                 })
                 ->orderBy('expired_at');
 
@@ -58,8 +54,16 @@ class ScheduleWorkController extends Controller
                         $task['stage_name'] = $task->stage->name;
                     }
                     if ($task->expired_at === null) {
-                        $d = 'in_progress';
-                    } else {
+                        if ($task->completed_at === null) {
+                            $d = 'in_progress';
+                        }else {
+                            if (Carbon::parse($task->completed_at)->isSameDay($date)) {
+                                $d = 'completed';
+                            }else {
+                                $d = 'in_progress';
+                            }
+                        }
+                    }else {
                         if (carbon::parse($task->expired_at)->greaterThan(Carbon::now())) {
                             $d = 'in_progress';
                         } else {
@@ -72,24 +76,16 @@ class ScheduleWorkController extends Controller
                     unset($task->stage);
                 }
             }
-            $b = DB::table('history_move_tasks')->whereDate('expired_at', $date)
-                ->select('task_id', 'old_stage', 'worker');
-
-            if (isset($request->account_id)) {
-                $abc = explode(',', $request->account_id);
-                foreach ($abc as $id) {
-                    $b->orWhere('account_id', $id);
-                }
-            } else {
-                $b->where('account_id', '!=', null);
-            }
-
-                $b->orWhere(function ($query) use ($date) {
-                    $query->whereDate('started_at', $date)
-                        ->where('expired_at', null);
-                })
-                ->groupBy('task_id', 'old_stage', 'worker');
-
+            $b = DB::table('history_move_tasks')
+                ->select('task_id', 'old_stage', 'worker')
+                ->where('worker', '!=', null);
+                $b->whereDate('started_at' , '<=' , $date)
+                    ->whereDate('created_at' , '>=' , $date)
+                    ->where(function ($query) use ($date) {
+                        $query->whereDate('expired_at', '>=', $date)
+                            ->orWhereNull('expired_at');
+                    })
+                    ->groupBy('task_id', 'old_stage', 'worker');
             $b = $b->get();
             foreach ($b as $task) {
                 $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
@@ -109,7 +105,7 @@ class ScheduleWorkController extends Controller
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
                 if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
-                    $d = 'completed';
+                  $d = 'completed';
                 } else {
                     $d = 'failed';
                 }

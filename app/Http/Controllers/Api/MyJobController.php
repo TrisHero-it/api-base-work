@@ -13,9 +13,9 @@ class MyJobController extends Controller
     {
         $tasks = Task::query();
         if (isset($request->account_id)) {
-            $tasks = $tasks->where('account_id', $request->account_id);
+            $tasks = $tasks->where('account_id', $request->account_id)->where('completed_at', null);
         } else {
-            $tasks = $tasks->where('account_id', '!=', null);
+            $tasks = $tasks->where('account_id', '!=', null)->where('completed_at', null);
         }
         $tasks = $tasks->get();
         foreach ($tasks as $task) {
@@ -54,6 +54,7 @@ class MyJobController extends Controller
             ]);
         }
         $data['status'] = 'completed';
+        $data['completed_at'] = now();
         $task->update($data);
 
         return response()->json($task);

@@ -40,7 +40,6 @@ class DepartmentController extends Controller
             ]);
         }
         $department = array_merge($department->toArray(), $data);
-        $department['id'] = 'department-' . $department['id'];
 
         return response()->json($department);
     }

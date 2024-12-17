@@ -156,6 +156,8 @@ class TaskController extends Controller
                 $data['like_count'] = 0;
                 $data['comment_count'] = 0;
                 $data['date_posted'] = null;
+                $data['completed_at'] = null;
+                $data['status'] = null;
             }
 
         //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
@@ -166,6 +168,7 @@ class TaskController extends Controller
                     ], 500);
                 }else {
                     $data['completed_at'] = now();
+                    $data['status'] = 'completed';
                 }
             }
 
