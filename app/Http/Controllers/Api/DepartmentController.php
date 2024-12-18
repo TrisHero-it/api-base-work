@@ -19,7 +19,6 @@ class DepartmentController extends Controller
             foreach ($accounts as $account) {
                 $arrAccount[] = Account::query()->select('username', 'avatar','full_name', 'id')->find($account->account_id);
             }
-
             $department['members'] = $arrAccount;
         }
 
@@ -60,6 +59,19 @@ class DepartmentController extends Controller
         $department['members'] = $data['members'];
         $department['id'] = 'department-' . $department['id'];
 
+        return response()->json($department);
+    }
+
+    public function show(int $id)
+    {
+        $department = Department::query()->findOrFail($id);
+        $arrAccount = [];
+        $accounts = AccountDepartment::query()->where('department_id', $department->id)->get();
+        foreach ($accounts as $account) {
+            $arrAccount[] = Account::query()->select('username', 'avatar','full_name', 'id')->find($account->account_id);
+        }
+
+        $department['members'] = $arrAccount;
         return response()->json($department);
     }
 

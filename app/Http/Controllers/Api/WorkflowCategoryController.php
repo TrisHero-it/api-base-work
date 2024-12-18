@@ -34,6 +34,7 @@ class WorkflowCategoryController extends Controller
                 $arrMembers[]  = [
                     'username' => "$member->department_id",
                     'full_name' => $b->name,
+                    'type' => 'department',
                 ];
             }
             }

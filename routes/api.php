@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
 use App\Http\Controllers\Api\StageController;
@@ -56,6 +55,8 @@ Route::middleware(['check.login'])->group(function () {
         'schedule' => \App\Http\Controllers\ScheduleWorkController::class,
         'my-tasks' => \App\Http\Controllers\Api\MyJobController::class,
         'departments' => \App\Http\Controllers\Api\DepartmentController::class,
+        'proposes' => \App\Http\Controllers\Api\ProposeController::class,
+        'propose-categories' => \App\Http\Controllers\Api\ProposeCategoryController::class,
     ]);
 
     // Nhãn dán

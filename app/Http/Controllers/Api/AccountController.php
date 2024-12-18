@@ -57,13 +57,6 @@ class AccountController extends Controller
             }else {
                 $accounts = Account::query()->where('username', 'like', "%$name%")->get()->toArray();
             }
-            $departments = Department::query()->get();
-            foreach ($departments as $department) {
-                $department['type'] = 'department';
-                $department['username'] = $department->id;
-                $department['full_name'] = $department->name;
-            }
-            $accounts = array_merge($departments->toArray(), $accounts);
 
         return response()->json($accounts);
     }

@@ -86,9 +86,7 @@ class WorkflowController extends Controller
             $a['members'] = $arrMember;
             $arrWorkflow[] = $a;
         }
-        return response()->json(
-            $arrWorkflow,
-        );
+        return response()->json($arrWorkflow);
     }
 
     public function store(WorkflowStoreRequest $request) {
@@ -107,7 +105,6 @@ class WorkflowController extends Controller
             if ($error) {
                 return response()->json(['errors'=>$error], 403);
             }
-
             $workflow = Workflow::query()->create($request->all());
             foreach ($accounts as $account) {
                 $acc = Account::query()->where('username', $account)->first();
@@ -121,11 +118,9 @@ class WorkflowController extends Controller
                    }
                }
             }
-
 //  Truy cập vào bảng workflow_category_stages để lấy ra cac stage được quy định sẵn từ workflow_category
             $stageRules =  WorkflowCategoryStage::query()->where('workflow_category_id', $workflow->workflow_category_id)->get();
             $numberIndex = $stageRules->count()+2;
-            $index = 2;
             foreach ($stageRules as $stageRule) {
                $stage =  Stage::query()->create([
                     'name' => $stageRule->name,
@@ -133,7 +128,6 @@ class WorkflowController extends Controller
                     'index' => $numberIndex
                 ]);
                 $numberIndex--;
-
                 foreach ($stageRule->reports as $field) {
                     Field::query()->create([
                         'name' => $field->name,
@@ -147,7 +141,6 @@ class WorkflowController extends Controller
                 ]);
                 }
             }
-
             Stage::query()->create([
                 'name' => 'Thất bại',
                 'workflow_id' => $workflow->id,
@@ -160,6 +153,7 @@ class WorkflowController extends Controller
                 'description' => 'Đánh dấu hoàn thành công việc',
                 'index' => 1
             ]);
+
             return response()->json($workflow);
     }
 
@@ -168,17 +162,6 @@ class WorkflowController extends Controller
             $workflow->delete();
 
             return response()->json(['success'=> 'Xoá thành công']);
-    }
-
-    public function showMember($id) {
-        $arr = [];
-        $members = AccountWorkflow::query()->where('workflow_id', $id)->get();
-        foreach ($members as $member) {
-            $arr1 = Account::query()->select('email', 'id','username')->where('id', $member->account_id)->first()->toArray();
-            $arr[] = $arr1;
-        }
-
-        return response()->json($arr);
     }
 
     public function update(int $id, WorkflowUpdateRequest $request) {
@@ -230,7 +213,6 @@ class WorkflowController extends Controller
     public function search(Request $request)
     {
         if (isset($request->keyword)) {
-            $arr = [];
             $workflows = Workflow::query()->where('name', 'like', '%' . $request->keyword . '%')->get();
 
             return response()->json($workflows);

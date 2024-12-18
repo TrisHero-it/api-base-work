@@ -27,7 +27,6 @@ class ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a1 = [];
             $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code', 'completed_at')->where('account_id', '!=', null);
             $a->whereDate('started_at', '<=', $date)
                 ->where(function ($query) use ($date) {
@@ -44,7 +43,6 @@ class ScheduleWorkController extends Controller
                         });
                 })
                 ->orderBy('expired_at');
-
             $a = $a->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
