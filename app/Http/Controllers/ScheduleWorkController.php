@@ -89,9 +89,9 @@ class ScheduleWorkController extends Controller
                 $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
                     ->where('id', $task->task_id)
                     ->first();
-                $his = HistoryMoveTask::query()->where('task_id', 97)
-                    ->where('old_stage', 3)
-                    ->where('worker', 2)
+                $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
+                    ->where('old_stage', $task->old_stage)
+                    ->where('worker', $task->worker)
                     ->orderBy('id', 'desc')
                     ->first();
                 $acc = Account::query()->where('id', $task->worker)->first();
