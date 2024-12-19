@@ -31,7 +31,8 @@ class LoadYoutubeCommand extends Command
         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
         // Tuần trước
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
-        $tasks = Task::query()->where('link_youtube', '!=', null)
+        $tasks = Task::query()->where('code_youtube', '!=', null)
+            ->where('stage_id', '!=', null)
             ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
             ->get();
         foreach ($tasks as $task) {

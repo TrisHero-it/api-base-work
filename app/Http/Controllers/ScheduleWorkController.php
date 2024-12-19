@@ -103,7 +103,11 @@ class ScheduleWorkController extends Controller
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
                 if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
-                  $d = 'completed';
+                  if (Carbon::parse($his->started_at)->isSameDay($date)) {
+                      $d = 'in_progress';
+                  }else {
+                      $d = 'completed';
+                  }
                 } else {
                     $d = 'failed';
                 }

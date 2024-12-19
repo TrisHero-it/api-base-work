@@ -285,7 +285,7 @@ class TaskController extends Controller
         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
         // Tuần trước
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
-            $tasks = Task::query()->where('link_youtube', '!=', null)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
+            $tasks = Task::query()->where('code_youtube', '!=', null)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
             $stages = Stage::query()->where('workflow_id', $request->workflow_id)->get();
             foreach ($stages as $stage) {
                 $a[] = $stage->id;
