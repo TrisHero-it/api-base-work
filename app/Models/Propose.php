@@ -14,11 +14,19 @@ class Propose extends Model
         'account_id',
         'description',
         'status',
+        'propose_category_id',
+        'approved_by'
     ];
 
     public function account()
     {
 
         return $this->belongsTo(Account::class);
+    }
+
+    public function propose_category()
+    {
+
+        return $this->belongsTo(ProposeCategory::class);
     }
 }

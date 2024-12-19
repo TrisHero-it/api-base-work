@@ -89,9 +89,9 @@ class ScheduleWorkController extends Controller
                 $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
                     ->where('id', $task->task_id)
                     ->first();
-                $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
-                    ->where('old_stage', $task->old_stage)
-                    ->where('worker', $task->worker)
+                $his = HistoryMoveTask::query()->where('task_id', 97)
+                    ->where('old_stage', 3)
+                    ->where('worker', 2)
                     ->orderBy('id', 'desc')
                     ->first();
                 $acc = Account::query()->where('id', $task->worker)->first();
@@ -102,8 +102,8 @@ class ScheduleWorkController extends Controller
                 $task->avatar = $acc->avatar;
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
-                if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired === null)) {
-                  if (Carbon::parse($his->started_at)->isSameDay($date)) {
+                if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired_at === null)) {
+                  if (Carbon::parse($his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
                       $d = 'completed';
                   }else {
                       $d = 'in_progress';
