@@ -12,7 +12,8 @@ class ProposeController extends Controller
     {
         $proposes = Propose::all();
         foreach ($proposes as $propose) {
-            $propose['account_name'] = $propose->account->full_name;
+            $propose['full_name'] = $propose->account->full_name;
+            $propose['avatar'] = $propose->account->avatar;
             unset($propose['account']);
             unset($propose['account_id']);
         }

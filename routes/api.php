@@ -64,7 +64,7 @@ Route::middleware(['check.login'])->group(function () {
 
     // Điểm danh
     Route::get('/attendances', [AttendanceController::class, 'index']);
-    Route::post('/check-in', [AttendanceController::class, 'checkIn']);
+    Route::post('/check-in', [AttendanceController::class, 'newCheckIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
 
     // Thời gian của nhiệm vụ trong từng giai đoạn

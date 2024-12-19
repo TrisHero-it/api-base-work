@@ -7,7 +7,7 @@ use App\Models\Account;
 use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use IPTools\IP;
 
 class AttendanceController extends Controller
 {
@@ -113,5 +113,14 @@ class AttendanceController extends Controller
                 ]);
             }
         }
+    }
+
+    public function newCheckIn(Request $request)
+    {
+        $userIp = $request->ip(); // Lấy địa chỉ IP của người dùng
+        $allowedIpRange = '192.168.1.0/24'; // Dải IP của mạng LAN nhà bạn
+
+        return $userIp;
+
     }
 }
