@@ -6,13 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendEmail;
 use App\Models\Account;
 use App\Models\Propose;
+use App\Models\ProposeCategory;
 use Illuminate\Http\Request;
 
 class ProposeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $proposes = Propose::query()->orderBy('created_at', 'desc')->get();
+        $proposes = Propose::query()->orderBy('created_at', 'desc');
+        if (isset($request->status)) {
+            $proposes = $proposes->where('status', $request->status);
+        }
+
+        $proposes = $proposes->get();
+
         foreach ($proposes as $propose) {
             $propose['full_name'] = $propose->account->full_name;
             $propose['avatar'] = $propose->account->avatar;
@@ -32,14 +39,17 @@ class ProposeController extends Controller
         $a = explode(' ', $a);
         $a = Account::query()->where('remember_token', $a[1])->first();
         $data['account_id'] = $a->id;
-        $propose = Propose::query()->create($data);
         $accounts = Account::query()->where('role_id', 2)->get();
+        $category = ProposeCategory::query()->where('id', $data['propose_category_id'])->first();
+        $name = $category == null ? 'Tuỳ chọn' : $category->name;
         foreach ($accounts as $account) {
             SendEmail::dispatch([
-                'email' => $accounts->email,
-                'body' => "<a href='https://work.1997.pro.vn/request'> Có 1 dề xuất mới từ <strong>$a->full_name</strong> </a>"
+                'email' => $account->email,
+                'body' => "<a style='color: #1F1F1F; text-decoration: none' href='https://work.1997.pro.vn/request'> Có 1 dề xuất mới từ <strong>$a->full_name</strong> ở mục <strong>$name</strong></strong></a>"
             ]);
         }
+        $propose = Propose::query()->create($data);
+
         return response()->json($propose);
     }
 

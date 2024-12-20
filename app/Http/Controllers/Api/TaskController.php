@@ -8,6 +8,8 @@ use App\Events\NotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskStoreRequest;
 use App\Models\Account;
+use App\Models\AccountWorkflow;
+use App\Models\AccountWorkflowCategory;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
 use App\Models\Notification;
@@ -33,13 +35,32 @@ class TaskController extends Controller
 
     public function store(TaskStoreRequest $request)
     {
+            $a = $request->header('authorization');
+            $a = explode(' ', $a);
+            $a = $a[1];
+            $a = Account::query()->where('remember_token', $a)->firstOrFail();
             $account = Account::query()->where('id', $request->account_id)->first() ?? null;
             $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();
+            $members = AccountWorkflow::query()->where('workflow_id', $request->workflow_id)->get();
+            if (!$a->isSeniorAdmin()) {
+                $flag = 0;
+                foreach ($members as $member) {
+                    if ($member->account_id == $a->id) {
+                        $flag = 1;
+                    }
+                }
+                if ($flag == 0) {
+                    return response()->json([
+                        'errors' => 'Bạn không phải là thành viên của workflow này'
+                    ], 403);
+                }
+            }
             if ($stage->isSuccessStage()) {
                 return response()->json([
                     'errors' => 'Chưa có giai đoạn'
                 ], 500);
             }
+
             $task = Task::query()->create([
                 'code' => rand(100000000, 99999999999),
                 'name' => $request->name,
@@ -58,6 +79,7 @@ class TaskController extends Controller
                 }
             }
             $task['id'] = $task->code;
+
             return response()->json($task);
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\WorkflowCategoryStoreRequest;
 use App\Http\Requests\WorkflowStoreRequest;
 use App\Models\Account;
+use App\Models\AccountWorkflow;
 use App\Models\AccountWorkflowCategory;
 use App\Models\Department;
 use App\Models\Workflow;
@@ -50,6 +51,25 @@ class WorkflowCategoryController extends Controller
     }
 
     public function update(int $id, Request $request) {
+        $a = $request->header('authorization');
+        $a = explode(' ', $a);
+        $a = $a[1];
+        $a = Account::query()->where('remember_token', $a)->firstOrFail();
+        $members2 = AccountWorkflow::query()->where('workflow_id', $request->workflow_id)->get();
+        if (!$a->isSeniorAdmin()) {
+            $flag = 0;
+            foreach ($members2 as $member) {
+                if ($member->account_id == $a->id) {
+                    $flag = 1;
+                }
+            }
+            if ($flag == 0) {
+                return response()->json([
+                    'errors' => 'Bạn không phải là thành viên của workflow này'
+                ], 403);
+            }
+        }
+
         $category = WorkflowCategory::query()->findOrFail($id);
         $category->update($request->all());
         if (isset($request->members)) {
