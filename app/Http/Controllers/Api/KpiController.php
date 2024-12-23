@@ -51,7 +51,6 @@ class KpiController extends Controller
                                 ->where('status', 0)
                                 ->where('task_id', $task->id)
                                 ->first();
-                            $task = $task;
                             if ($kpi != null) {
                                 $kpi['failed'] = false;
                                 $kpi['created_at'] = $task->value('created_at');
