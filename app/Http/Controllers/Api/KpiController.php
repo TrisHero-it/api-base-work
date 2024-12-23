@@ -28,6 +28,7 @@ class KpiController extends Controller
             ->where('index', '!=', '0')
             ->orderBy('index', 'desc')
             ->get();
+        dd($stages);
         $accounts = AccountWorkflow::query()
             ->select('id', 'account_id')
             ->where('workflow_id', $request->workflow_id)
