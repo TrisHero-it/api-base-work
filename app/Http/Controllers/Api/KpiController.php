@@ -37,9 +37,9 @@ class KpiController extends Controller
                 foreach ($stages as $stage) {
                     if (isset($request->tag_id)) {
                         $arrTag = explode(',', $request->tag_id);
-                        $tasks = Task::whereHas('tags', function($query) use ($arrTag) {
+                        $tasks = Task::query()->whereHas('tags', function($query) use ($arrTag) {
                             $query->whereIn('stickers.id', $arrTag);
-                        })->get();
+                        })->toRawSql();
                         return response()->json($tasks);
                         $arrStage = [];
                         $arrFailedStage = [];
