@@ -28,7 +28,6 @@ class KpiController extends Controller
             ->where('index', '!=', '0')
             ->orderBy('index', 'desc')
             ->get();
-        dd($stages);
         $accounts = AccountWorkflow::query()
             ->select('id', 'account_id')
             ->where('workflow_id', $request->workflow_id)
@@ -41,6 +40,7 @@ class KpiController extends Controller
                         $tasks = Task::whereHas('tags', function($query) use ($arrTag) {
                             $query->whereIn('stickers.id', $arrTag);
                         })->get();
+                        return response()->json($tasks);
                         $arrStage = [];
                         $arrFailedStage = [];
                         foreach ($tasks as $task) {
