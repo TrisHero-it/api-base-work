@@ -36,11 +36,10 @@ class KpiController extends Controller
                 $account['Người thực thi'] = Account::query()->where('id', $account->account_id)->value('full_name');
                 foreach ($stages as $stage) {
                     if (isset($request->tag_id)) {
-                        $arrTag = explode(',', $request->tag_id);
+                        $arrTag = $request->tag_id;
                         $tasks = Task::query()->whereHas('tags', function($query) use ($arrTag) {
                             $query->whereIn('stickers.id', $arrTag);
-                        })->toRawSql();
-                        return response()->json($tasks);
+                        })->get();
                         $arrStage = [];
                         $arrFailedStage = [];
                         foreach ($tasks as $task) {
@@ -84,6 +83,7 @@ class KpiController extends Controller
                             ->where('status', 0)
                             ->get();
                         foreach ($kpis as $kpi) {
+                            $task = Task::query()->where('id', $kpi->task_id);
                             $kpi['failed'] = false;
                             $kpi['task_name'] = $task->value('name');
                             $kpi['stage'] = $task->first()->stage ? Task::query()
