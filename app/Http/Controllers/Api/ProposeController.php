@@ -45,7 +45,9 @@ class ProposeController extends Controller
         foreach ($accounts as $account) {
             SendEmail::dispatch([
                 'email' => $account->email,
-                'body' => "<a style='color: #1F1F1F; text-decoration: none' href='https://work.1997.pro.vn/request'> Có 1 dề xuất mới từ <strong>$a->full_name</strong> ở mục <strong>$name</strong></strong></a>"
+                'body' => "<p style='font-size: 20px'> Có 1 đề xuất mới từ <strong>$a->full_name</strong> ở mục <strong>$name</strong></strong> <br>
+                           Xem chi tiết tại <a href='https://work.1997.pro.vn/request'>Đây</a>
+                           </p>"
             ]);
         }
         $propose = Propose::query()->create($data);
@@ -55,6 +57,14 @@ class ProposeController extends Controller
 
     public function update(int $id, Request $request)
     {
+        $a = explode(' ', $request->header('authorization'));
+        $a = Account::query()->where('remember_token', $a[1])->first();
+        if (!$a->isSeniorAdmin()){
+            return response()->json([
+                'message'=> 'Bạn không có quyền thao tác',
+                'errors' => 'Bạn không có quyền thao tác'
+            ], 403);
+        }
         $propose = Propose::query()->findOrFail($id);
         $propose->update($request->all());
 

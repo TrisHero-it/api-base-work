@@ -51,12 +51,13 @@ class KpiController extends Controller
                                 ->where('status', 0)
                                 ->where('task_id', $task->id)
                                 ->first();
+                            $task = $task;
                             if ($kpi != null) {
                                 $kpi['failed'] = false;
-                                $kpi['created_at'] = Task::query()->where('id', $kpi->task_id)->value('created_at');
-                                $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage->name;
-                                $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
-                                $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
+                                $kpi['created_at'] = $task->value('created_at');
+                                $kpi['stage'] = $task->stage->name;
+                                $kpi['task_name'] = $task->value('name');
+                                $kpi['task_id'] = $task->value('code');
                                 $arrStage[] = $kpi;
                             }
                             $failedKpi = Kpi::query()
@@ -70,9 +71,7 @@ class KpiController extends Controller
                             if ($failedKpi != null) {
                                 $failedKpi['failed'] = false;
                                 $failedKpi['task_name'] = Task::query()->where('id', $failedKpi->task_id)->value('name');
-                                $failedKpi['task_id'] = Task::query()->where('id', $failedKpi->task_id)->value('code');
                                 $arrFailedStage[] = $failedKpi;
-
                             }
                         };
                         $account[$stage->name] =array_merge($arrStage, $arrFailedStage);
@@ -86,11 +85,11 @@ class KpiController extends Controller
                             ->get();
                         foreach ($kpis as $kpi) {
                             $kpi['failed'] = false;
-                            $kpi['task_name'] = Task::query()->where('id', $kpi->task_id)->value('name');
-                            $kpi['stage'] = Task::query()->where('id', $kpi->task_id)->first()->stage ? Task::query()
+                            $kpi['task_name'] = $task->value('name');
+                            $kpi['stage'] = $task->first()->stage ? Task::query()
                                 ->where('id', $kpi->task_id)
                                 ->first()->stage->name : null ;
-                            $kpi['task_id'] = Task::query()->where('id', $kpi->task_id)->value('code');
+                            $kpi['task_id'] = $task->value('code');
                         }
                         $kpis = $kpis->toArray();
                         $failedKpis = Kpi::query()
