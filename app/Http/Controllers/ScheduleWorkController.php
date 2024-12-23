@@ -44,8 +44,16 @@ class ScheduleWorkController extends Controller
                 })
                 ->orderBy('expired_at');
             $a = $a->get();
+            return $a;
+            $arrTest = [];
+            foreach ($a as $task) {
+                $arrTest[] = $task->id;
+            }
+            return $arrTest;
+            $c = Task::whereIn('id', [1 , 2 , 3 ,4 , 5, 6,7,8])->toRawSql();
+            return $c;
             if (!empty($a)) {
-                foreach ($a as $task) {
+                foreach ($a as $key => $task) {
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
                     if ($task->stage_id != null) {

@@ -36,7 +36,7 @@ class KpiController extends Controller
                 $account['Người thực thi'] = Account::query()->where('id', $account->account_id)->value('full_name');
                 foreach ($stages as $stage) {
                     if (isset($request->tag_id)) {
-                        $arrTag = $request->tag_id;
+                        $arrTag = explode(',', $request->tag_id);
                         $tasks = Task::query()->whereHas('tags', function($query) use ($arrTag) {
                             $query->whereIn('stickers.id', $arrTag);
                         })->get();
