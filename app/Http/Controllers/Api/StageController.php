@@ -47,10 +47,6 @@ class StageController extends Controller
                     $task['sticker'] = $stickers;
                 }
            }
-            foreach ($tasks as $task) {
-//   thay id bằng mã code của nhiệm vụ khi trả cho client
-                $task['id'] = $task->code;
-            }
 //   Hiển thị danh sách nhiệm vụ của stages
             $stage['tasks'] = $tasks;
         }

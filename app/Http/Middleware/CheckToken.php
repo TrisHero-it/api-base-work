@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Account;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class   CheckToken
@@ -29,8 +30,9 @@ class   CheckToken
             ]);
         }
         $token = $token[1];
-        $accounts = Account::query()->where('remember_token', $token)->first();
-        if (isset($accounts)) {
+        $account = Account::query()->where('remember_token', $token)->first();
+        Auth::login($account);
+        if (Auth::check()) {
             return $next($request);
         }else {
             return response()->json([

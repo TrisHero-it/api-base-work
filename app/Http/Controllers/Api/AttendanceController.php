@@ -7,13 +7,13 @@ use App\Models\Account;
 use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use IPTools\IP;
 
 class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $a = explode(' ', $request->header('Authorization'));
         $attendance = Attendance::query();
         //  Loc theo ngày
         if (isset($request->start) && isset($request->end)) {
@@ -46,7 +46,7 @@ class AttendanceController extends Controller
         }
 
         if (isset($request->me)) {
-            $account = Account::query()->where('remember_token', $a[1])->first();
+            $account = Auth::user();
             $attendance = Attendance::query()->where('account_id', $account->id)->whereDate('checkin', Carbon::today())->orderBy('id')->first();
         }
 
@@ -55,12 +55,9 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        $isToday = false;
-        $token = $request->header('Authorization');
-        $token = explode(' ', $token)[1];
-        $a = Account::query()->where('remember_token', $token)->first();
-        if (isset($a)) {
-            $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
+
+        if (Auth::check()) {
+            $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         }
        if (isset($account)) {
            if ($account->checkin != null) {
@@ -74,7 +71,7 @@ class AttendanceController extends Controller
         } else {
             Attendance::query()
                 ->create([
-                    'account_id' => $a->id,
+                    'account_id' => Auth::id(),
                     'checkin' => now()
                 ]);
 
@@ -88,10 +85,7 @@ class AttendanceController extends Controller
     public function checkOut(Request $request)
     {
         $isToday = false;
-        $token = $request->header('Authorization');
-        $token = explode(' ', $token)[1];
-        $a = Account::query()->where('remember_token', $token)->first();
-        $account = Attendance::where('account_id', $a->id)->orderBy('id', 'desc')->first();
+        $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();
         if ($isToday == false) {
             return response()->json([
@@ -113,14 +107,5 @@ class AttendanceController extends Controller
                 ]);
             }
         }
-    }
-
-    public function newCheckIn(Request $request)
-    {
-        $userIp = $request->ip(); // Lấy địa chỉ IP của người dùng
-        $allowedIpRange = '192.168.1.0/24'; // Dải IP của mạng LAN nhà bạn
-
-        return $userIp;
-
     }
 }

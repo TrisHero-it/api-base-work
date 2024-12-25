@@ -18,34 +18,35 @@ use App\Models\StickerTask;
 use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $tasks = Task::query()->where('stage_id', $request->stage_id)->orderBy('updated_at', 'desc')->get();
-        foreach ($tasks as $task) {
-              $task['id'] = $task->code;
-              $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
-        }
+        $tasks = Task::query()
+            ->with('tags')
+            ->latest('updated_at')
+            ->get();
 
         return response()->json($tasks);
     }
 
     public function store(TaskStoreRequest $request)
     {
-            $a = $request->header('authorization');
-            $a = explode(' ', $a);
-            $a = $a[1];
-            $a = Account::query()->where('remember_token', $a)->firstOrFail();
-            $account = Account::query()->where('id', $request->account_id)->first() ?? null;
-            $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();
-            $members = AccountWorkflow::query()->where('workflow_id', $request->workflow_id)->get();
-            if (!$a->isSeniorAdmin()) {
+            $account = Account::query()->find($request->account_id);
+            $stage = Stage::query()
+                ->where('workflow_id', $request->workflow_id)
+                ->orderByDesc('index')
+                ->first();
+            $members = AccountWorkflow::query()
+                ->where('workflow_id', $request->workflow_id)
+                ->get();
+            if (!Auth::user()->isSeniorAdmin()) {
                 $flag = 0;
                 foreach ($members as $member) {
-                    if ($member->account_id == $a->id) {
+                    if ($member->account_id == Auth::id()) {
                         $flag = 1;
                     }
                 }
@@ -62,7 +63,6 @@ class TaskController extends Controller
             }
 
             $task = Task::query()->create([
-                'code' => rand(100000000, 99999999999),
                 'name' => $request->name,
                 'description' => $request->description ?? null,
                 'account_id' => $account->id ?? null,
@@ -71,24 +71,23 @@ class TaskController extends Controller
             if (isset($account)) {
                 if (isset($stage->expired_after_hours)) {
                     $dateTime = Carbon::parse($request->created_at);
-                    $task = Task::query()->where('id', $task->id)->first() ?? null;
+                    $task = Task::query()
+                        ->where('id', $task->id)
+                        ->first() ?? null;
                     $task->update([
                         'expired' => $dateTime->addHour($stage->expired_after_hours),
                         'started_at' => $dateTime
                     ]);
                 }
             }
-            $task['id'] = $task->code;
 
             return response()->json($task);
     }
 
     public function update($id, TaskStoreRequest $request)
     {
-        $token = explode(' ', $request->header('Authorization'));
-        $token = $token[1];
-        $account = Account::query()->where('remember_token', $token)->first() ?? null;
-        $task = Task::query()->where('code' , $id)->first();
+        $account = Auth::user();
+        $task = Task::query()->find($id);
 
         if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
             return response()->json([
@@ -279,7 +278,7 @@ class TaskController extends Controller
 
     public function show(int $id)
     {
-        $task = Task::query()->where('code', $id)->first();
+        $task = Task::query()->findOrFail($id);
         $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
 
         return response()->json($task);
@@ -288,7 +287,7 @@ class TaskController extends Controller
     public function destroy($id)
     {
         try {
-            $task = Task::query()->where('code', $id)->first();
+            $task = Task::query()->findOrFail($id);
             $task->delete();
             return response()->json([
                 'success' => 'Xoá thành công'

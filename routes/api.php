@@ -16,6 +16,14 @@ use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\WorkflowCategoryController;
 use App\Http\Controllers\Api\WorkflowController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\StickerController;
+use App\Http\Controllers\Api\TagValueController;
+use App\Http\Controllers\Api\MyJobController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\ProposeController;
+use App\Http\Controllers\Api\ProposeCategoryController;
+use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,7 +45,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
 
     Route::apiResources([
-        'roles' => \App\Http\Controllers\Api\RoleController::class,
+        'roles' => RoleController::class,
         'images' => ImageController::class,
         'notifications' => NotificationController::class,
         'workflows' => WorkflowController::class,
@@ -51,13 +59,13 @@ Route::middleware(['check.login'])->group(function () {
         'report-fields' => ReportFieldController::class,
         'report-field-values' => ReportFieldValueController::class,
         'kpis' => KpiController::class,
-        'tags'=> \App\Http\Controllers\Api\StickerController::class,
-        'tag-task' => \App\Http\Controllers\Api\TagValueController::class,
-        'schedule' => \App\Http\Controllers\ScheduleWorkController::class,
-        'my-tasks' => \App\Http\Controllers\Api\MyJobController::class,
-        'departments' => \App\Http\Controllers\Api\DepartmentController::class,
-        'proposes' => \App\Http\Controllers\Api\ProposeController::class,
-        'propose-categories' => \App\Http\Controllers\Api\ProposeCategoryController::class,
+        'tags'=> StickerController::class,
+        'tag-task' => TagValueController::class,
+        'schedule' => ScheduleWorkController::class,
+        'my-tasks' => MyJobController::class,
+        'departments' => DepartmentController::class,
+        'proposes' => ProposeController::class,
+        'propose-categories' => ProposeCategoryController::class,
     ]);
 
     // Nhãn dán

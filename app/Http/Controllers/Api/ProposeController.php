@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProposeController extends Controller
 {
@@ -34,10 +35,7 @@ class ProposeController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $a = $request->header('authorization');
-        $a = explode(' ', $a);
-        $a = Account::query()->where('remember_token', $a[1])->first();
+        $a = Auth::user();
         $data['account_id'] = $a->id;
         $accounts = Account::query()->where('role_id', 2)->get();
         $category = ProposeCategory::query()->where('id', $data['propose_category_id'])->first();
@@ -57,9 +55,7 @@ class ProposeController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $a = explode(' ', $request->header('authorization'));
-        $a = Account::query()->where('remember_token', $a[1])->first();
-        if (!$a->isSeniorAdmin()){
+        if (!Auth::user()->isSeniorAdmin()){
             return response()->json([
                 'message'=> 'Bạn không có quyền thao tác',
                 'errors' => 'Bạn không có quyền thao tác'

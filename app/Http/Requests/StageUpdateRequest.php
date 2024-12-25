@@ -26,6 +26,7 @@ class StageUpdateRequest extends FormRequest
         return [
             'name' => 'string',
             'workflow_id'=> 'nullable|integer|exists:workflows,id',
+            'description'=> 'nullable|string',
             'expired_after_hours' => 'nullable|integer|between:1,60',
         ];
     }

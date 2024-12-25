@@ -13,26 +13,34 @@ class HistoryMoveTaskController extends Controller
 {
     public function index(Request $request)
     {
-        $task = Task::query()->where('code', $request->task_id)->first();
-        if ($task == null) {
-            return response()->json([
-                'error' => 'Sai mã code nhiệm vụ'
-            ]);
-        }
+        $task = Task::query()->findOrFail($request->task_id);
         $histories = HistoryMoveTask::query()->where('task_id', $task->id)->orderBy('id', 'desc')->get();
-        if (isset($request->stage_id)) {
-            $a = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->where('worker', '!=', null)->orderBy('id', 'desc')->first();
-            return response()->json($a);
-        }
+        $arrAccountId = $histories->pluck('account_id');
+        $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
+        $arrOldStage = $histories->pluck('old_stage');
+        $stages1 = Stage::query()->whereIn('id', $arrOldStage)->get();
+        $arrNewStage = $histories->pluck('new_stage');
+        $stages2 = Stage::query()->whereIn('id', $arrNewStage)->get();
         foreach ($histories as $history) {
+            foreach ($accounts as $account) {
+                if ($account->id == $history->account_id) {
+                    $name = $account->full_name;
+                }
+            }
+            $history['full_name'] = $name;  
+            foreach ($stages1 as $stage) {
+                if ($stage->id == $history->old_stage) {
+                    $stageT = $stage;
+                    $history['name_old_stage'] = $stageT->name;
+                }
+            }
 
-            $name = Account::query()->where('id', $history->account_id)->first();
-            $name = $name->full_name;
-            $history['full_name'] = $name;
-            $stage = Stage::query()->find($history->old_stage);
-            $history['name_old_stage'] = $stage->name;
-            $stage = Stage::query()->find($history->new_stage);
-            $history['name_new_stage'] = $stage->name;
+            foreach ($stages2 as $stage) {
+                if ($stage->id == $history->new_stage) {
+                    $stageT = $stage;
+                    $history['name_new_stage'] = $stageT->name;
+                }
+            }
         }
 
         return response()->json($histories);

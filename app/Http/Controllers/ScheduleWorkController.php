@@ -10,24 +10,22 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ScheduleWorkController extends Controller
+class   ScheduleWorkController extends Controller
 {
     public function index(Request $request)
     {
         // Tuần này
         if (isset($request->end)) {
-            $startOfLastWeek = Carbon::parse($request->start)->toDateString();
-            $endOfThisWeek = Carbon::parse($request->end)->toDateString();
+            $startDate = Carbon::parse($request->start);
+            $endDate = Carbon::parse($request->end);
         }else {
-            $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
-            $startOfLastWeek = Carbon::now()->startOfWeek()->toDateString();
+            $endDate = Carbon::now()->endOfWeek();
+            $startDate = Carbon::now()->startOfWeek();
         }
-        $startDate = Carbon::parse($startOfLastWeek);
-        $endDate = Carbon::parse($endOfThisWeek);
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'code', 'completed_at')->where('account_id', '!=', null);
+            $a = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')->where('account_id', '!=', null);
             $a->whereDate('started_at', '<=', $date)
                 ->where(function ($query) use ($date) {
                     $query->where(function ($subQuery) use ($date) {
@@ -77,16 +75,16 @@ class ScheduleWorkController extends Controller
             $b = DB::table('history_move_tasks')
                 ->select('task_id', 'old_stage', 'worker')
                 ->where('worker', '!=', null);
-                $b->whereDate('started_at' , '<=' , $date)
-                    ->whereDate('created_at' , '>=' , $date)
-                    ->where(function ($query) use ($date) {
-                        $query->whereDate('expired_at', '>=', $date)
-                            ->orWhereNull('expired_at');
-                    })
-                    ->groupBy('task_id', 'old_stage', 'worker');
+            $b->whereDate('started_at' , '<=' , $date)
+                ->whereDate('created_at' , '>=' , $date)
+                ->where(function ($query) use ($date) {
+                    $query->whereDate('expired_at', '>=', $date)
+                        ->orWhereNull('expired_at');
+                })
+                ->groupBy('task_id', 'old_stage', 'worker');
             $b = $b->get();
             foreach ($b as $task) {
-                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'code')
+                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at')
                     ->where('id', $task->task_id)
                     ->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
@@ -96,18 +94,17 @@ class ScheduleWorkController extends Controller
                     ->first();
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
-                $task->code = $c->code;
                 $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;
                 $task->account_name = $acc->full_name;
                 $task->avatar = $acc->avatar;
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
                 if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired_at === null)) {
-                  if (Carbon::parse($his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
-                      $d = 'completed';
-                  }else {
-                      $d = 'in_progress';
-                  }
+                    if (Carbon::parse($his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
+                        $d = 'completed';
+                    }else {
+                        $d = 'in_progress';
+                    }
                 } else {
                     $d = 'failed';
                 }

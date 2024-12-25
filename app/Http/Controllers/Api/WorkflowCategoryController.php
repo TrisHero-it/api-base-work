@@ -14,6 +14,7 @@ use App\Models\WorkflowCategory;
 use App\Models\WorkflowCategoryStage;
 use App\Models\WorkflowCategoryStageReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -51,15 +52,12 @@ class WorkflowCategoryController extends Controller
     }
 
     public function update(int $id, Request $request) {
-        $a = $request->header('authorization');
-        $a = explode(' ', $a);
-        $a = $a[1];
-        $a = Account::query()->where('remember_token', $a)->firstOrFail();
+
         $members2 = AccountWorkflow::query()->where('workflow_id', $request->workflow_id)->get();
-        if (!$a->isSeniorAdmin()) {
+        if (!Auth::user()->isSeniorAdmin()) {
             $flag = 0;
             foreach ($members2 as $member) {
-                if ($member->account_id == $a->id) {
+                if ($member->account_id == Auth::id()) {
                     $flag = 1;
                 }
             }

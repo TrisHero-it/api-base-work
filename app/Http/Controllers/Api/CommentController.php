@@ -10,6 +10,7 @@ use App\Models\AccountProfile;
 use App\Models\Comment;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
@@ -42,16 +43,12 @@ class CommentController extends Controller
             $data = $request->except('task_id', 'account_id');
             $convertedText = $this->convertLinksToAnchors($data['content']);
             $data['content'] = $convertedText;
-            $a = explode(' ', $request->header('Authorization'));
-            $token = $a[1];
-            $account = Account::query()->where('remember_token', $token)->first();
-            $data['account_id'] = $account->id;
+            $data['account_id'] = Auth::id();
             $task = Task::query()->where('code', $request->task_id)->first();
             $data['task_id'] = $task->id;
             $comment = Comment::query()->create($data);
 
             return response()->json($comment);
-
     }
 
     public function destroy(int $id)

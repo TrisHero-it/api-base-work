@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -74,9 +75,8 @@ class AccountController extends Controller
                 'error' => 'Bạn chưa đăng nhập'
             ]);
         }
-        $token = explode(' ', $token);
-        $token = $token[1];
-        $account = Account::query()->where('remember_token', $token)->first();
+
+        $account = Auth::user();
             if ($account->role_id == 1 ){
                 $account['role'] = 'Admin';
             }else if ($account->role_id == 2 ){

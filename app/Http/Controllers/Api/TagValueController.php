@@ -13,7 +13,7 @@ class TagValueController extends Controller
     public function store(Request $request) {
         if (isset($request->tag_id)) {
             $data = [];
-            $task_id = Task::query()->where('code', $request->task_id)->first()->id;
+            $task_id = Task::query()->findOrFail($request->task_id)->id;
             $data['sticker_id'] = $request->tag_id;
             $tag = [];
             foreach ($data['sticker_id'] as $tagId) {
@@ -29,7 +29,7 @@ class TagValueController extends Controller
 
     public function update(int $id, Request $request) {
         $arrTag = $request->tag_id;
-        $task = Task::query()->where('code', $id)->first();
+        $task = Task::query()->findOrFail($id);
         StickerTask::query()->where('task_id', $task->id)->delete();
         $tag = [];
         foreach ($arrTag as $tagId) {
