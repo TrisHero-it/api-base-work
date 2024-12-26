@@ -56,7 +56,7 @@ class KpiController extends Controller
                                 $kpi['created_at'] = $task->value('created_at');
                                 $kpi['stage'] = $task->stage->name;
                                 $kpi['task_name'] = $task->value('name');
-                                $kpi['task_id'] = $task->value('code');
+                                $kpi['task_id'] = $task->value('id');
                                 $arrStage[] = $kpi;
                             }
                             $failedKpi = Kpi::query()
@@ -89,7 +89,7 @@ class KpiController extends Controller
                             $kpi['stage'] = $task->first()->stage ? Task::query()
                                 ->where('id', $kpi->task_id)
                                 ->first()->stage->name : null ;
-                            $kpi['task_id'] = $task->value('code');
+                            $kpi['task_id'] = $task->value('id');
                         }
                         $kpis = $kpis->toArray();
                         $failedKpis = Kpi::query()
@@ -101,7 +101,7 @@ class KpiController extends Controller
                         foreach ($failedKpis as $failedKpi) {
                             $failedKpi['failed'] = false;
                             $failedKpi['task_name'] = Task::query()->where('id', $failedKpi->task_id)->value('name');
-                            $failedKpi['task_id'] = Task::query()->where('id', $failedKpi->task_id)->value('code');
+                            $failedKpi['task_id'] = Task::query()->where('id', $failedKpi->task_id)->value('id');
                         }
                         $failedKpis = $failedKpis->toArray();
                         $account[$stage->name] = array_merge($kpis, $failedKpis);

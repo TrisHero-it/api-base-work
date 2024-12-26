@@ -35,7 +35,7 @@ class ReportFieldController extends Controller
             if (isset($request->task_id)) {
                 $reports = Field::query()->where('model', 'report-field')->where('workflow_id', $request->workflow_id)->where('stage_id', $request->stage_id)->get();
                 foreach ($reports as $report) {
-                    $task = Task::query()->where('code', $request->task_id)->first();
+                    $task = Task::query()->findOrFail($request->task_id);
                     $a = FieldTask::query()->select('value')->where('fields_id', $report->id)->where('task_id', $task->id)->first();
                     if (isset($a)) {
                         $report['value'] = $a->value;

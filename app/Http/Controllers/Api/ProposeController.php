@@ -14,17 +14,17 @@ class ProposeController extends Controller
 {
     public function index(Request $request)
     {
-        $proposes = Propose::query()->orderBy('created_at', 'desc');
+        $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category']);
         if (isset($request->status)) {
             $proposes = $proposes->where('status', $request->status);
         }
 
         $proposes = $proposes->get();
-
         foreach ($proposes as $propose) {
+
             $propose['full_name'] = $propose->account->full_name;
             $propose['avatar'] = $propose->account->avatar;
-            $propose['category_name'] = $propose->propose_category== null ? 'Tuỳ chỉnh' : $propose->propose_category->name; ;
+            $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name; ;
             unset($propose['account']);
             unset($propose['propose_category']);
             unset($propose['account_id']);

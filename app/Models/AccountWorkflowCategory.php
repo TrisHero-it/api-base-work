@@ -16,6 +16,12 @@ class AccountWorkflowCategory extends Model
     ];
 
     public function account() {
+
         return $this->belongsTo(Account::class);
+    }
+
+    public function department() {
+
+        return $this->belongsTo(Department::class);
     }
 }

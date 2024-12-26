@@ -88,6 +88,17 @@ class TaskController extends Controller
     {
         $account = Auth::user();
         $task = Task::query()->find($id);
+        if (isset($request->tag_id)) {
+            $arrTag = $request->tag_id;
+            StickerTask::query()->where('task_id', $task->id)->delete();
+            $tag = [];
+            foreach ($arrTag as $tagId) {
+                $tag[] = StickerTask::query()->create([
+                    'task_id' => $task->id,
+                    'sticker_id' => $tagId
+                ]);
+            }
+        }
 
         if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
             return response()->json([
@@ -270,8 +281,10 @@ class TaskController extends Controller
                }
             };
         }
-
         $task->update($data);
+        if (isset($tag)) {
+            $task['tag'] = $tag;
+        }
 
         return $task;
     }

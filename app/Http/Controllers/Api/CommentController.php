@@ -16,7 +16,7 @@ class CommentController extends Controller
 {
     public function index(Request $request)
     {
-        $task = Task::query()->where('code', $request->task_id)->first();
+        $task = Task::query()->findOrFail($request->task_id);
 
         $comments = Comment::query()->where('task_id', $task->id)->where('comment_id', null)->orderByDesc('id')->get();
         foreach ($comments as $comment) {
@@ -44,7 +44,7 @@ class CommentController extends Controller
             $convertedText = $this->convertLinksToAnchors($data['content']);
             $data['content'] = $convertedText;
             $data['account_id'] = Auth::id();
-            $task = Task::query()->where('code', $request->task_id)->first();
+            $task = Task::query()->findOrFail($request->task_id);
             $data['task_id'] = $task->id;
             $comment = Comment::query()->create($data);
 

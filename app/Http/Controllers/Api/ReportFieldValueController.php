@@ -17,7 +17,7 @@ class ReportFieldValueController extends Controller
 
     public function store(Request $request)
     {
-            $task = Task::query()->where('code', $request->task_id)->first();
+            $task = Task::query()->findOrFail($request->task_id);
             if ($task == null) {
                 return response()->json([
                     'error' => 'Không tìm thấy nhiệm vụ'
@@ -122,7 +122,7 @@ class ReportFieldValueController extends Controller
     }
 
     public function show(int $id) {
-        $task = Task::query()->where('code', $id)->first();
+        $task = Task::query()->findOrFail($id);
         $stages = Stage::query()->select('id', 'name')->where('workflow_id', $task->stage->workflow_id)->where('index', '!=', 0)->where('index', '!=', 1 )->orderBy('index', 'asc')->get();
         foreach ($stages as $stage) {
             $a = [];

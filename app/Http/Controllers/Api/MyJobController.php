@@ -11,7 +11,7 @@ class MyJobController extends Controller
 {
     public function index(Request $request)
     {
-        $tasks = Task::query();
+        $tasks = Task::query()->with(['stage', 'account']);
         if (isset($request->account_id)) {
             $tasks = $tasks->where('account_id', $request->account_id)->where('completed_at', null);
         } else {
@@ -36,7 +36,6 @@ class MyJobController extends Controller
     {
         $data = $request->except('stage_id', 'expired');
         $data['expired'] = new \DateTime($request->expired_at);
-        $data['code'] =  rand(100000000, 99999999999);
         $data['started_at'] = now();
         $task = Task::query()->create($data);
 
