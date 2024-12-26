@@ -16,7 +16,6 @@ class StageController extends Controller
 {
     public function index(Request $request)
     {
-
         // Tuần này
         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
         // Tuần trước
@@ -24,16 +23,15 @@ class StageController extends Controller
 
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->with('tasks')->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
-           if ($stage->isSuccessStage()) {
-               $tasks = Task::query()
-                   ->where('stage_id', $stage['id'])
-                   ->orderBy('completed_at', 'desc')
-                   ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
-                   ->get();
-               $stage['tasks'] = $tasks;
-           }
+            if ($stage->isSuccessStage()) {
+                $tasks = Task::query()
+                    ->where('stage_id', $stage['id'])
+                    ->orderBy('completed_at', 'desc')
+                    ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
+                    ->get();
+                $stage['tasks'] = $tasks;
+            }
         }
-
         return response()->json($stages);
     }
 

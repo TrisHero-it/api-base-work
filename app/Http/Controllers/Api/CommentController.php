@@ -44,8 +44,7 @@ class CommentController extends Controller
             $convertedText = $this->convertLinksToAnchors($data['content']);
             $data['content'] = $convertedText;
             $data['account_id'] = Auth::id();
-            $task = Task::query()->findOrFail($request->task_id);
-            $data['task_id'] = $task->id;
+            $data['task_id'] = $request->task_id;
             $comment = Comment::query()->create($data);
 
             return response()->json($comment);
