@@ -49,6 +49,24 @@ class WorkflowCategoryController extends Controller
             $abc[] = $arr;
         }
         return response()->json($abc);
+
+//        Bản mới
+//        $categories = WorkflowCategory::query()->with('workflows')->get();
+//        $arrCategoryId = $categories->pluck('id');
+//        $members =  AccountWorkflowCategory::query()->where('workflow_category_id', $arrCategoryId)->with(['account', 'department'])->get();
+//        foreach ($categories as $category) {
+//            $arrMembers = [];
+//            foreach ($members as $member) {
+//                if (isset($member->account_id)) {
+//                    $arrMembers[]  = $member->account;
+//                }else {
+//                    $arrMembers[]  = $member->department;
+//                }
+//            }
+//            $category['members'] = $arrMembers;
+//        }
+//
+//        return response()->json($categories);
     }
 
     public function update(int $id, Request $request) {

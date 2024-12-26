@@ -22,7 +22,7 @@ class StageController extends Controller
         // Tuần trước
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
 
-        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->with('tasks')->orderBy('index', 'desc')->get();
+        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         foreach ($stages as $stage) {
            if ($stage->isSuccessStage()) {
                $tasks = Task::query()
@@ -30,8 +30,25 @@ class StageController extends Controller
                    ->orderBy('completed_at', 'desc')
                    ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
                    ->get();
-               $stage['tasks'] = $tasks;
+               foreach ($tasks as $task) {
+                   $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
+                   foreach ($stickers as $sticker) {
+                       $sticker['name'] = $sticker->sticker->title;
+                   }
+                   $task['sticker'] = $stickers;
+               }
+           }else {
+                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
+                foreach ($tasks as $task) {
+                   $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
+                    foreach ($stickers as $sticker) {
+                        $sticker['name'] = $sticker->sticker->title;
+                    }
+                    $task['sticker'] = $stickers;
+                }
            }
+//   Hiển thị danh sách nhiệm vụ của stages
+            $stage['tasks'] = $tasks;
         }
 
         return response()->json($stages);

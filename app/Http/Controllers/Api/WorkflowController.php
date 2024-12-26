@@ -42,7 +42,6 @@ class WorkflowController extends Controller
         }
 
         $workflows = $query->get()->toArray();
-
             foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
