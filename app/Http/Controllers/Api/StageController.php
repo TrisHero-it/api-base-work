@@ -22,33 +22,20 @@ class StageController extends Controller
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
 
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
+        $arrStageId = $stages->pluck('id');
+
+        $tasks2 =  Task::query()->whereIn('stage_id', $arrStageId)->with('tags')->latest('updated_at')->get();
         foreach ($stages as $stage) {
            if ($stage->isSuccessStage()) {
-               $tasks = Task::query()
-                   ->where('stage_id', $stage['id'])
-                   ->orderBy('completed_at', 'desc')
-                   ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
-                   ->get();
-               foreach ($tasks as $task) {
-                   $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
-                   foreach ($stickers as $sticker) {
-                       $sticker['name'] = $sticker->sticker->title;
-                   }
-                   $task['sticker'] = $stickers;
-               }
+               $tasks = $tasks2->where('stage_id', $stage->id)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
            }else {
-                $tasks = Task::query()->where('stage_id', $stage['id'])->orderBy('updated_at', 'desc')->get();
-                foreach ($tasks as $task) {
-                   $stickers = StickerTask::query()->select('sticker_id')->where('task_id', $task->id)->get();
-                    foreach ($stickers as $sticker) {
-                        $sticker['name'] = $sticker->sticker->title;
-                    }
-                    $task['sticker'] = $stickers;
-                }
+               $tasks = $tasks2->where('stage_id', $stage->id);
            }
 //   Hiển thị danh sách nhiệm vụ của stages
+            $tasks = array_values($tasks->toArray());
             $stage['tasks'] = $tasks;
         }
+
         return response()->json($stages);
     }
 
