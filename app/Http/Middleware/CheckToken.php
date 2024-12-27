@@ -21,13 +21,13 @@ class   CheckToken
         if (empty($token)) {
             return response()->json([
                 'error' => 'Bạn chưa đăng nhập'
-            ]);
+            ], 403);
         }
         $token = explode(' ', $token);
         if ($token[0] !== 'Bearer') {
             return response()->json([
                 'error' => 'Sai loại token'
-            ]);
+            ], 403);
         }
         $token = $token[1];
         $account = Account::query()->where('remember_token', $token)->first();
@@ -37,7 +37,7 @@ class   CheckToken
         }else {
             return response()->json([
                 'error' => 'Bạn đang định hack web tôi à'
-            ]);
+            ], 403);
         }
     }
 }

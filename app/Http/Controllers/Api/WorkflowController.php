@@ -41,19 +41,23 @@ class WorkflowController extends Controller
             });
         }
 
-        $workflows = $query->get()->toArray();
+        $workflows = $query->get();
+        $arrWorkflowId = $workflows->pluck('id');
+        $stagesCompletedAndFailed = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->whereIn('index', [0 , 1])->get();
+        $arrIdFailedAndIdCompleted = $stagesCompletedAndFailed->pluck('id');
+        $tasks = Task::query()->whereIn('id', $arrIdFailedAndIdCompleted)->get();
             foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
-            $stageFailed = Stage::query()->where('workflow_id', $workflow['id'])->where('index', 0)->first();
+            $stageFailed = Stage::query()->where('workflow_id', $workflow->id)->where('index', 0)->first();
             if (isset($stageFailed)) {
                 $countTaskFailed = Task::query()->where('stage_id', $stageFailed->id)->count();
             }
-            $stageCompleted = Stage::query()->where('workflow_id', $workflow['id'])->where('index', 1)->first();
+            $stageCompleted = Stage::query()->where('workflow_id', $workflow->id)->where('index', 1)->first();
             if (isset($stageCompleted)) {
                 $countTaskSuccess = Task::query()->where('stage_id', $stageCompleted->id)->count();
             }
-            $stages = Stage::query()->where('workflow_id', $workflow['id'])->get()->toArray();
+            $stages = Stage::query()->where('workflow_id', $workflow->id)->get()->toArray();
             $totalTask = 0;
             foreach ($stages as $row) {
                 $countTask = Task::query()->where('stage_id', $row['id'])->count();

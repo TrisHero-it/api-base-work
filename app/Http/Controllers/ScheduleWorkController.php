@@ -84,7 +84,7 @@ class   ScheduleWorkController extends Controller
                 ->groupBy('task_id', 'old_stage', 'worker');
             $b = $b->get();
             foreach ($b as $task) {
-                $c = Task::query()->select('name as name_task', 'account_id', 'started_at', 'expired as expired_at')
+                $c = Task::query()->select('id','name as name_task', 'account_id', 'started_at', 'expired as expired_at')
                     ->where('id', $task->task_id)
                     ->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
@@ -94,6 +94,7 @@ class   ScheduleWorkController extends Controller
                     ->first();
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
+                $task->task_id = $c->id;
                 $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;
                 $task->account_name = $acc->full_name;
                 $task->avatar = $acc->avatar;
