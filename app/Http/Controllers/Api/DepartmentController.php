@@ -20,9 +20,9 @@ class DepartmentController extends Controller
         foreach ($departments as $department) {
             $accounts2 = $accounts->where('department_id', $department->id);
             $members2 = $members->whereIn('id', $accounts2->pluck('account_id'));
+            $members2 = array_values($members2->toArray());
             $department['members'] = $members2;
         }
-
         return response()->json($departments);
     }
 
