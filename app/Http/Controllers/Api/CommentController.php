@@ -45,7 +45,6 @@ class CommentController extends Controller
             $data['content'] = $convertedText;
             $data['account_id'] = Auth::id();
             $data['task_id'] = $request->task_id;
-            return $data;
             $comment = Comment::query()->create($data);
 
             return response()->json($comment);
