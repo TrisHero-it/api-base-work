@@ -66,7 +66,7 @@ class WorkflowController extends Controller
             }
             $stages = $tasks->where('workflow_id', $workflow->id)->count();
             $totalTask = $stages;
-
+            $members2 = $members->where('workflow_id', $workflow->id);
             $arr = [
                 'totalTask' => $totalTask,
                 'totalSuccessTask' => $countTaskSuccess ?? 0,
@@ -74,7 +74,7 @@ class WorkflowController extends Controller
             ];
 
             $arrMember = [];
-            foreach ($members as $member) {
+            foreach ($members2 as $member) {
                 $tri = $accounts->where('id', $member->account_id);
                 $tri = array_values($tri->toArray());
                 $tri = $tri[0];
