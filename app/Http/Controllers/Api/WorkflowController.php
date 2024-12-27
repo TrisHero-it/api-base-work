@@ -42,10 +42,6 @@ class WorkflowController extends Controller
         }
 
         $workflows = $query->get();
-        $arrWorkflowId = $workflows->pluck('id');
-        $stagesCompletedAndFailed = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->whereIn('index', [0 , 1])->get();
-        $arrIdFailedAndIdCompleted = $stagesCompletedAndFailed->pluck('id');
-        $tasks = Task::query()->whereIn('id', $arrIdFailedAndIdCompleted)->get();
             foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
