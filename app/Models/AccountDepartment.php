@@ -12,4 +12,9 @@ class AccountDepartment extends Model
         'account_id',
         'department_id',
     ];
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
 }

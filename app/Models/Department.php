@@ -12,9 +12,4 @@ class Department extends Model
         'name'
     ];
 
-    public function accounts()
-    {
-
-        return $this->hasManyThrough();
-    }
 }

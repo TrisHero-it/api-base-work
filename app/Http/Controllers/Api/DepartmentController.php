@@ -12,14 +12,15 @@ class DepartmentController extends Controller
 {
     public function index()
     {
-        $departments = Department::all();
+        $departments = Department::query()->get();
+        $arrDepartmentId = $departments->pluck('id');
+        $accounts = AccountDepartment::query()->whereIn('department_id', $arrDepartmentId)->get();
+        $arrAccountId = $accounts->pluck('account_id')->toArray();
+        $members = Account::query()->whereIn('id', $arrAccountId)->get();
         foreach ($departments as $department) {
-            $arrAccount = [];
-            $accounts = AccountDepartment::query()->where('department_id', $department->id)->get();
-            foreach ($accounts as $account) {
-                $arrAccount[] = Account::query()->select('username', 'avatar','full_name', 'id')->find($account->account_id);
-            }
-            $department['members'] = $arrAccount;
+            $accounts2 = $accounts->where('department_id', $department->id);
+            $members2 = $members->whereIn('id', $accounts2->pluck('account_id'));
+            $department['members'] = $members2;
         }
 
         return response()->json($departments);
