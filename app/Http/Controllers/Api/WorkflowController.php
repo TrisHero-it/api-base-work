@@ -41,24 +41,31 @@ class WorkflowController extends Controller
             });
         }
 
-        $workflows = $query->get()->toArray();
+        $workflows = $query->get();
+        $arrWorkflowId = $workflows->pluck('id');
+        $stagesCompletedAndFailed = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->whereIn('index', [0 , 1])->get();
+        $arrIdFailedAndIdCompleted = $stagesCompletedAndFailed->pluck('id');
+        $tasks = Task::query()->whereIn('id', $arrIdFailedAndIdCompleted)->get();
+        $members = AccountWorkflow::query()->whereIn('workflow_id',$arrWorkflowId)->get();
+        $arrAccountId = $members->pluck('account_id');
+        $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
+
+
             foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
-            $stageFailed = Stage::query()->where('workflow_id', $workflow['id'])->where('index', 0)->first();
+            $stageFailed = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 0);
+            $stageFailed = array_values($stageFailed->toArray());
             if (isset($stageFailed)) {
-                $countTaskFailed = Task::query()->where('stage_id', $stageFailed->id)->count();
+                $countTaskFailed = $tasks->where('stage_id', $stageFailed[0]['id'])->count();
             }
-            $stageCompleted = Stage::query()->where('workflow_id', $workflow['id'])->where('index', 1)->first();
+            $stageCompleted = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 1);
+            $stageCompleted = array_values($stageCompleted->toArray());
             if (isset($stageCompleted)) {
-                $countTaskSuccess = Task::query()->where('stage_id', $stageCompleted->id)->count();
+                $countTaskSuccess = $tasks->where('stage_id', $stageCompleted[0]['id'])->count();
             }
-            $stages = Stage::query()->where('workflow_id', $workflow['id'])->get()->toArray();
-            $totalTask = 0;
-            foreach ($stages as $row) {
-                $countTask = Task::query()->where('stage_id', $row['id'])->count();
-                $totalTask += $countTask;
-            }
+            $stages = $tasks->where('workflow_id', $workflow->id)->count();
+            $totalTask = $stages;
 
             $arr = [
                 'totalTask' => $totalTask,
@@ -67,21 +74,21 @@ class WorkflowController extends Controller
             ];
 
             $arrMember = [];
-            $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
             foreach ($members as $member) {
-                $tri = Account::query()->where('id', $member->account_id)->first();
-                    if ($tri->role_id == 1 ){
+                $tri = $accounts->where('id', $member->account_id);
+                $tri = array_values($tri->toArray());
+                $tri = $tri[0];
+                    if ($tri['role_id'] == 1 ){
                         $tri['role'] = 'Admin';
-                    }else if ($tri->role_id == 2 ){
+                    }else if ($tri['role_id'] == 2 ){
                         $tri['role'] = 'Admin lv2';
                     }else {
                         $tri['role'] = 'User';
                     }
-                    unset($tri->role_id);
-                $tri = $tri->toArray();
+                    unset($tri['role_id']);
                 $arrMember[] = $tri;
             }
-            $a = array_merge($arr, $workflow);
+            $a = array_merge($arr, $workflow->toArray());
             $a['members'] = $arrMember;
             $arrWorkflow[] = $a;
         }
