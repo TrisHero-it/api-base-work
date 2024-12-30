@@ -23,34 +23,6 @@ class WorkflowCategoryController extends Controller
     const IMAGE_PATH =  '/images/workflow-categories';
 
     public function index() {
-//        $categories = WorkflowCategory::get()->toArray();
-//        $abc = [];
-//        foreach ($categories as $category) {
-//            $arrMembers = [];
-//            $members = AccountWorkflowCategory::query()->where('workflow_category_id', $category['id'])->get();
-//            foreach ($members as $member) {
-//            if (isset($member->account_id)) {
-//                $arrMembers[]  = Account::query()->select('id','email','created_at','updated_at','username','full_name')->find($member->account_id);
-//            }else {
-//                $b = Department::query()->where('id', $member->department_id)->first();
-//                $arrMembers[]  = [
-//                    'username' => "$member->department_id",
-//                    'full_name' => $b->name,
-//                    'type' => 'department',
-//                ];
-//            }
-//            }
-//            $a = [];
-//            $a['members'] = $arrMembers;
-//            $arrWorkflows = [];
-//            $workflows = Workflow::query()->where('workflow_category_id', $category['id'])->get();
-//            $arrWorkflows['workflows'] = $workflows;
-//            $arr = array_merge($category, $a, $arrWorkflows);
-//            $abc[] = $arr;
-//        }
-//        return response()->json($abc);
-
-//        Bản mới
         $categories = WorkflowCategory::query()->with('workflows')->get();
         $arrCategoryId = $categories->pluck('id');
         $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account', 'department'])->get();

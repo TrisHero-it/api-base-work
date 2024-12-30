@@ -27,7 +27,7 @@ class HistoryMoveTaskController extends Controller
                     $name = $account->full_name;
                 }
             }
-            $history['full_name'] = $name;  
+            $history['full_name'] = $name;
             foreach ($stages1 as $stage) {
                 if ($stage->id == $history->old_stage) {
                     $stageT = $stage;
@@ -48,13 +48,25 @@ class HistoryMoveTaskController extends Controller
 
     public function timeStage(Request $request, int $idTask) {
         $task = Task::query()->find($idTask);
-        $stages = Stage::query()->where('workflow_id', $task->stage->workflow_id)->orderByDesc('index')->get();
+        $stages = Stage::query()
+            ->where('workflow_id', $task->stage->workflow_id)
+            ->orderByDesc('index')
+            ->get();
+        $arrStageId = $stages->pluck('id');
+        $arrHistoryMoveTask = HistoryMoveTask::query()
+            ->whereIn('old_stage', $arrStageId)
+            ->where('task_id', $idTask)
+            ->where('worker', '!=', null)
+            ->get();
+        $arrAccountId = $arrHistoryMoveTask->pluck('worker');
+        $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
         $data = [];
         foreach ($stages as $stage) {
-            $a = HistoryMoveTask::query()->where('old_stage', $stage->id)->where('task_id', $idTask)->orderBy('id', 'desc')->first();
-            if (isset($a)){
-                if ($a->worker != null) {
-                    $account = Account::query()->where('id', $a->worker)->first();
+            $a = $arrHistoryMoveTask->where('old_stage', $stage->id);
+            $a = array_values($a->toArray());
+            if (!empty($a)){
+                if ($a[0]['worker'] != null) {
+                    $account = $accounts->where('id', $a[0]['worker']);
                 }
             }else {
                 $account = null;
@@ -64,7 +76,7 @@ class HistoryMoveTaskController extends Controller
             }
             $stage['account'] = $account ?? null;
             if ($stage->index != 0 && $stage->index != 1) {
-                $histories = HistoryMoveTask::query()->where('task_id', $idTask)->where('old_stage', $stage->id)->orderBy('id', 'desc')->get();
+                $histories = $arrHistoryMoveTask->where('old_stage', $stage->id);
                 $totalHours = 0;
                 $totalMinutes = 0;
                 foreach ($histories as $history) {

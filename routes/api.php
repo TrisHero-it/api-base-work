@@ -67,7 +67,6 @@ Route::middleware(['check.login'])->group(function () {
         'proposes' => ProposeController::class,
         'propose-categories' => ProposeCategoryController::class,
     ]);
-
     // Nhãn dán
     Route::get('my-account', [AccountController::class, 'myAccount']);
 

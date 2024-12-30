@@ -27,6 +27,10 @@ class AttendanceController extends Controller
             $attendance->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
 
+        if (!Auth::user()->isSeniorAdmin()) {
+            $attendance->where('account_id', Auth::id());
+        }
+
         if (!isset($request->start) && !isset($request->date)) {
             $attendance->whereMonth('created_at', date('m'));
         }
