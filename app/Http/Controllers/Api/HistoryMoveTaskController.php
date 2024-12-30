@@ -65,8 +65,10 @@ class HistoryMoveTaskController extends Controller
             $a = $arrHistoryMoveTask->where('old_stage', $stage->id);
             $a = array_values($a->toArray());
             if (!empty($a)){
-                if ($a[0]['worker'] != null) {
-                    $account = $accounts->where('id', $a[0]['worker']);
+                $a = $a[0];
+                if ($a['worker'] != null) {
+                    $account = $accounts->where('id', $a['worker']);
+                    $account = array_values($account->toArray())[0];
                 }
             }else {
                 $account = null;
