@@ -28,13 +28,31 @@ class DayScheduleController extends Controller
             $endDate = Carbon::now()->endOfMonth();
         }
 
-        $schedule = Schedule::query()->create([
-                'day_of_week' => $request->day_of_week ,
-                'go_to_work' => $request->go_to_work,
-                'description' => $request->description,
+        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            echo $date->format('Y-m-d'). "\n";
+            $goToWork = true;
+            $description = null;
+            if ($date->isSunday()) {
+                $goToWork = false;
+                $description = 'Nghỉ ngày chủ nhật';
+            }
+            $schedule = Schedule::query()->create([
+                'day_of_week' => $date ,
+                'go_to_work' => $goToWork,
+                'description' => $description,
+            ]);
+        }
+            return response()->json([
+                'success' => 'Them thanh cong'
             ]);
 
-        return response()->json($schedule);
+//        $schedule = Schedule::query()->create([
+//                'day_of_week' => $request->day_of_week ,
+//                'go_to_work' => $request->go_to_work,
+//                'description' => $request->description,
+//            ]);
+
+//        return response()->json($schedule);
     }
 
     public function update(int $id, Request $request)

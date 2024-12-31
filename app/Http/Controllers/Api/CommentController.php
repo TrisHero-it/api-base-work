@@ -41,8 +41,6 @@ class CommentController extends Controller
     public function store(CommentStoreRequest $request)
     {
             $data = $request->except('task_id', 'account_id');
-            $convertedText = $this->convertLinksToAnchors($data['content']);
-            $data['content'] = $convertedText;
             $data['account_id'] = Auth::id();
             $data['task_id'] = $request->task_id;
             $comment = Comment::query()->create($data);
