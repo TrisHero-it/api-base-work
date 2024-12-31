@@ -32,22 +32,33 @@ class DayScheduleController extends Controller
     {
         $a = Schedule::query()->whereRaw('DAYOFWEEK(day_of_week) = 7')->latest('id')->first();
         if (!empty($a)) {
+            $offSaturday = $a->go_to_work == true ? true : false;
             $date = Carbon::parse($a->day_of_week);
             $startDate = $date->addMonthNoOverflow()->startOfMonth();
             $endDate = $startDate->copy()->endOfMonth();
         }else {
+            $offSaturday = false;
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
         }
-
         $data = [];
         $numSaturday = 0;
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            if ($date->isSaturday()) {
-                $numSaturday++;
-            }
             $goToWork = true;
             $description = null;
+            if ($date->isSaturday()) {
+                if ($offSaturday==true) {
+                    $numSaturday++;
+                    if ($numSaturday <=2) {
+                        $offSaturday = false;
+                    }
+                    $goToWork = false;
+                    $description = 'Nghỉ thứ 7';
+                }else {
+                    echo 'Ngày: '.$date->format('d-m-Y'). " đi làm \n";
+                    $offSaturday = true;
+                }
+            }
             if ($date->isSunday()) {
                 $goToWork = false;
                 $description = 'Nghỉ ngày chủ nhật';
@@ -58,10 +69,9 @@ class DayScheduleController extends Controller
                 'description' => $description
             ];
         }
-
-
         $schedule = Schedule::query()->insert($data);
-            return response()->json($schedule);
+
+        return response()->json($schedule);
     }
 
     public function update(int $id, Request $request)
