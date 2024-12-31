@@ -22,7 +22,7 @@ class DayScheduleController extends Controller
         $schedules = Schedule::query()
             ->whereMonth('day_of_week', $month)
             ->whereYear('day_of_week', $year)
-            ->orderBy('day_of_week', 'desc')
+            ->orderBy('day_of_week')
             ->get();
 
         return response()->json($schedules);
@@ -41,6 +41,8 @@ class DayScheduleController extends Controller
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
         }
+        $month = $startDate->month;
+        $year = $startDate->year;
         $data = [];
         $numSaturday = 0;
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
@@ -55,7 +57,6 @@ class DayScheduleController extends Controller
                     $goToWork = false;
                     $description = 'Nghỉ thứ 7';
                 }else {
-                    echo 'Ngày: '.$date->format('d-m-Y'). " đi làm \n";
                     $offSaturday = true;
                 }
             }
@@ -69,25 +70,31 @@ class DayScheduleController extends Controller
                 'description' => $description
             ];
         }
-        $schedule = Schedule::query()->insert($data);
+        Schedule::query()->insert($data);
 
-        return response()->json($schedule);
+        $schedules = Schedule::query()->whereYear('day_of_week', $year)->whereMonth('day_of_week', $month)->orderBy('day_of_week')->get();
+
+        return response()->json($schedules);
     }
 
     public function update(int $id, Request $request)
     {
-        $schedule = Schedule::query()->findOrFail($id);
-        $schedule->update([
+
+        $schedules = Schedule::query()->whereIn('id', $request->ids)->update([
             'go_to_work' => $request->go_to_work,
             'description' => $request->description
         ]);
 
-        return response()->json($schedule);
+        return response()->json($schedules);
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id, Request $request)
     {
-        $schedule = Schedule::query()->findOrFail($id);
-        $schedule->delete();
+        $a = $request->date;
+        $month = $a[1];
+        $year = $a[0];
+        $schedule = Schedule::query()->whereYear('day_of_week', $year)->whereMonth('day_of_week', $month)->delete();
+
+        return response()->json($schedule);
     }
 }
