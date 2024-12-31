@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\FieldController;
 use App\Http\Controllers\Api\FieldValueController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
@@ -45,6 +46,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
 
     Route::apiResources([
+        'day-off' => DayScheduleController::class,
         'roles' => RoleController::class,
         'images' => ImageController::class,
         'notifications' => NotificationController::class,
@@ -76,5 +78,5 @@ Route::middleware(['check.login'])->group(function () {
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
 
     // Thời gian của nhiệm vụ trong từng giai đoạn
-    Route::get('time-stage/{idTask}', [\App\Http\Controllers\Api\HistoryMoveTaskController::class, 'timeStage']);
+    Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
 });

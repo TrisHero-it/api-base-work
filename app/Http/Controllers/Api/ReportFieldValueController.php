@@ -74,7 +74,7 @@ class ReportFieldValueController extends Controller
             }
 //          Lấy ra tất cả nhiệm vụ từ giá trị mình vừa lấy ở trên
             $tasks = FieldTask::query()->where('task_id', $a->task_id)->where('fields_id', $g)->get();
-//          Thêm giá trị vừa rôồi vào để lọc cho vòng lặp sau
+//          Thêm giá trị vừa rồi vào để lọc cho vòng lặp sau
             $arrCondition[] = $a->task_id;
             $b =[];
             $c =0;

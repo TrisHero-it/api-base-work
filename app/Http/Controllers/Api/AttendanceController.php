@@ -38,7 +38,6 @@ class AttendanceController extends Controller
         $attendance = $attendance->get();
 
         foreach ($attendance as $value) {
-
             $dateTime = new \DateTime($value->checkin);
             $nineAM = clone $dateTime;
             $nineAM->setTime(9, 1, 0);

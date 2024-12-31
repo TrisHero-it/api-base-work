@@ -14,7 +14,19 @@ class HistoryMoveTaskController extends Controller
     public function index(Request $request)
     {
         $task = Task::query()->findOrFail($request->task_id);
-        $histories = HistoryMoveTask::query()->where('task_id', $task->id)->orderBy('id', 'desc')->get();
+        if (isset($request->stage_id)) {
+            $history = HistoryMoveTask::query()
+                ->where('task_id', $task->id)
+                ->where('old_stage', $request->stage_id)
+                ->where('worker', '!=', null)
+                ->latest('id')->get();
+
+            return $history;
+        }
+        $histories = HistoryMoveTask::query()
+            ->where('task_id', $task->id)
+            ->orderBy('id', 'desc')
+            ->get();
         $arrAccountId = $histories->pluck('account_id');
         $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
         $arrOldStage = $histories->pluck('old_stage');
@@ -42,6 +54,8 @@ class HistoryMoveTaskController extends Controller
                 }
             }
         }
+
+
 
         return response()->json($histories);
     }

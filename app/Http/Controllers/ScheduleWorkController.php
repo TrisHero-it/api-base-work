@@ -25,7 +25,8 @@ class   ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('id as task_id','name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')->where('account_id', '!=', null);
+            $a = Task::query()->select('id as task_id','name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
+                ->where('account_id', '!=', null);
             $a->whereDate('started_at', '<=', $date)
                 ->where(function ($query) use ($date) {
                     $query->where(function ($subQuery) use ($date) {
