@@ -53,6 +53,7 @@ class CommentController extends Controller
         try {
             $comment = Comment::query()->findOrFail($id);
             $comment->delete();
+
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);

@@ -9,16 +9,28 @@ use Illuminate\Http\Request;
 
 class DayScheduleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $schedules = Schedule::query()->where('go_to_work', false)->get();
+        if (isset($request->date)) {
+            $a = explode("-", $request->date);
+            $month = $a[1];
+            $year = $a[0];
+        }else {
+            $month = Carbon::now()->month;
+            $year = Carbon::now()->year;
+        }
+        $schedules = Schedule::query()
+            ->whereMonth('day_of_week', $month)
+            ->whereYear('day_of_week', $year)
+            ->orderBy('day_of_week', 'desc')
+            ->get();
 
         return response()->json($schedules);
     }
 
     public function store(Request $request)
     {
-        $a = Schedule::query()->latest('id')->first();
+        $a = Schedule::query()->whereRaw('DAYOFWEEK(day_of_week) = 7')->latest('id')->first();
         if (!empty($a)) {
             $date = Carbon::parse($a->day_of_week);
             $startDate = $date->addMonthNoOverflow()->startOfMonth();
@@ -28,31 +40,28 @@ class DayScheduleController extends Controller
             $endDate = Carbon::now()->endOfMonth();
         }
 
+        $data = [];
+        $numSaturday = 0;
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            echo $date->format('Y-m-d'). "\n";
+            if ($date->isSaturday()) {
+                $numSaturday++;
+            }
             $goToWork = true;
             $description = null;
             if ($date->isSunday()) {
                 $goToWork = false;
                 $description = 'Nghỉ ngày chủ nhật';
             }
-            $schedule = Schedule::query()->create([
-                'day_of_week' => $date ,
+            $data[]  = [
+                'day_of_week' => $date->format('Y-m-d'),
                 'go_to_work' => $goToWork,
-                'description' => $description,
-            ]);
+                'description' => $description
+            ];
         }
-            return response()->json([
-                'success' => 'Them thanh cong'
-            ]);
 
-//        $schedule = Schedule::query()->create([
-//                'day_of_week' => $request->day_of_week ,
-//                'go_to_work' => $request->go_to_work,
-//                'description' => $request->description,
-//            ]);
 
-//        return response()->json($schedule);
+        $schedule = Schedule::query()->insert($data);
+            return response()->json($schedule);
     }
 
     public function update(int $id, Request $request)
