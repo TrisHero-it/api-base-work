@@ -19,7 +19,7 @@ class HistoryMoveTaskController extends Controller
                 ->where('task_id', $task->id)
                 ->where('old_stage', $request->stage_id)
                 ->where('worker', '!=', null)
-                ->latest('id')->get();
+                ->latest('id')->first();
 
             return $history;
         }
