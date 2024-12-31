@@ -70,16 +70,4 @@ class CommentController extends Controller
 
             return response()->json($comment);
     }
-
-    public function convertLinksToAnchors($text)
-    {
-        // Biểu thức chính quy tìm URL
-        $pattern = '/(https?:\/\/[^\s]+)/i';
-
-        // Thay thế URL bằng thẻ <a>
-        $replacement = '<a href="$1" target="_blank">$1</a>';
-
-        // Trả về chuỗi đã thay đổi
-        return preg_replace($pattern, $replacement, $text);
-    }
 }
