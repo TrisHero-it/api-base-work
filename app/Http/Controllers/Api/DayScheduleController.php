@@ -79,11 +79,18 @@ class DayScheduleController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $go_to_work = $request->go_to_work ?? true;
-        Schedule::query()->whereIn('id', $request->ids)->update([
-            'go_to_work' => $go_to_work,
-            'description' => $request->description
-        ]);
+        if (isset($request->is_holiday)) {
+            Schedule::query()->whereIn('id', $request->is_holiday)->update([
+                'go_to_work' => false,
+                'description' => $request->description
+            ]);
+        }
+
+        if (isset($request->is_not_holiday)) {
+            Schedule::query()->whereIn('id', $request->is_not_holiday)->update([
+                'go_to_work' => true,
+            ]);
+        }
 
         return response()->json(['success'=> 'Thành công']);
     }
