@@ -40,9 +40,6 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 Route::apiResource('accounts', AccountController::class);
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
-Route::get('/test', function () {
-    echo request()->ip();
-});
 
 Route::middleware(['check.login'])->group(function () {
 

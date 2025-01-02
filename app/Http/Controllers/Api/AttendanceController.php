@@ -58,6 +58,16 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        $allowedIp= [
+            '58.186.22.148',
+            '127.0.0.1',
+        ];
+        if (!in_array($request->ip(), $allowedIp)) {
+            return response()->json([
+                'messages' => 'Dùng mạng trên muakey để check in nhé.' ,
+                'errors' => 'Dùng mạng trên muakey để check in nhé.'
+            ], 403);
+        }
 
         if (Auth::check()) {
             $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
@@ -87,6 +97,16 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
+        $allowedIp= [
+            '58.186.22.148',
+            '127.0.0.1',
+        ];
+        if (!in_array($request->ip(), $allowedIp)) {
+            return response()->json([
+                'messages' => 'Dùng mạng trên muakey để check out nhé.' ,
+                'errors' => 'Dùng mạng trên muakey để check out nhé.'
+            ], 403);
+        }
         $isToday = false;
         $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();

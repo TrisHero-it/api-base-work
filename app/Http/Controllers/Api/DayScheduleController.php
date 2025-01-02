@@ -79,13 +79,14 @@ class DayScheduleController extends Controller
 
     public function update(int $id, Request $request)
     {
-        $go_to_work = isset($request->go_to_work) ?? true;
+        $go_to_work = $request->go_to_work ?? true;
+        return $go_to_work;
         $schedules = Schedule::query()->whereIn('id', $request->ids)->update([
             'go_to_work' => $go_to_work,
             'description' => $request->description
         ]);
 
-        return response()->json($schedules);
+        return response()->json(['success'=> 'Thành công']);
     }
 
     public function destroy(int $id, Request $request)
