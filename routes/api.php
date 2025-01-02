@@ -31,7 +31,11 @@ Route::post('login', [LoginController::class, 'store'])->name('api.login.store')
 Route::apiResource('accounts', AccountController::class);
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
 Route::get('/test', function () {
-    echo request()->ip();
+    $allowedIp= [
+        '58.186.22.148',
+        '127.0.0.1',
+    ];
+    dd(in_array(request()->ip(), $allowedIp));
 });
 
 Route::middleware(['check.login'])->group(function () {
