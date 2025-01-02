@@ -35,7 +35,7 @@ Route::get('/test', function () {
         '58.186.22.148',
         '127.0.0.1',
     ];
-    dd(in_array(request()->ip(), $allowedIp));
+    dd(!in_array(request()->ip(), $allowedIp));
 });
 
 Route::middleware(['check.login'])->group(function () {
