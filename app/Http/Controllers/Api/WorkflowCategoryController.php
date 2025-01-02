@@ -25,15 +25,12 @@ class WorkflowCategoryController extends Controller
     public function index() {
         $categories = WorkflowCategory::query()->with('workflows')->get();
         $arrCategoryId = $categories->pluck('id');
-        $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account', 'department'])->get();
+        $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account'])->get();
         foreach ($categories as $category) {
             $arrMembers = [];
-            foreach ($members as $member) {
-                if (isset($member->account_id)) {
+            $members2 = $members->where('workflow_category_id', $category->id);
+            foreach ($members2 as $member) {
                     $arrMembers[]  = $member->account;
-                }else {
-                    $arrMembers[]  = $member->department;
-                }
             }
             $category['members'] = $arrMembers;
         }
