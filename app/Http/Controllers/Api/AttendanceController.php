@@ -56,7 +56,7 @@ class AttendanceController extends Controller
         return response()->json($attendance);
     }
 
-    public function checkIn(Request $request)
+    public function  checkIn(Request $request)
     {
         $allowedIp= [
             '58.186.22.148',
