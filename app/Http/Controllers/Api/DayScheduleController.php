@@ -79,9 +79,9 @@ class DayScheduleController extends Controller
 
     public function update(int $id, Request $request)
     {
-
+        $go_to_work = isset($request->go_to_work) ?? true;
         $schedules = Schedule::query()->whereIn('id', $request->ids)->update([
-            'go_to_work' => $request->go_to_work,
+            'go_to_work' => $go_to_work,
             'description' => $request->description
         ]);
 
