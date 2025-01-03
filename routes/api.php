@@ -39,8 +39,12 @@ Route::get('/test', function () {
     dd(in_array(request()->ip(), $allowedIp));
 });
 
-Route::get('redeem-code', function () {
+Route::get('a', function () {
     return redirect('https://docs.google.com/spreadsheets/d/1vnOG_vqJipGhDy0HDCHCVk46XQknztLnwJ7lt4Uk4xg/edit');
+})->middleware('auth.basic');
+
+Route::get('b', function () {
+    return redirect('https://docs.google.com/spreadsheets/d/121Q0A0LhDw6G_jXbewOcW6iazt2K6nmFZP3eI7oJZes/edit');
 })->middleware('auth.basic');
 
 Route::middleware(['check.login'])->group(function () {
