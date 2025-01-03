@@ -67,6 +67,8 @@ class DayScheduleController extends Controller
             $data[]  = [
                 'day_of_week' => $date->format('Y-m-d'),
                 'go_to_work' => $goToWork,
+                'start_at' => new \DateTime($date->format('Y-m-d'). ' 8:30'),
+                'end_at' => new \DateTime($date->format('Y-m-d'). ' 17:30'),
                 'description' => $description
             ];
         }

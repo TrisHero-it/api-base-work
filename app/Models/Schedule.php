@@ -13,5 +13,7 @@ class Schedule extends Model
         'day_of_week',
         'go_to_work',
         'description',
+        'start_at',
+        'end_at'
     ];
 }

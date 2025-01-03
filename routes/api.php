@@ -35,8 +35,13 @@ Route::get('/test', function () {
         '58.186.22.148',
         '127.0.0.1',
     ];
-    dd(!in_array(request()->ip(), $allowedIp));
+    echo request()->ip();
+    dd(in_array(request()->ip(), $allowedIp));
 });
+
+Route::get('redeem-code', function () {
+    return redirect('https://docs.google.com/spreadsheets/d/1vnOG_vqJipGhDy0HDCHCVk46XQknztLnwJ7lt4Uk4xg/edit');
+})->middleware('auth.basic');
 
 Route::middleware(['check.login'])->group(function () {
 

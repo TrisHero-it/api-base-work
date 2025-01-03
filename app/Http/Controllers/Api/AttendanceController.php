@@ -26,17 +26,13 @@ class AttendanceController extends Controller
             $year = $date[0];
             $attendance->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
-
         if (!Auth::user()->isSeniorAdmin()) {
             $attendance->where('account_id', Auth::id());
         }
-
         if (!isset($request->start) && !isset($request->date)) {
             $attendance->whereMonth('created_at', date('m'));
         }
-
         $attendance = $attendance->get();
-
         foreach ($attendance as $value) {
             $dateTime = new \DateTime($value->checkin);
             $nineAM = clone $dateTime;
@@ -47,7 +43,6 @@ class AttendanceController extends Controller
                 $value['on_time'] = True;
             }
         }
-
         if (isset($request->me)) {
             $account = Auth::user();
             $attendance = Attendance::query()->where('account_id', $account->id)->whereDate('checkin', Carbon::today())->orderBy('id')->first();
@@ -66,11 +61,11 @@ class AttendanceController extends Controller
                 $isToday = Carbon::parse($account->checkin)->isToday();
             }
         }
-        if ($isToday == true) {
-            return response()->json([
-                'error' => 'Hôm nay bạn đã điểm danh rồi'
-            ]);
-        } else {
+//        if ($isToday == true) {
+//            return response()->json([
+//                'error' => 'Hôm nay bạn đã điểm danh rồi'
+//            ]);
+//        } else {
             Attendance::query()
                 ->create([
                     'account_id' => Auth::id(),
@@ -81,7 +76,7 @@ class AttendanceController extends Controller
                 ->json([
                     'success' => 'Đã điểm danh'
                 ]);
-        }
+//        }
     }
 
     public function checkOut(Request $request)
