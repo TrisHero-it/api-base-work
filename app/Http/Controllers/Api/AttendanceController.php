@@ -58,22 +58,18 @@ class AttendanceController extends Controller
 
     public function  checkIn(Request $request)
     {
-
         if (Auth::check()) {
             $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         }
-       if (isset($account)) {
-           if ($account->checkin != null) {
-               $isToday = Carbon::parse($account->checkin)->isToday();
-           }
-       }
-        if (isset($isToday)) {
-            if ($isToday == true)
-            {
-                return response()->json([
-                    'error' => 'Hôm nay bạn đã điểm danh rồi'
-                ]);
+        if (isset($account)) {
+            if ($account->checkin != null) {
+                $isToday = Carbon::parse($account->checkin)->isToday();
             }
+        }
+        if ($isToday == true) {
+            return response()->json([
+                'error' => 'Hôm nay bạn đã điểm danh rồi'
+            ]);
         } else {
             Attendance::query()
                 ->create([
