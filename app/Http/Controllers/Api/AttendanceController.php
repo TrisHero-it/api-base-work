@@ -37,8 +37,6 @@ class AttendanceController extends Controller
             $dateTime = new \DateTime($value->checkin);
             $nineAM = clone $dateTime;
             $nineAM->setTime(9, 1, 0);
-            $endTime = $dateTime->modify('+9 hours');
-            $value['estimated_check_out'] = $endTime->format('Y-m-d H:i:s');
             if ($dateTime > $nineAM) {
                 $value['on_time'] = False;
             }else {
@@ -53,7 +51,7 @@ class AttendanceController extends Controller
         return response()->json($attendance);
     }
 
-    public function checkIn(Request $request)
+    public function  checkIn(Request $request)
     {
         if (Auth::check()) {
             $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
@@ -63,11 +61,11 @@ class AttendanceController extends Controller
                 $isToday = Carbon::parse($account->checkin)->isToday();
             }
         }
-       if ($isToday == true) {
-           return response()->json([
-               'error' => 'Hôm nay bạn đã điểm danh rồi'
-           ]);
-       } else {
+//        if ($isToday == true) {
+//            return response()->json([
+//                'error' => 'Hôm nay bạn đã điểm danh rồi'
+//            ]);
+//        } else {
             Attendance::query()
                 ->create([
                     'account_id' => Auth::id(),
@@ -78,7 +76,7 @@ class AttendanceController extends Controller
                 ->json([
                     'success' => 'Đã điểm danh'
                 ]);
-       }
+//        }
     }
 
     public function checkOut(Request $request)
