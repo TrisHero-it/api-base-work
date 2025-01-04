@@ -28,8 +28,11 @@ use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
+
 Route::apiResource('accounts', AccountController::class);
+
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
+
 Route::get('/test', function () {
     $allowedIp= [
         '58.186.22.148',
@@ -48,8 +51,8 @@ Route::get('b', function () {
 })->middleware('auth.basic');
 
 Route::middleware(['check.login'])->group(function () {
-
-    Route::put('load-youtube', [\App\Http\Controllers\Api\TaskController::class, 'loadYoutube']);
+    
+    Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
 
     Route::apiResources([
         'day-off' => DayScheduleController::class,
