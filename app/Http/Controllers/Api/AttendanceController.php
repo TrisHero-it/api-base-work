@@ -42,6 +42,8 @@ class AttendanceController extends Controller
             }else {
                 $value['on_time'] = True;
             }
+            $b = $dateTime->modify("+9 hours");
+            $value['estimated_checkout'] = $b->format('Y-m-d H:i:s');
         }
         if (isset($request->me)) {
             $account = Auth::user();
@@ -61,11 +63,11 @@ class AttendanceController extends Controller
                 $isToday = Carbon::parse($account->checkin)->isToday();
             }
         }
-//        if ($isToday == true) {
-//            return response()->json([
-//                'error' => 'Hôm nay bạn đã điểm danh rồi'
-//            ]);
-//        } else {
+       if ($isToday == true) {
+           return response()->json([
+               'error' => 'Hôm nay bạn đã điểm danh rồi'
+           ]);
+       } else {
             Attendance::query()
                 ->create([
                     'account_id' => Auth::id(),
@@ -76,7 +78,7 @@ class AttendanceController extends Controller
                 ->json([
                     'success' => 'Đã điểm danh'
                 ]);
-//        }
+       }
     }
 
     public function checkOut(Request $request)
