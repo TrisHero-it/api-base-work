@@ -84,6 +84,7 @@ class TaskController extends Controller
             return response()->json($task);
     }
 
+
     public function update($id, TaskStoreRequest $request)
     {
         $account = Auth::user();
@@ -331,7 +332,6 @@ class TaskController extends Controller
                 $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
 
                 $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
-
                 $response = file_get_contents($url);
                 $data = json_decode($response, true);
                 $dateTime = new \DateTime($data['items'][0]['snippet']['publishedAt']);
