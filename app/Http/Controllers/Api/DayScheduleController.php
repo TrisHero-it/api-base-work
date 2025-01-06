@@ -88,6 +88,25 @@ class DayScheduleController extends Controller
             ]);
         }
 
+        if (isset($request->start_date)) {
+            $start_date = Carbon::parse($request->start_date);
+            $end_date = Carbon::parse($request->end_date);
+            $dates = [];
+            for ($date = $start_date; $date->lte($end_date); $date->addDay()) {
+              $dates[] = $date->format('Y-m-d');
+            }
+
+            Schedule::where(function ($query) use ($dates) {
+                foreach ($dates as $date) {
+                    $query->orWhereDate('day_of_week', $date);
+                }
+            })->update([
+                'go_to_work' => false,
+                'description' => $request->description
+            ]);
+
+        }
+
         if (isset($request->is_not_holiday)) {
             Schedule::query()->whereIn('id', $request->is_not_holiday)->update([
                 'go_to_work' => true,
@@ -102,7 +121,10 @@ class DayScheduleController extends Controller
         $a = $request->date;
         $month = $a[1];
         $year = $a[0];
-        $schedule = Schedule::query()->whereYear('day_of_week', $year)->whereMonth('day_of_week', $month)->delete();
+        $schedule = Schedule::query()
+        ->whereYear('day_of_week', $year)
+        ->whereMonth('day_of_week', $month)
+        ->delete();
 
         return response()->json($schedule);
     }

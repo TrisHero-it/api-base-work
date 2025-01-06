@@ -334,6 +334,9 @@ class TaskController extends Controller
                 $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
                 $response = file_get_contents($url);
                 $data = json_decode($response, true);
+                if($data['items'] == null) {
+                    continue;
+                }
                 $dateTime = new \DateTime($data['items'][0]['snippet']['publishedAt']);
                 $dateTime->setTimezone(new \DateTimeZone('Asia/Ho_Chi_Minh'));
                 $valueData = [

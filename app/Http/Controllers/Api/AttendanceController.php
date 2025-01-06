@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Attendance;
+use App\Models\Propose;
+use App\Models\ProposeCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,14 +19,16 @@ class AttendanceController extends Controller
         $attendance = Attendance::query();
         //  Loc theo ngày
         if (isset($request->start) && isset($request->end)) {
-            $attendance->where('created_at', '>=', $request->start)->where('created_at', '<=', $request->end);
+            $attendance->where('created_at', '>=', $request->start)
+                       ->where('created_at', '<=', $request->end);
         }
         //  Lọc theo tháng
         if (isset($request->date)) {
             $date = explode('-', $request->date);
             $month = $date[1];
             $year = $date[0];
-            $attendance->whereMonth('created_at', $month)->whereYear('created_at', $year);
+            $attendance->whereMonth('created_at', $month)
+                       ->whereYear('created_at', $year);
         }
         if (!Auth::user()->isSeniorAdmin()) {
             $attendance->where('account_id', Auth::id());
@@ -32,8 +36,15 @@ class AttendanceController extends Controller
         if (!isset($request->start) && !isset($request->date)) {
             $attendance->whereMonth('created_at', date('m'));
         }
+        $idOverTime = ProposeCategory::query()->where('name', 'Đăng ký OT')->first();
+        if (!empty($idOverTime)) {
+            $overTime = Propose::query()->where('propose_category_id', $idOverTime->id)->get();
+        }
+        dd($overTime);
         $attendance = $attendance->get();
         foreach ($attendance as $value) {
+            $value['start_over_time'] = null;
+            $value['end_over_time'] = null;
             $dateTime = new \DateTime($value->checkin);
             $nineAM = clone $dateTime;
             $nineAM->setTime(9, 1, 0);
@@ -47,7 +58,11 @@ class AttendanceController extends Controller
         }
         if (isset($request->me)) {
             $account = Auth::user();
-            $attendance = Attendance::query()->where('account_id', $account->id)->whereDate('checkin', Carbon::today())->orderBy('id')->first();
+            $attendance = Attendance::query()
+            ->where('account_id', $account->id)
+            ->whereDate('checkin', Carbon::today())
+            ->orderBy('id')
+            ->first();
         }
 
         return response()->json($attendance);
