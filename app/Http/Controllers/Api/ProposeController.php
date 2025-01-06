@@ -47,6 +47,7 @@ class ProposeController extends Controller
     public function store(Request $request)
     {
         $a = Auth::user();
+        $data = $request->all();
         $data['account_id'] = $a->id;
         $accounts = Account::query()->where('role_id', 2)->get();
         $category = ProposeCategory::query()->where('id', $data['propose_category_id'])->first();
