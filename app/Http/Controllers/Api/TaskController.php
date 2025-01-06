@@ -127,7 +127,9 @@ class TaskController extends Controller
         $data = $request->except('expired');
 
         if(isset($request->expired_at)) {
-            $data['expired'] = now()->modify('+' . $request->expired_at . ' hours');
+            $task->update([
+                'expired' => now()->modify('+' . $request->expired_at . ' hours')
+            ]);
         }
 
 
