@@ -36,11 +36,10 @@ class AttendanceController extends Controller
         if (!isset($request->start) && !isset($request->date)) {
             $attendance->whereMonth('created_at', date('m'));
         }
-        $idOverTime = ProposeCategory::query()->where('name', 'Đăng ký OT')->first();
-        if (!empty($idOverTime)) {
-            $overTime = Propose::query()->where('propose_category_id', $idOverTime->id)->get();
-        }
-        dd($overTime);
+        // $idOverTime = ProposeCategory::query()->where('name', 'Đăng ký OT')->first();
+        // if (!empty($idOverTime)) {
+        //     $overTime = Propose::query()->where('propose_category_id', $idOverTime->id)->get();
+        // }
         $attendance = $attendance->get();
         foreach ($attendance as $value) {
             $value['start_over_time'] = null;
