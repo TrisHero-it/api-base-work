@@ -124,12 +124,7 @@ class TaskController extends Controller
     };
     }
         // Cập nhập thông tin nhiệm vụ
-        $data = $request->except('expired');
-
-        if(isset($request->expired)) {
-            $now = Carbon::now();
-            $data['expired'] = $now->addHours($request->expired);
-        }
+        $data = $request->all();
 
         if (isset($request->link_youtube)){
         // Nếu có link youtube thì lấy ra mã code của link đó
