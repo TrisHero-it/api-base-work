@@ -36,7 +36,10 @@ class AttendanceController extends Controller
         if (!isset($request->start) && !isset($request->date)) {
             $attendance->whereMonth('created_at', date('m'));
         }
-        $idOverTime = ProposeCategory::query()->where('name', 'Đăng ký OT')->first()->id;
+        $idOverTime = ProposeCategory::query()->where('name', 'Đăng ký OT')->first();
+        if(isset($idOverTime)) {
+            $idOverTime = $idOverTime->id;
+        }
         $attendance = $attendance->get();
         foreach ($attendance as $value) {
             $value['start_over_time'] = null;
@@ -52,11 +55,13 @@ class AttendanceController extends Controller
             $b = $dateTime->modify("+9 hours 1 minutes");
             $value['estimated_checkout'] = $b->format('Y-m-d H:i:s');
             $aa = explode(' ', $value->checkin);
-            $overTime = Propose::query()->where('propose_category_id', $idOverTime)->whereDate('start_time',$aa[0])->first();
+            if (isset($idOverTime)) {
+                $overTime = Propose::query()->where('propose_category_id', $idOverTime)->whereDate('start_time',$aa[0])->first();
             if (isset($overTime)) {
                 $value['start_over_time'] = $overTime->start_time;
                 $value['end_over_time'] = $overTime->end_time;
             } 
+            }
         }
         if (isset($request->me)) {
             $account = Auth::user();
