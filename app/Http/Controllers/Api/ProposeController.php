@@ -19,6 +19,17 @@ class ProposeController extends Controller
             $proposes = $proposes->where('status', $request->status);
         }
 
+        if (isset($request->propose_category_id)) {
+            $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
+        }  
+        
+        if (isset($request->date)) {
+            $date = explode("-", $request->date);
+            $year = $date[0];
+            $month = $date[1];
+            $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
+        }  
+
         $proposes = $proposes->get();
         foreach ($proposes as $propose) {
 
@@ -59,7 +70,7 @@ class ProposeController extends Controller
             return response()->json([
                 'message'=> 'Bạn không có quyền thao tác',
                 'errors' => 'Bạn không có quyền thao tác'
-            ], 403);
+            ], status: 403);
         }
         $propose = Propose::query()->findOrFail($id);
         $propose->update($request->all());
@@ -72,6 +83,6 @@ class ProposeController extends Controller
         $propose = Propose::query()->findOrFail($id);
         $propose->delete();
 
-        return response()->json(['success'=> 'Xoá thành công']);
+        return response()->json(data: ['success'=> 'Xoá thành công']);
     }
 }

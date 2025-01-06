@@ -44,7 +44,7 @@ class   ScheduleWorkController extends Controller
                 ->orderBy('expired_at');
             $a = $a->get();
             if (!empty($a)) {
-                foreach ($a as $key => $task) {
+                foreach ($a as $task) {
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
                     if ($task->stage_id != null) {
@@ -102,7 +102,7 @@ class   ScheduleWorkController extends Controller
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
                 if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired_at === null)) {
-                    if (Carbon::parse($his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
+                    if (Carbon::parse(time: $his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
                         $d = 'completed';
                     }else {
                         $d = 'in_progress';
