@@ -101,6 +101,7 @@ class TaskController extends Controller
             }
         }
 
+    
         if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
             return response()->json([
                 'message' => 'Nhiệm vụ này không phải của bạn',
@@ -123,7 +124,19 @@ class TaskController extends Controller
     };
     }
         // Cập nhập thông tin nhiệm vụ
-        $data = $request->all();
+        $data = $request->except('expired');
+
+        if(isset($request->expired_at)) {
+            if(isset($task->expired)){
+                $expired = new \DateTime($task->expired);
+            }else {
+                $expired = new \DateTime(now());
+            }
+
+            $data['expired'] = $expired->modify('+' . $request->expired_at . ' hours');
+        }
+
+
         if (isset($request->link_youtube)){
         // Nếu có link youtube thì lấy ra mã code của link đó
             preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
