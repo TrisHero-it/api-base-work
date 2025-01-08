@@ -68,6 +68,15 @@ class AccountController extends Controller
             return response()->json($account);
     }
 
+    public function destroy(int $id) {
+            $account = Account::query()->findOrFail($id);
+            $account->delete();
+
+            return response()->json([
+                'message' => 'Xóa thành công'
+            ]);
+    }
+
     public function myAccount(Request $request) {
         $token = $request->header('Authorization');
         if ($token==null) {
