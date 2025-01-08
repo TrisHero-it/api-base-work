@@ -49,7 +49,10 @@ class AttendanceController extends Controller
             $value['estimated_checkout'] = $b->format('Y-m-d H:i:s');
             $aa = explode(' ', $value->checkin);
             if (isset($idOverTime)) {
-                $overTime = Propose::query()->where('propose_category_id', $idOverTime)->whereDate('start_time',$aa[0])->first();
+                $overTime = Propose::query()
+                ->where('propose_category_id', $idOverTime)
+                ->whereDate('start_time',$aa[0])
+                ->first();
             if (isset($overTime)) {
                 $value['start_over_time'] = $overTime->start_time;
                 $value['end_over_time'] = $overTime->end_time;

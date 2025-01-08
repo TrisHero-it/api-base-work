@@ -17,32 +17,32 @@ class AccountController extends Controller
 {
     public function store(AccountStoreRequest $request)
     {
-            $email = $request->safe()->email;
-            $result = explode('@', $email)[0];
-            $account = Account::create([
-                'email' => $request->safe()->email,
-                'password' => Hash::make($request->safe()->password),
-                'username' => '@'.$result,
-                'full_name'=>$result,
-            ]);
+        $email = $request->safe()->email;
+        $result = explode('@', $email)[0];
+        $account = Account::create([
+            'email' => $request->safe()->email,
+            'password' => Hash::make($request->safe()->password),
+            'username' => '@'.$result,
+            'full_name'=>$result,
+        ]);
 
-            return response()->json($account);
+        return response()->json($account);
     }
 
     public function update(int $id, AccountUpdateRequest $request) {
-            $account = Account::query()
-                ->findOrFail($id);
-            $data = $request->except('password', 'avatar');
-            if (isset($request->password)) {
-                $data['password'] = Hash::make($request->password);
-            }
-            if (isset($request->avatar)) {
-                $data['avatar'] = Storage::put('public/avatars', $request->avatar);
-                $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
-            }
-            $account->update($data);
+        $account = Account::query()
+            ->findOrFail($id);
+        $data = $request->except('password', 'avatar');
+        if (isset($request->password)) {
+            $data['password'] = Hash::make($request->password);
+        }
+        if (isset($request->avatar)) {
+            $data['avatar'] = Storage::put('public/avatars', $request->avatar);
+            $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
+        }
+        $account->update($data);
 
-            return response()->json($account);
+        return response()->json($account);
     }
 
     public function index(Request $request) {
@@ -65,18 +65,18 @@ class AccountController extends Controller
     }
 
     public function show(int $id) {
-            $account = Account::query()->where('id', $id)->first();
+        $account = Account::query()->where('id', $id)->first();
 
-            return response()->json($account);
+        return response()->json($account);
     }
 
     public function destroy(int $id) {
-            $account = Account::query()->findOrFail($id);
-            $account->delete();
+        $account = Account::query()->findOrFail($id);
+        $account->delete();
 
-            return response()->json([
-                'message' => 'Xóa thành công'
-            ]);
+        return response()->json([
+            'message' => 'Xóa thành công'
+        ]);
     }
 
     public function myAccount(Request $request) {
