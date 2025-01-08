@@ -23,8 +23,9 @@ class AccountUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $id = $this->route('id');
         return [
-            'email' => 'nullable|email|unique:accounts,email',
+            'email' => 'nullable|email|unique:accounts,email,'.$id,
             'password' => 'nullable|min:8',
             'username' => 'nullable|unique:accounts,username',
             'full_name' => 'nullable|max:100',
