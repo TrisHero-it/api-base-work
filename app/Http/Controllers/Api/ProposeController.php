@@ -52,14 +52,14 @@ class ProposeController extends Controller
         $accounts = Account::query()->where('role_id', 2)->get();
         $category = ProposeCategory::query()->where('id', $data['propose_category_id'])->first();
         $name = $category == null ? 'Tuỳ chọn' : $category->name;
-        foreach ($accounts as $account) {
-            SendEmail::dispatch([
-                'email' => $account->email,
-                'body' => "<p style='font-size: 20px'> Có 1 đề xuất mới từ <strong>$a->full_name</strong> ở mục <strong>$name</strong></strong> <br>
-                           Xem chi tiết tại <a href='https://work.1997.pro.vn/request'>Đây</a>
-                           </p>"
-            ]);
-        }
+        // foreach ($accounts as $account) {
+        //     SendEmail::dispatch([
+        //         'email' => $account->email,
+        //         'body' => "<p style='font-size: 20px'> Có 1 đề xuất mới từ <strong>$a->full_name</strong> ở mục <strong>$name</strong></strong> <br>
+        //                    Xem chi tiết tại <a href='https://work.1997.pro.vn/request'>Đây</a>
+        //                    </p>"
+        //     ]);
+        // }
         $propose = Propose::query()->create($data);
 
         return response()->json($propose);
