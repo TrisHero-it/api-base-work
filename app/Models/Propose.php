@@ -16,7 +16,9 @@ class Propose extends Model
         'status',
         'propose_category_id',
         'approved_by',
-        'reason'
+        'reason',
+        'start_time',
+        'end_time',
     ];
 
     public function account()

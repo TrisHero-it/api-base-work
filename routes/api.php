@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\CommentController;
