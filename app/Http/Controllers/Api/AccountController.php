@@ -32,8 +32,10 @@ class AccountController extends Controller
     public function update(int $id, AccountUpdateRequest $request) {
             $account = Account::query()
                 ->findOrFail($id);
-            $data = $request->validated()
-                ->except('avatar');
+            $data = $request->except('password', 'avatar');
+            if (isset($request->password)) {
+                $data['password'] = Hash::make($request->password);
+            }
             if (isset($request->avatar)) {
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
                 $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
@@ -97,4 +99,21 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
+    public function forgotPassword(Request $request) {
+        $email = $request->email;
+        $account = Account::query()->where('email', $email)->first();
+        if ($account == null) {
+            return response()->json([
+                'error' => 'Email không tồn tại'
+            ]);
+        } else {
+            $account->update([
+                'password' => Hash::make('123456')
+            ]);
+
+            return response()->json([
+                'success' => 'Mật khẩu đã được reset về 123456'
+            ]);
+        }
+    }
 }
