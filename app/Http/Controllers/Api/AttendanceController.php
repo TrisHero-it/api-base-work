@@ -70,14 +70,13 @@ class AttendanceController extends Controller
 
     public function  checkIn(Request $request)
     {
+        $isToday = false;
         if (Auth::check()) {
             $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         }
         if (isset($account)) {
             if ($account->checkin != null) {
                 $isToday = Carbon::parse($account->checkin)->isToday();
-            }else {
-                $isToday = false;
             }
         }
 
