@@ -37,8 +37,12 @@ class AccountController extends Controller
             $data['password'] = Hash::make($request->password);
         }
         if (isset($request->avatar)) {
+           if($request->hasFile('avatar')) {
             $data['avatar'] = Storage::put('public/avatars', $request->avatar);
             $data['avatar'] = env('APP_URL').Storage::url($data['avatar']);
+           }else {
+            $data['avatar'] = $request->avatar;
+           }
         }
         $account->update($data);
 
