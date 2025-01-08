@@ -80,6 +80,8 @@ class AttendanceController extends Controller
                 $isToday = false;
             }
         }
+
+        dd($isToday);
        if ($isToday == true) {
            return response()->json([
                'error' => 'Hôm nay bạn đã điểm danh rồi'
