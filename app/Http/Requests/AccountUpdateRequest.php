@@ -34,7 +34,7 @@ class AccountUpdateRequest extends FormRequest
             'birthday' => 'nullable|date',
             'address' => 'nullable|max:100',
             'manager_id'=> 'nullable|exists:account,id',
-            'avatar' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
+            'avatar' => 'nullable'
         ];
     }
 
