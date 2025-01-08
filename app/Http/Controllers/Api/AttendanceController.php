@@ -45,13 +45,6 @@ class AttendanceController extends Controller
             $value['start_over_time'] = null;
             $value['end_over_time'] = null;
             $dateTime = new \DateTime($value->checkin);
-            $nineAM = clone $dateTime;
-            $nineAM->setTime(9, 1, 0);
-            if ($dateTime > $nineAM) {
-                $value['on_time'] = False;
-            }else {
-                $value['on_time'] = True;
-            }
             $b = $dateTime->modify("+9 hours 1 minutes");
             $value['estimated_checkout'] = $b->format('Y-m-d H:i:s');
             $aa = explode(' ', $value->checkin);
@@ -83,6 +76,8 @@ class AttendanceController extends Controller
         if (isset($account)) {
             if ($account->checkin != null) {
                 $isToday = Carbon::parse($account->checkin)->isToday();
+            }else {
+                $isToday = false;
             }
         }
        if ($isToday == true) {
