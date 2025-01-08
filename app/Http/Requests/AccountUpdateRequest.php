@@ -24,16 +24,16 @@ class AccountUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'email|unique:accounts,email',
-            'password' => 'min:8',
-            'username' => 'unique:accounts,username',
-            'full_name' => 'max:100',
-            'position' => 'max:20',
-            'phone'=> 'unique:accounts,phone | regex:/^(\+84|0)(\d{9})$/',
-            'birthday' => 'date',
-            'address' => 'max:100',
-            'manager_id'=> 'exists:account,id',
-            'avatar' => 'image|mimes:jpeg,jpg,png,gif|max:2048'
+            'email' => 'nullable|email|unique:accounts,email',
+            'password' => 'nullable|min:8',
+            'username' => 'nullable|unique:accounts,username',
+            'full_name' => 'nullable|max:100',
+            'position' => 'nullable|max:20',
+            'phone'=> 'nullable|unique:accounts,phone | regex:/^(\+84|0)(\d{9})$/',
+            'birthday' => 'nullable|date',
+            'address' => 'nullable|max:100',
+            'manager_id'=> 'nullable|exists:account,id',
+            'avatar' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
         ];
     }
 
