@@ -52,6 +52,7 @@ class AttendanceController extends Controller
                 $overTime = Propose::query()
                 ->where('propose_category_id', $idOverTime)
                 ->whereDate('start_time',$aa[0])
+                ->where('account_id', Auth::id())
                 ->first();
             if (isset($overTime)) {
                 $value['start_over_time'] = $overTime->start_time;
