@@ -21,6 +21,12 @@ class Propose extends Model
         'end_time',
     ];
 
+    public function date_holidays()
+    {
+
+        return $this->hasMany(DateHoliday::class, 'propose_id', 'id');
+    }
+
     public function account()
     {
 

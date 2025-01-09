@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendEmail;
 use App\Models\Account;
+use App\Models\DateHoliday;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class ProposeController extends Controller
 
         $proposes = $proposes->get();
         foreach ($proposes as $propose) {
-
+            $propose['date'] = $propose->date_holidays;
             $propose['full_name'] = $propose->account->full_name;
             $propose['avatar'] = $propose->account->avatar;
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name; ;
@@ -47,20 +48,18 @@ class ProposeController extends Controller
     public function store(Request $request)
     {
         $a = Auth::user();
-        $data = $request->all();
+        $data = $request->except('holiday');
         $data['account_id'] = $a->id;
-        $accounts = Account::query()->where('role_id', 2)->get();
-        $category = ProposeCategory::query()->where('id', $data['propose_category_id'])->first();
-        $name = $category == null ? 'Tuỳ chọn' : $category->name;
-        // foreach ($accounts as $account) {
-        //     SendEmail::dispatch([
-        //         'email' => $account->email,
-        //         'body' => "<p style='font-size: 20px'> Có 1 đề xuất mới từ <strong>$a->full_name</strong> ở mục <strong>$name</strong></strong> <br>
-        //                    Xem chi tiết tại <a href='https://work.1997.pro.vn/request'>Đây</a>
-        //                    </p>"
-        //     ]);
-        // }
+        $arr = [];
         $propose = Propose::query()->create($data);
+
+        if (isset($request->holiday)) {
+            foreach ($request->holiday as $date) {
+                $a =  ['propose_id'=> $propose->id];
+                $arr[] = array_merge($a, $date);
+            }
+        }
+        DateHoliday::query()->insert($arr);
 
         return response()->json($propose);
     }
