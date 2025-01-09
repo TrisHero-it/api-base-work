@@ -25,7 +25,7 @@ class StageController extends Controller
         $tasks2 =  Task::query()->whereIn('stage_id', $arrStageId)->with('tags')->latest('updated_at')->get();
         foreach ($stages as $stage) {
            if ($stage->isSuccessStage()) {
-               $tasks = $tasks2->where('stage_id', $stage->id)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
+               $tasks = $tasks2->where('stage_id', $stage->id)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])->sortByDesc('completed_at');
            }else {
                $tasks = $tasks2->where('stage_id', $stage->id);
            }
