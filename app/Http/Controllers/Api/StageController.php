@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StageStoreRequest;
 use App\Http\Requests\StageUpdateRequest;
 use App\Models\Stage;
-use App\Models\StickerTask;
 use App\Models\Task;
 use Carbon\Carbon;
-use http\Client\Response;
 use Illuminate\Http\Request;
 
 class StageController extends Controller
@@ -27,7 +25,7 @@ class StageController extends Controller
         $tasks2 =  Task::query()->whereIn('stage_id', $arrStageId)->with('tags')->latest('updated_at')->get();
         foreach ($stages as $stage) {
            if ($stage->isSuccessStage()) {
-               $tasks = $tasks2->where('stage_id', $stage->id)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
+               $tasks = $tasks2->where('stage_id', $stage->id)->orderBy('completed_at', 'desc')->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
            }else {
                $tasks = $tasks2->where('stage_id', $stage->id);
            }

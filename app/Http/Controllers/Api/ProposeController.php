@@ -49,7 +49,7 @@ class ProposeController extends Controller
         $data['account_id'] = $a->id;
         $arr = [];
         $propose = Propose::query()->create($data);
-
+        
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
                 $a =  ['propose_id'=> $propose->id];
