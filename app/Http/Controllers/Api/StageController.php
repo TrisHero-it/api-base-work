@@ -29,7 +29,7 @@ class StageController extends Controller
            }else {
                $tasks = $tasks2->where('stage_id', $stage->id);
            }
-//   Hiển thị danh sách nhiệm vụ của stages
+        //Hiển thị danh sách nhiệm vụ của stages
             $tasks = array_values($tasks->toArray());
             $stage['tasks'] = $tasks;
         }
@@ -39,7 +39,7 @@ class StageController extends Controller
 
     public function store(StageStoreRequest $request) {
             if (!isset($request->index)) {
-//              Nếu như không truyeefn lên vị trí của stages thì sẽ thêm vào stages mới nht
+            //Nếu như không truyeefn lên vị trí của stages thì sẽ thêm vào stages mới nht
                 $stage = Stage::query()->where('workflow_id', $request->workflow_id)->orderByDesc('index')->first();
                 $stages = Stage::query()->create([
                     'name' => $request->name,
@@ -103,7 +103,7 @@ class StageController extends Controller
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
-        }catch (\Exception $exception){
+        }catch (\Exception $exception){ 
             return response()->json([
                 'error' => 'Giai đoạn có chứa nhiệm vụ'
             ], 500);

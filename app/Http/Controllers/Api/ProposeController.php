@@ -12,7 +12,7 @@ class ProposeController extends Controller
 {
     public function index(Request $request)
     {
-        $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category']);
+        $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays']);
         if (isset($request->status)) {
             $proposes = $proposes->where('status', $request->status);
         }
@@ -35,6 +35,7 @@ class ProposeController extends Controller
             $propose['avatar'] = $propose->account->avatar;
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name; ;
             unset($propose['account']);
+            unset($propose['date_holidays']);
             unset($propose['propose_category']);
             unset($propose['account_id']);
         }

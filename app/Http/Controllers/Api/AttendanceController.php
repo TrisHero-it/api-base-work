@@ -66,7 +66,7 @@ class AttendanceController extends Controller
             ->where('account_id', $account->id)
             ->whereDate('checkin', Carbon::today())
             ->orderBy('id')
-            ->first();
+            ->get();
         }
 
         return response()->json($attendance);
@@ -74,21 +74,21 @@ class AttendanceController extends Controller
 
     public function  checkIn(Request $request)
     {
-        $isToday = false;
-        if (Auth::check()) {
-            $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
-        }
-        if (isset($account)) {
-            if ($account->checkin != null) {
-                $isToday = Carbon::parse($account->checkin)->isToday();
-            }
-        }
+        // $isToday = false;
+        // if (Auth::check()) {
+        //     $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
+        // }
+        // if (isset($account)) {
+        //     if ($account->checkin != null) {
+        //         $isToday = Carbon::parse($account->checkin)->isToday();
+        //     }
+        // }
 
-       if ($isToday == true) {
-           return response()->json([
-               'error' => 'Hôm nay bạn đã điểm danh rồi'
-           ]);
-       } else {
+    //    if ($isToday == true) {
+    //        return response()->json([
+    //            'error' => 'Hôm nay bạn đã điểm danh rồi'
+    //        ]);
+    //    } else {
             Attendance::query()
                 ->create([
                     'account_id' => Auth::id(),
@@ -99,7 +99,7 @@ class AttendanceController extends Controller
                 ->json([
                     'success' => 'Đã điểm danh'
                 ]);
-       }
+    //    }
     }
 
     public function checkOut(Request $request)
