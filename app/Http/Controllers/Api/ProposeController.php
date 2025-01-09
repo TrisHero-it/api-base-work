@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendEmail;
-use App\Models\Account;
 use App\Models\DateHoliday;
 use App\Models\Propose;
-use App\Models\ProposeCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

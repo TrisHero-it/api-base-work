@@ -19,6 +19,7 @@ class Propose extends Model
         'reason',
         'start_time',
         'end_time',
+        'type'
     ];
 
     public function date_holidays()
