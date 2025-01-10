@@ -11,7 +11,8 @@ class Sticker extends Model
 
     protected $fillable = [
         'title',
-        'workflow_id'
+        'workflow_id',
+        'code_color'
     ];
 
     public function tasks()

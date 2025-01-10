@@ -19,6 +19,7 @@ class StickerController extends Controller
     {
         $sticker = Sticker::query()->findOrFail($id);
         $sticker->update($request->all());
+
         return response()->json($sticker);
     }
 
@@ -34,10 +35,12 @@ class StickerController extends Controller
         try {
             $sticker = Sticker::query()->findOrFail($id);
             $sticker->delete();
+
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
         }catch (\Exception $exception){
+            
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'
             ], 500);
