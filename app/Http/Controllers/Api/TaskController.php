@@ -9,17 +9,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskStoreRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflow;
-use App\Models\AccountWorkflowCategory;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
-use App\Models\Notification;
 use App\Models\Stage;
 use App\Models\StickerTask;
 use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -101,7 +98,6 @@ class TaskController extends Controller
             }
         }
 
-    
         if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
             return response()->json([
                 'message' => 'Nhiệm vụ này không phải của bạn',
@@ -131,6 +127,13 @@ class TaskController extends Controller
             preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
         // Phân biệt youtube shorts
             if (strpos($request->link_youtube, 'shorts') !== false) {
+                $aa = explode('/', $request->link_youtube);
+                $data['code_youtube'] = end($aa);
+            } else {
+                $data['code_youtube'] = $matches[1];
+            }
+
+            if (strpos($request->link_youtube, 'youtu.be') !== false) {
                 $aa = explode('/', $request->link_youtube);
                 $data['code_youtube'] = end($aa);
             } else {

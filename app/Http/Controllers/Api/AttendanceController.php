@@ -16,6 +16,14 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
+        if (isset($request->me)) {
+            $account = Auth::user();
+            $attendance = Attendance::query()
+            ->where('account_id', $account->id)
+            ->whereDate('checkin', Carbon::today())
+            ->orderBy('id')
+            ->get();
+        }else {
         $attendance = Attendance::query();
         //  Loc theo ngày
         if (isset($request->start) && isset($request->end)) {
@@ -60,14 +68,7 @@ class AttendanceController extends Controller
             } 
             }
         }
-        if (isset($request->me)) {
-            $account = Auth::user();
-            $attendance = Attendance::query()
-            ->where('account_id', $account->id)
-            ->whereDate('checkin', Carbon::today())
-            ->orderBy('id')
-            ->get();
-        }
+    }
 
         return response()->json($attendance);
     }
