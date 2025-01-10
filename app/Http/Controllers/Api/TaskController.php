@@ -132,6 +132,9 @@ class TaskController extends Controller
             } else if(strpos($request->link_youtube, 'youtu.be') !== false) {
                 $aa = explode('/', $request->link_youtube);
                 $data['code_youtube'] = end($aa);
+                if (strpos($data['code_youtube'], '?') !== false) {
+                    $data['code_youtube'] = explode('?', $data['code_youtube'])[0];
+                }
             }else {
                 $data['code_youtube'] = $matches[1];
             }
