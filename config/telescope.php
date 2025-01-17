@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\checkDevMuaKey;
 use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
 
@@ -94,6 +95,7 @@ return [
     'middleware' => [
         'web',
         Authorize::class,
+        checkDevMuaKey::class
     ],
 
     /*
@@ -131,13 +133,6 @@ return [
     | a request or task is executed. Feel free to customize this list.
     |
     */
-
-    'gate' => function ($user) {
-        return in_array($user->email, [
-            'dovuong020802@gmail.com',
-            'nghia@gmail.com'
-        ]);
-    },
 
     'watchers' => [
         Watchers\BatchWatcher::class => env('TELESCOPE_BATCH_WATCHER', true),
