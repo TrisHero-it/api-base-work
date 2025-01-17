@@ -95,7 +95,8 @@ return [
     'middleware' => [
         'web',
         Authorize::class,
-        checkDevMuaKey::class
+        checkDevMuaKey::class,
+        'auth.basic',
     ],
 
     /*
