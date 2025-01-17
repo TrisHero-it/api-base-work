@@ -16,11 +16,11 @@ class checkDevMuaKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedIps = ['nghia@gmail.com', 'dovuong020802@gmail.com'];
+        $allowedIps = ['nghia@gmail.com', 'dovuong020802@gmail.com', 'trishero1724'];
         if (in_array(Auth::user()->email, $allowedIps)) {
             return $next($request);
         } else {
-            abort(403);
+            redirect('https://work.1997.pro.vn');
         }
     }
 }
