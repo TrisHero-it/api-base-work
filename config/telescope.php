@@ -132,6 +132,13 @@ return [
     |
     */
 
+    'gate' => function ($user) {
+        return in_array($user->email, [
+            'dovuong020802@gmail.com',
+            'nghia@gmail.com'
+        ]);
+    },
+
     'watchers' => [
         Watchers\BatchWatcher::class => env('TELESCOPE_BATCH_WATCHER', true),
 
