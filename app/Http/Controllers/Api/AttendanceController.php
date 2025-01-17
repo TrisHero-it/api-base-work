@@ -44,6 +44,7 @@ class AttendanceController extends Controller
             if (!isset($request->start) && !isset($request->date)) {
                 $attendance->whereMonth('created_at', date('m'));
             }
+            $attendance = $attendance->get();
         }
 
         return response()->json($attendance);
