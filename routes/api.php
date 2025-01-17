@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\CommentController;
@@ -33,7 +34,7 @@ Route::apiResource('accounts', AccountController::class);
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
 
 Route::get('/test', function () {
-    $allowedIp= [
+    $allowedIp = [
         '58.186.22.148',
         '127.0.0.1',
     ];
@@ -50,7 +51,7 @@ Route::get('b', function () {
 })->middleware('auth.basic');
 
 Route::middleware(['check.login'])->group(function () {
-    
+
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
 
     Route::apiResources([
@@ -64,12 +65,12 @@ Route::middleware(['check.login'])->group(function () {
         'workflow-categories' => WorkflowCategoryController::class,
         'fields' => FieldController::class,
         'field-values' => FieldValueController::class,
-        'history-move-tasks'=> HistoryMoveTaskController::class,
+        'history-move-tasks' => HistoryMoveTaskController::class,
         'comments' => CommentController::class,
         'report-fields' => ReportFieldController::class,
         'report-field-values' => ReportFieldValueController::class,
         'kpis' => KpiController::class,
-        'tags'=> StickerController::class,
+        'tags' => StickerController::class,
         'tag-task' => TagValueController::class,
         'schedule' => ScheduleWorkController::class,
         'my-tasks' => MyJobController::class,

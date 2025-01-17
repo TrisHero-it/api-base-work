@@ -19,21 +19,25 @@ class ProposeController extends Controller
 
         if (isset($request->propose_category_id)) {
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
-        }  
-        
+        }
+
+        if (isset($request->account_id)) {
+            $proposes = $proposes->where('account_id', $request->account_id);
+        }
+
         if (isset($request->date)) {
             $date = explode("-", $request->date);
             $year = $date[0];
             $month = $date[1];
             $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
-        }  
+        }
 
         $proposes = $proposes->get();
         foreach ($proposes as $propose) {
             $propose['date'] = $propose->date_holidays;
             $propose['full_name'] = $propose->account->full_name;
             $propose['avatar'] = $propose->account->avatar;
-            $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name; ;
+            $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;;
             unset($propose['account']);
             unset($propose['date_holidays']);
             unset($propose['propose_category']);
@@ -50,10 +54,10 @@ class ProposeController extends Controller
         $data['account_id'] = $a->id;
         $arr = [];
         $propose = Propose::query()->create($data);
-        
+
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
-                $a =  ['propose_id'=> $propose->id];
+                $a =  ['propose_id' => $propose->id];
                 $arr[] = array_merge($a, $date);
             }
         }
@@ -64,9 +68,9 @@ class ProposeController extends Controller
 
     public function update(int $id, Request $request)
     {
-        if (!Auth::user()->isSeniorAdmin()){
+        if (!Auth::user()->isSeniorAdmin()) {
             return response()->json([
-                'message'=> 'Bạn không có quyền thao tác',
+                'message' => 'Bạn không có quyền thao tác',
                 'errors' => 'Bạn không có quyền thao tác'
             ], status: 403);
         }
@@ -81,6 +85,6 @@ class ProposeController extends Controller
         $propose = Propose::query()->findOrFail($id);
         $propose->delete();
 
-        return response()->json(data: ['success'=> 'Xoá thành công']);
+        return response()->json(data: ['success' => 'Xoá thành công']);
     }
 }

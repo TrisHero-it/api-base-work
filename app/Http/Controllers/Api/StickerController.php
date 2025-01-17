@@ -25,12 +25,12 @@ class StickerController extends Controller
 
     public function store(Request $request)
     {
-           $tag =  Sticker::query()->create($request->all());
+        $tag =  Sticker::query()->create($request->all());
 
-           return response()->json($tag);
+        return response()->json($tag);
     }
 
-    public function destroy(Request $request, int $id)
+    public function destroy(int $id)
     {
         try {
             $sticker = Sticker::query()->findOrFail($id);
@@ -39,13 +39,11 @@ class StickerController extends Controller
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
-        }catch (\Exception $exception){
-            
+        } catch (\Exception $exception) {
+
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'
             ], 500);
         }
-
-
     }
 }
