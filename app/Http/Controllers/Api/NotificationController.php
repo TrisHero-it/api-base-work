@@ -15,7 +15,7 @@ class NotificationController extends Controller
         $notifications = Notification::query()
             ->orderBy('id', 'desc')
             ->where('account_id', Auth::id())
-            ->with('manager', 'account')
+            ->with('manager')
             ->get();
 
         return response()->json($notifications);
