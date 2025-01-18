@@ -8,6 +8,7 @@ use App\Http\Requests\CommentUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountProfile;
 use App\Models\Comment;
+use App\Models\Notification;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,12 +41,12 @@ class CommentController extends Controller
 
     public function store(CommentStoreRequest $request)
     {
-            $data = $request->except('task_id', 'account_id');
-            $data['account_id'] = Auth::id();
-            $data['task_id'] = $request->task_id;
-            $comment = Comment::query()->create($data);
+        $data = $request->except('task_id', 'account_id');
+        $data['account_id'] = Auth::id();
+        $data['task_id'] = $request->task_id;
+        $comment = Comment::query()->create($data);
 
-            return response()->json($comment);
+        return response()->json($comment);
     }
 
     public function destroy(int $id)
@@ -57,7 +58,7 @@ class CommentController extends Controller
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => 'Đã xảy ra lỗi'
             ], 500);
@@ -66,9 +67,9 @@ class CommentController extends Controller
 
     public function update(CommentUpdateRequest $request, int $id)
     {
-            $comment = Comment::query()->findOrFail($id);
-            $comment->update($request->all());
+        $comment = Comment::query()->findOrFail($id);
+        $comment->update($request->all());
 
-            return response()->json($comment);
+        return response()->json($comment);
     }
 }

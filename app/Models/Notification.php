@@ -14,6 +14,7 @@ class Notification extends Model
         'message',
         'link',
         'seen',
-        'account_id'
+        'account_id',
+        'manager_id'
     ];
 }

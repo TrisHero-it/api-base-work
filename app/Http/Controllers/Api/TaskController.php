@@ -32,53 +32,53 @@ class TaskController extends Controller
 
     public function store(TaskStoreRequest $request)
     {
-            $account = Account::query()->find($request->account_id);
-            $stage = Stage::query()
-                ->where('workflow_id', $request->workflow_id)
-                ->orderByDesc('index')
-                ->first();
-            $members = AccountWorkflow::query()
-                ->where('workflow_id', $request->workflow_id)
-                ->get();
-            if (!Auth::user()->isSeniorAdmin()) {
-                $flag = 0;
-                foreach ($members as $member) {
-                    if ($member->account_id == Auth::id()) {
-                        $flag = 1;
-                    }
-                }
-                if ($flag == 0) {
-                    return response()->json([
-                        'errors' => 'Bạn không phải là thành viên của workflow này'
-                    ], 403);
+        $account = Account::query()->find($request->account_id);
+        $stage = Stage::query()
+            ->where('workflow_id', $request->workflow_id)
+            ->orderByDesc('index')
+            ->first();
+        $members = AccountWorkflow::query()
+            ->where('workflow_id', $request->workflow_id)
+            ->get();
+        if (!Auth::user()->isSeniorAdmin()) {
+            $flag = 0;
+            foreach ($members as $member) {
+                if ($member->account_id == Auth::id()) {
+                    $flag = 1;
                 }
             }
-            if ($stage->isSuccessStage()) {
+            if ($flag == 0) {
                 return response()->json([
-                    'errors' => 'Chưa có giai đoạn'
-                ], 500);
+                    'errors' => 'Bạn không phải là thành viên của workflow này'
+                ], 403);
             }
+        }
+        if ($stage->isSuccessStage()) {
+            return response()->json([
+                'errors' => 'Chưa có giai đoạn'
+            ], 500);
+        }
 
-            $task = Task::query()->create([
-                'name' => $request->name,
-                'description' => $request->description ?? null,
-                'account_id' => $account->id ?? null,
-                'stage_id' => $stage->id,
-            ]);
-            if (isset($account)) {
-                if (isset($stage->expired_after_hours)) {
-                    $dateTime = Carbon::parse($request->created_at);
-                    $task = Task::query()
-                        ->where('id', $task->id)
-                        ->first() ?? null;
-                    $task->update([
-                        'expired' => $dateTime->addHour($stage->expired_after_hours),
-                        'started_at' => $dateTime
-                    ]);
-                }
+        $task = Task::query()->create([
+            'name' => $request->name,
+            'description' => $request->description ?? null,
+            'account_id' => $account->id ?? null,
+            'stage_id' => $stage->id,
+        ]);
+        if (isset($account)) {
+            if (isset($stage->expired_after_hours)) {
+                $dateTime = Carbon::parse($request->created_at);
+                $task = Task::query()
+                    ->where('id', $task->id)
+                    ->first() ?? null;
+                $task->update([
+                    'expired' => $dateTime->addHour($stage->expired_after_hours),
+                    'started_at' => $dateTime
+                ]);
             }
+        }
 
-            return response()->json($task);
+        return response()->json($task);
     }
 
 
@@ -106,44 +106,43 @@ class TaskController extends Controller
                 ]
             ], 403);
         }
-    if (isset($request->stage_id)) {
-    //  Lấy ra stage mà mình muốn chuyển đến
-    $stage = Stage::query()->where('id', $request->stage_id)->first();
+        if (isset($request->stage_id)) {
+            //  Lấy ra stage mà mình muốn chuyển đến
+            $stage = Stage::query()->where('id', $request->stage_id)->first();
 
-    if ($stage->isFailStage() && !$account->isSeniorAdmin()) {
-        return response()->json([
-            'message' => 'Bạn không thể cho nhiệm vụ thất bại',
-            'errors' => [
-                'task' => 'Bạn không thể cho nhiệm vụ thất bại'
-            ]
-        ], 403);
-    };
-    }
+            if ($stage->isFailStage() && !$account->isSeniorAdmin()) {
+                return response()->json([
+                    'message' => 'Bạn không thể cho nhiệm vụ thất bại',
+                    'errors' => [
+                        'task' => 'Bạn không thể cho nhiệm vụ thất bại'
+                    ]
+                ], 403);
+            };
+        }
         // Cập nhập thông tin nhiệm vụ
         $data = $request->all();
 
-        if (isset($request->link_youtube)){
-        // Nếu có link youtube thì lấy ra mã code của link đó
+        if (isset($request->link_youtube)) {
+            // Nếu có link youtube thì lấy ra mã code của link đó
             preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
-        // Phân biệt youtube shorts
+            // Phân biệt youtube shorts
             if (strpos($request->link_youtube, 'shorts') !== false) {
                 $aa = explode('/', $request->link_youtube);
                 $data['code_youtube'] = end($aa);
-            } else if(strpos($request->link_youtube, 'youtu.be') !== false) {
+            } else if (strpos($request->link_youtube, 'youtu.be') !== false) {
                 $aa = explode('/', $request->link_youtube);
                 $data['code_youtube'] = end($aa);
                 if (strpos($data['code_youtube'], '?') !== false) {
                     $data['code_youtube'] = explode('?', $data['code_youtube'])[0];
                 }
-            }else {
+            } else {
                 $data['code_youtube'] = $matches[1];
             }
         }
 
         //  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
         //  Nếu account_id == null thì là gỡ người làm nhiệm vụ
-        if (isset($request->account_id) && $request->account_id == null)
-        {
+        if (isset($request->account_id) && $request->account_id == null) {
             if ($task->account_id != $account->id) {
                 if (!$account->isAdmin()) {
                     return response()->json([
@@ -155,34 +154,35 @@ class TaskController extends Controller
                 }
             }
         }
-            if ($task->account_id != $request->account_id && $request->account_id != null) {
-        //  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
-                if ($task->account_id != null) {
-                    if (!$account->isAdmin()) {
-                        return response()->json([
-                            'message' => 'Nhiệm vụ này đã có người nhận, load lại đi men',
-                            'errors' => [
-                                'task' => 'Nhiệm vụ này đã có người nhận, load lại đi men'
-                            ],
-                        ], 403);
-                    }
+        if ($task->account_id != $request->account_id && $request->account_id != null) {
+            //  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
+            if ($task->account_id != null) {
+                if (!$account->isAdmin()) {
+                    return response()->json([
+                        'message' => 'Nhiệm vụ này đã có người nhận, load lại đi men',
+                        'errors' => [
+                            'task' => 'Nhiệm vụ này đã có người nhận, load lại đi men'
+                        ],
+                    ], 403);
                 }
-                $data['started_at'] = now();
-
-                if($task->stage->expired_after_hours != null) {
-                    $dateTime = new \DateTime($data['started_at']);
-                    $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
-                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
-                }else {
-                    $data['expired'] = null;
-                }
-                    event(new NotificationEvent([
-                        'full_name' => $account->full_name,
-                        'task_name' => $task->name,
-                        'workflow_id' => $task->stage->workflow_id,
-                        'account_id' => $request->account_id
-                    ]));
             }
+            $data['started_at'] = now();
+
+            if ($task->stage->expired_after_hours != null) {
+                $dateTime = new \DateTime($data['started_at']);
+                $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+            } else {
+                $data['expired'] = null;
+            }
+            event(new NotificationEvent([
+                'full_name' => $account->full_name,
+                'task_name' => $task->name,
+                'workflow_id' => $task->stage->workflow_id,
+                'account_id' => $request->account_id,
+                'manager_id' => Auth::id(),
+            ]));
+        }
 
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
@@ -197,19 +197,19 @@ class TaskController extends Controller
                 $data['status'] = null;
             }
 
-        //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
+            //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
                 if ($task->account_id == null) {
                     return response()->json([
                         'errors' => 'Nhiệm vụ chưa được giao'
                     ], 500);
-                }else {
+                } else {
                     $data['completed_at'] = now();
                     $data['status'] = 'completed';
                 }
             }
 
-        //  Lấy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
+            //  Lấy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
             $worker = HistoryMoveTask::query()
                 ->where('task_id', $task->id)
                 ->where('old_stage', $request->stage_id)
@@ -219,19 +219,19 @@ class TaskController extends Controller
                 $data['expired'] = $worker->expired_at;
                 $data['account_id'] = $worker->worker;
                 $data['started_at'] = $worker->started_at;
-            }else {
+            } else {
                 $data['expired'] = null;
                 $data['account_id'] = null;
                 $data['started_at'] = null;
             }
 
-        //  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
+            //  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
             if (isset($stage->expired_after_hours) && $data['expired'] === null && $data['account_id'] !== null) {
                 $dateTime = now();
                 $dateTime->addHours($task->stage->expired_after_hours);
                 $data['expired'] = $dateTime->format('Y-m-d H:i:s');
             }
-        //  Thêm lịch sử kéo thả nhiệm vụ
+            //  Thêm lịch sử kéo thả nhiệm vụ
             event(new HistoryMoveTaskEvent([
                 'account_id' => $account->id,
                 'task_id' => $task->id,
@@ -239,32 +239,32 @@ class TaskController extends Controller
                 'new_stage' => $request->stage_id,
                 'started_at' => $task->started_at ?? null,
                 'worker' => $task->account_id ?? null,
-                'expired_at'=> $task->expired ?? null,
+                'expired_at' => $task->expired ?? null,
             ]));
 
-        //  Nếu như nhiệm vụ đã thành công mà bị chuyển sang thất bại, thì sẽ xóa tát cả kpi của những người làm nhiệm vụ đó
-    if ($stage->isFailStage()) {
-        $a = Kpi::query()->where('task_id', $task->id)->get();
-        $date = new \DateTime($task->created_at);
-        $now = new \DateTime();
-        foreach ($a as $item) {
-            if ($date->format('Y-m') == $now->format('Y-m')) {
-                $item->delete();
-            }else {
-                Kpi::query()->create([
-                    'status' => 1,
-                    'task_id' => $item->task_id,
-                    'stage_id' => $item->stage_id,
-                    'account_id' => $item->account_id,
-                ]);
+            //  Nếu như nhiệm vụ đã thành công mà bị chuyển sang thất bại, thì sẽ xóa tát cả kpi của những người làm nhiệm vụ đó
+            if ($stage->isFailStage()) {
+                $a = Kpi::query()->where('task_id', $task->id)->get();
+                $date = new \DateTime($task->created_at);
+                $now = new \DateTime();
+                foreach ($a as $item) {
+                    if ($date->format('Y-m') == $now->format('Y-m')) {
+                        $item->delete();
+                    } else {
+                        Kpi::query()->create([
+                            'status' => 1,
+                            'task_id' => $item->task_id,
+                            'stage_id' => $item->stage_id,
+                            'account_id' => $item->account_id,
+                        ]);
+                    }
+                }
             }
-        }
-    }
-        //  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
+            //  Nếu như là chuyển tiếp giao đoạn thì thêm cho 1 kpi
             if ($task->isNextStage($stage->index) && $task->account_id != null && !$stage->isFailStage()) {
                 $a = HistoryMoveTask::query()->where('task_id', $task->id)
                     ->where('old_stage', $task->stage_id)
-                    ->orderBy('id','desc')
+                    ->orderBy('id', 'desc')
                     ->first();
                 $date1 = new \DateTime($a->started_at);
                 $date2 = new \DateTime($a->created_at);
@@ -277,13 +277,13 @@ class TaskController extends Controller
                     'task_id' => $task->id,
                     'stage_id' => $task->stage_id,
                     'status' => 0,
-                    'total_time' => $totalHours .'h',
+                    'total_time' => $totalHours . 'h',
                 ]));
             } else {
-               $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
-               if ($kpi !== null) {
-                   $kpi->delete();
-               }
+                $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
+                if ($kpi !== null) {
+                    $kpi->delete();
+                }
             };
         }
         $task->update($data);
@@ -324,38 +324,36 @@ class TaskController extends Controller
         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
         // Tuần trước
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
-            $tasks = Task::query()->where('code_youtube', '!=', null)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
-            $stages = Stage::query()->where('workflow_id', $request->workflow_id)->get();
-            foreach ($stages as $stage) {
-                $a[] = $stage->id;
+        $tasks = Task::query()->where('code_youtube', '!=', null)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek]);
+        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->get();
+        foreach ($stages as $stage) {
+            $a[] = $stage->id;
+        }
+        $tasks = $tasks->whereIn('stage_id', $a)->get();
+
+        foreach ($tasks as $task) {
+            $videoId = $task->code_youtube; // Thay VIDEO_ID bằng ID của video YouTube
+            $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
+
+            $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
+            $response = file_get_contents($url);
+            $data = json_decode($response, true);
+            if ($data['items'] == null) {
+                continue;
             }
-            $tasks = $tasks->whereIn('stage_id', $a)->get();
+            $dateTime = new \DateTime($data['items'][0]['snippet']['publishedAt']);
+            $dateTime->setTimezone(new \DateTimeZone('Asia/Ho_Chi_Minh'));
+            $valueData = [
+                'view_count' => $data['items'][0]['statistics']['viewCount'],
+                'like_count' => $data['items'][0]['statistics']['likeCount'],
+                'comment_count' => $data['items'][0]['statistics']['commentCount'],
+                'date_posted' => $dateTime,
+            ];
+            $task->update($valueData);
+        }
 
-            foreach ($tasks as $task) {
-                $videoId = $task->code_youtube; // Thay VIDEO_ID bằng ID của video YouTube
-                $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
-
-                $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
-                $response = file_get_contents($url);
-                $data = json_decode($response, true);
-                if($data['items'] == null) {
-                    continue;
-                }
-                $dateTime = new \DateTime($data['items'][0]['snippet']['publishedAt']);
-                $dateTime->setTimezone(new \DateTimeZone('Asia/Ho_Chi_Minh'));
-                $valueData = [
-                    'view_count' => $data['items'][0]['statistics']['viewCount'],
-                    'like_count' => $data['items'][0]['statistics']['likeCount'],
-                    'comment_count' => $data['items'][0]['statistics']['commentCount'],
-                    'date_posted' => $dateTime,
-                ];
-                $task->update($valueData);
-            }
-
-            return response()->json([
-                'success' => 'Cập nhập thành công'
-            ]);
-
+        return response()->json([
+            'success' => 'Cập nhập thành công'
+        ]);
     }
-
 }
