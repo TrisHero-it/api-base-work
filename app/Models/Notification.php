@@ -17,4 +17,16 @@ class Notification extends Model
         'account_id',
         'manager_id'
     ];
+
+    public function manager()
+    {
+
+        return $this->belongsTo(Account::class);
+    }
+
+    public function account()
+    {
+
+        return $this->belongsTo(Account::class);
+    }
 }
