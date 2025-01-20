@@ -121,7 +121,6 @@ class TaskController extends Controller
         }
         // Cập nhập thông tin nhiệm vụ
         $data = $request->all();
-
         if (isset($request->link_youtube)) {
             // Nếu có link youtube thì lấy ra mã code của link đó
             preg_match('/v=([a-zA-Z0-9_-]+)/', $request->link_youtube, $matches);
@@ -139,7 +138,6 @@ class TaskController extends Controller
                 $data['code_youtube'] = $matches[1];
             }
         }
-
         //  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
         //  Nếu account_id == null thì là gỡ người làm nhiệm vụ
         if (isset($request->account_id) && $request->account_id == null) {
@@ -167,7 +165,6 @@ class TaskController extends Controller
                 }
             }
             $data['started_at'] = now();
-
             if ($task->stage->expired_after_hours != null) {
                 $dateTime = new \DateTime($data['started_at']);
                 $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
@@ -183,7 +180,6 @@ class TaskController extends Controller
                 'manager_id' => Auth::id(),
             ]));
         }
-
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
             if ($task->stage->isSuccessStage()) {
@@ -196,7 +192,6 @@ class TaskController extends Controller
                 $data['completed_at'] = null;
                 $data['status'] = null;
             }
-
             //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
                 if ($task->account_id == null) {
@@ -208,7 +203,6 @@ class TaskController extends Controller
                     $data['status'] = 'completed';
                 }
             }
-
             //  Lấy thông tin từ bảng kéo thả nhiệm vụ để hiển thị lại người nhận nhiệm vụ ở giai đoạn cũ
             $worker = HistoryMoveTask::query()
                 ->where('task_id', $task->id)
@@ -224,7 +218,6 @@ class TaskController extends Controller
                 $data['account_id'] = null;
                 $data['started_at'] = null;
             }
-
             //  Nếu giai đoạn có hạn thì nhiệm vụ sẽ ăn theo hạn của giai đoạn
             if (isset($stage->expired_after_hours) && $data['expired'] === null && $data['account_id'] !== null) {
                 $dateTime = now();
@@ -241,7 +234,6 @@ class TaskController extends Controller
                 'worker' => $task->account_id ?? null,
                 'expired_at' => $task->expired ?? null,
             ]));
-
             //  Nếu như nhiệm vụ đã thành công mà bị chuyển sang thất bại, thì sẽ xóa tát cả kpi của những người làm nhiệm vụ đó
             if ($stage->isFailStage()) {
                 $a = Kpi::query()->where('task_id', $task->id)->get();

@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\ScheduleWorkController;
+use App\Models\Comment;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
@@ -83,6 +84,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::post('/forgot-password', [AccountController::class, 'forgotPassword']);
 
     // Điểm danh
+    Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::get('/attendances', [AttendanceController::class, 'index']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);

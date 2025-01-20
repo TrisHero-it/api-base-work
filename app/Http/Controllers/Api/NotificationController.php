@@ -28,9 +28,13 @@ class NotificationController extends Controller
         return response()->json($notification);
     }
 
-    public function delete(int $id)
+    public function delete(int $id, Request $request)
     {
-        $notification = Notification::find($id)->delete();
+        if (isset($request->all)) {
+            Notification::where('account_id', Auth::id())->delete();
+        } else {
+            $notification = Notification::find($id)->delete();
+        } 
 
         return response()->json([
             'success' => 'Xoá thành công'

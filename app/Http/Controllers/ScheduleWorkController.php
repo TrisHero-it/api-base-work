@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class   ScheduleWorkController extends Controller
+class ScheduleWorkController extends Controller
 {
     public function index(Request $request)
     {
