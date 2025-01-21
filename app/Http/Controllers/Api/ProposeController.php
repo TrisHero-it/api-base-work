@@ -80,7 +80,7 @@ class ProposeController extends Controller
         // $propose->update($request->all());
         return $propose;
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
-            $date = explode(separator: ' ', $propose->start_time)[0];
+            // $date = explode(separator: ' ', $propose->end_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)->first();
             if (isset($attendance)) {
                 $attendance->update([
