@@ -91,7 +91,7 @@ class ProposeController extends Controller
         $status = $propose->status == 'approved' ? 'được chấp nhận' : 'bị từ chối';
         Notification::create([
             'account_id' => $propose->account_id,
-            'title' => "<strong>$name</strong> của bạn đã " . $status,
+            'title' => "$name của bạn đã " . $status,
             'message' => "<strong>$name</strong> của bạn đã " . $status,
             'manager_id' => auth()->id()
         ]);
