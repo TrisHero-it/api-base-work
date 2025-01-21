@@ -81,12 +81,10 @@ class ProposeController extends Controller
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $propose->start_time);
             $attendance = Attendance::whereDate('checkin', $date)->first();
-            if (isset($attendance)) {
-                $attendance->update([
-                    'checkin' => $propose->start_time,
-                    'checkout' => $propose->end_time,
-                ]);
-            }
+            $attendance->update([
+                'checkin' => $propose->start_time,
+                'checkout' => $propose->end_time,
+            ]);
         }
         $name = $propose->propose_category->name;
         $status = $propose->status == 'approved' ? 'được chấp nhận' : 'bị từ chối';
