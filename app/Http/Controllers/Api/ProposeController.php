@@ -77,10 +77,9 @@ class ProposeController extends Controller
             ], status: 403);
         }
         $propose = Propose::query()->with('propose_category')->findOrFail($id);
-        // $propose->update($request->all());
-        return $propose;
+        $propose->update($request->all());
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
-            // $date = explode(separator: ' ', $propose->end_time)[0];
+            $date = explode(' ', $propose->start_time);
             $attendance = Attendance::whereDate('checkin', $date)->first();
             if (isset($attendance)) {
                 $attendance->update([
