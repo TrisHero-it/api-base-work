@@ -66,6 +66,11 @@ class AttendanceController extends Controller
                 ->json([
                     'success' => 'Đã điểm danh'
                 ]);
+        }else {
+            return response()
+            ->json([
+                'error' => 'Không được điểm danh vào thời gian này'
+            ],423);
         }
     }
 
