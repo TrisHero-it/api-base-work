@@ -52,32 +52,21 @@ class AttendanceController extends Controller
 
     public function  checkIn(Request $request)
     {
-        // $isToday = false;
-        // if (Auth::check()) {
-        //     $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
-        // }
-        // if (isset($account)) {
-        //     if ($account->checkin != null) {
-        //         $isToday = Carbon::parse($account->checkin)->isToday();
-        //     }
-        // }
+        $currentTime = Carbon::now();
+        $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
+        $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
+        if ($currentTime->between($startTime, $endTime)) {
+            Attendance::query()
+                ->create([
+                    'account_id' => Auth::id(),
+                    'checkin' => now()
+                ]);
 
-        //    if ($isToday == true) {
-        //        return response()->json([
-        //            'error' => 'Hôm nay bạn đã điểm danh rồi'
-        //        ]);
-        //    } else {
-        Attendance::query()
-            ->create([
-                'account_id' => Auth::id(),
-                'checkin' => now()
-            ]);
-
-        return response()
-            ->json([
-                'success' => 'Đã điểm danh'
-            ]);
-        //    }
+            return response()
+                ->json([
+                    'success' => 'Đã điểm danh'
+                ]);
+        }
     }
 
     public function checkOut(Request $request)
