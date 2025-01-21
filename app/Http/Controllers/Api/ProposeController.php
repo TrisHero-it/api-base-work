@@ -78,9 +78,8 @@ class ProposeController extends Controller
         }
         $propose = Propose::query()->with('propose_category')->findOrFail($id);
         // $propose->update($request->all());
-        return $propose;
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
-            $date = explode(' ', $propose->start_time);
+            $date = explode(' ', $propose->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)->first();
             $attendance->update([
                 'checkin' => $propose->start_time,
