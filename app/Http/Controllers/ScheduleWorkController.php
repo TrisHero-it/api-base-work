@@ -18,14 +18,14 @@ class ScheduleWorkController extends Controller
         if (isset($request->end)) {
             $startDate = Carbon::parse($request->start);
             $endDate = Carbon::parse($request->end);
-        }else {
+        } else {
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('id as task_id','name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
+            $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
                 ->where('account_id', '!=', null);
             $a->whereDate('started_at', '<=', $date)
                 ->where(function ($query) use ($date) {
@@ -53,14 +53,14 @@ class ScheduleWorkController extends Controller
                     if ($task->expired_at === null) {
                         if ($task->completed_at === null) {
                             $d = 'in_progress';
-                        }else {
+                        } else {
                             if (Carbon::parse($task->completed_at)->isSameDay($date)) {
                                 $d = 'completed';
-                            }else {
+                            } else {
                                 $d = 'in_progress';
                             }
                         }
-                    }else {
+                    } else {
                         if (carbon::parse($task->expired_at)->greaterThan(Carbon::now())) {
                             $d = 'in_progress';
                         } else {
@@ -76,8 +76,8 @@ class ScheduleWorkController extends Controller
             $b = DB::table('history_move_tasks')
                 ->select('task_id', 'old_stage', 'worker')
                 ->where('worker', '!=', null);
-            $b->whereDate('started_at' , '<=' , $date)
-                ->whereDate('created_at' , '>=' , $date)
+            $b->whereDate('started_at', '<=', $date)
+                ->whereDate('created_at', '>=', $date)
                 ->where(function ($query) use ($date) {
                     $query->whereDate('expired_at', '>=', $date)
                         ->orWhereNull('expired_at');
@@ -85,7 +85,7 @@ class ScheduleWorkController extends Controller
                 ->groupBy('task_id', 'old_stage', 'worker');
             $b = $b->get();
             foreach ($b as $task) {
-                $c = Task::query()->select('id','name as name_task', 'account_id', 'started_at', 'expired as expired_at')
+                $c = Task::query()->select('id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at')
                     ->where('id', $task->task_id)
                     ->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
@@ -104,7 +104,7 @@ class ScheduleWorkController extends Controller
                 if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired_at === null)) {
                     if (Carbon::parse(time: $his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
                         $d = 'completed';
-                    }else {
+                    } else {
                         $d = 'in_progress';
                     }
                 } else {

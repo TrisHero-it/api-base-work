@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Mail\MailNotify;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,9 +16,10 @@ class SendEmail implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct($data)
+    public function __construct(public $email, $data)
     {
         $this->data = $data;
+        $this->email = $email;
     }
 
     /**
@@ -27,6 +27,9 @@ class SendEmail implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->data['email'])->send(new  MailNotify($this->data['body']));
+        Mail::send('mails.index', ['data' => $this->data], function ($message) {
+            $message->to($this->email)
+                ->subject('Thông báo từ hệ thống');
+        });
     }
 }

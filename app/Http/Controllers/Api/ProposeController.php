@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\DateHoliday;
+use App\Models\Notification;
 use App\Models\Propose;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,8 +76,24 @@ class ProposeController extends Controller
                 'errors' => 'Bạn không có quyền thao tác'
             ], status: 403);
         }
-        $propose = Propose::query()->findOrFail($id);
+        $propose = Propose::query()->with('propose_category')->findOrFail($id);
         $propose->update($request->all());
+        if ($propose->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
+            $date = explode(' ', $propose->end_time)[0];
+            $attendance = Attendance::whereDate('checkin', $date)->first();
+            $attendance->update([
+                'checkin' => $propose->start_time,
+                'checkout' => $propose->end_time,
+            ]);
+        }
+        $name = $propose->propose_category->name;
+        $status = $propose->status == 'approved' ? 'được chấp nhận' : 'bị từ chối';
+        Notification::create([
+            'account_id' => $propose->account_id,
+            'title' => "<strong>$name</strong> của bạn đã " . $status,
+            'message' => "<strong>$name</strong> của bạn đã " . $status,
+            'manager_id' => auth()->id()
+        ]);
 
         return response()->json($propose);
     }

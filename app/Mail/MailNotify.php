@@ -14,7 +14,7 @@ class MailNotify extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
     public $data;
     /**
-     * Create a new message instance.
+     * Create a new message instance. 
      */
     public function __construct($data)
     {
@@ -34,7 +34,7 @@ class MailNotify extends Mailable implements ShouldQueue
     public function build()
     {
         return $this->subject('Thông báo từ BaseWork MuaKey')
-            ->view('mails.index')
+            ->view(view: 'mails.index')
             ->with('data', $this->data);
     }
 
