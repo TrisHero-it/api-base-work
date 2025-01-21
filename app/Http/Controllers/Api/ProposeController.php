@@ -77,7 +77,7 @@ class ProposeController extends Controller
             ], status: 403);
         }
         $propose = Propose::query()->with('propose_category')->findOrFail($id);
-        // $propose->update($request->all());
+        $propose->update($request->all());
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $propose->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)->where('account_id', $propose->account_id)
