@@ -26,8 +26,9 @@ class ScheduleWorkController extends Controller
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
             $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
-                ->where('account_id', '!=', null);
-            $a->whereDate('started_at', '<=', $date)
+                ->with(['stage', 'account'])
+                ->where('account_id', '!=', null)
+                ->whereDate('started_at', '<=', $date)
                 ->where(function ($query) use ($date) {
                     $query->where(function ($subQuery) use ($date) {
                         $subQuery->whereNotNull('completed_at')
@@ -41,8 +42,8 @@ class ScheduleWorkController extends Controller
                                 });
                         });
                 })
-                ->orderBy('expired_at');
-            $a = $a->get();
+                ->orderBy('expired_at')
+                ->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
                     $task['account_name'] = $task->account->full_name;
