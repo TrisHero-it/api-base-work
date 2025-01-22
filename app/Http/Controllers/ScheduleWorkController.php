@@ -25,8 +25,7 @@ class ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()
-                ->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
+            $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
                 ->with(['stage', 'account'])
                 ->where('account_id', '!=', null)
                 ->whereDate('started_at', '<=', $date)
@@ -77,24 +76,19 @@ class ScheduleWorkController extends Controller
             }
             $b = DB::table('history_move_tasks')
                 ->select('task_id', 'old_stage', 'worker')
-                ->where('worker', '!=', null)
-                ->whereDate('started_at', '<=', $date)
+                ->where('worker', '!=', null);
+            $b->whereDate('started_at', '<=', $date)
                 ->whereDate('created_at', '>=', $date)
                 ->where(function ($query) use ($date) {
                     $query->whereDate('expired_at', '>=', $date)
                         ->orWhereNull('expired_at');
                 })
-                ->groupBy('task_id', 'old_stage', 'worker')
-                ->get();
-            $arrIdTask = [];
-            foreach ($b as $ta) {
-                $arrIdTask[] = $ta->task_id;
-            }
-            $tasks = Task::query()->select('id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at')
-                ->whereIn('id', $arrIdTask)
-                ->get();
+                ->groupBy('task_id', 'old_stage', 'worker');
+            $b = $b->get();
             foreach ($b as $task) {
-                $c = $tasks->where('id', $task->task_id);
+                $c = Task::query()->select('id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at')
+                    ->where('id', $task->task_id)
+                    ->first();
                 $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
                     ->where('old_stage', $task->old_stage)
                     ->where('worker', $task->worker)
