@@ -7,6 +7,7 @@ use App\Http\Requests\WorkflowCategoryStoreRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflow;
 use App\Models\AccountWorkflowCategory;
+use App\Models\Workflow;
 use App\Models\WorkflowCategory;
 use App\Models\WorkflowCategoryStage;
 use App\Models\WorkflowCategoryStageReport;
@@ -19,10 +20,17 @@ class WorkflowCategoryController extends Controller
 
     public function index()
     {
-        $categories = WorkflowCategory::query()->with('workflows')->get();
+        $categories = WorkflowCategory::query()->get();
+        $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
+        $arrWorkflowId = [];
+        foreach ($workflows as $workflow) {
+            $arrWorkflowId[] = $workflow->workflow_id;
+        }
+        $workflows = Workflow::whereIn('id', $arrWorkflowId)->get();
         $arrCategoryId = $categories->pluck('id');
         $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account'])->get();
         foreach ($categories as $category) {
+            $category['workflows'] = $workflows->where('workflow_category_id', $category->id);
             $arrMembers = [];
             $members2 = $members->where('workflow_category_id', $category->id);
             foreach ($members2 as $member) {
