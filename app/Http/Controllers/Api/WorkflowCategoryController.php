@@ -36,7 +36,7 @@ class WorkflowCategoryController extends Controller
                 $arrMembers[]  = $member->account;
             }
             $category['members'] = $arrMembers;
-            // $category['workflows'] = $workflows->where('workflow_category_id', $category->id);
+            $category['workflows'] = array_values($workflows->where('workflow_category_id', $category->id)->toArray());
         }
 
         return response()->json($categories);
