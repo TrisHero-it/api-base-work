@@ -52,26 +52,26 @@ class AttendanceController extends Controller
 
     public function  checkIn(Request $request)
     {
-        $currentTime = Carbon::now();
-        $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
-        $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
-        if (!$currentTime->between($startTime, $endTime)) {
-            Attendance::query()
-                ->create([
-                    'account_id' => Auth::id(),
-                    'checkin' => now()
-                ]);
+        // $currentTime = Carbon::now();
+        // $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
+        // $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
+        // if (!$currentTime->between($startTime, $endTime)) {
+        //     Attendance::query()
+        //         ->create([
+        //             'account_id' => Auth::id(),
+        //             'checkin' => now()
+        //         ]);
 
-            return response()
-                ->json([
-                    'success' => 'Đã điểm danh'
-                ]);
-        } else {
-            return response()
-                ->json([
-                    'error' => 'Không được điểm danh vào thời gian này'
-                ], 423);
-        }
+        //     return response()
+        //         ->json([
+        //             'success' => 'Đã điểm danh'
+        //         ]);
+        // } else {
+        //     return response()
+        //         ->json([
+        //             'error' => 'Không được điểm danh vào thời gian này'
+        //         ], 423);
+        // }
     }
 
     public function checkOut(Request $request)
