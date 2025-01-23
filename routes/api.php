@@ -54,7 +54,7 @@ Route::get('b', function () {
 Route::middleware(['check.login'])->group(function () {
 
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
-
+    
     Route::apiResources([
         'day-off' => DayScheduleController::class,
         'roles' => RoleController::class,

@@ -27,6 +27,7 @@ class WorkflowCategoryController extends Controller
             $arrWorkflowId[] = $workflow->workflow_id;
         }
         $workflows = Workflow::whereIn('id', $arrWorkflowId)->get();
+
         $arrCategoryId = $categories->pluck('id');
         $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account'])->get();
         foreach ($categories as $category) {

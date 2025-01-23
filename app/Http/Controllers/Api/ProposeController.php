@@ -37,7 +37,7 @@ class ProposeController extends Controller
         $proposes = $proposes->get();
         foreach ($proposes as $propose) {
             $propose['date'] = $propose->date_holidays;
-            $propose['full_name'] = $propose->account->full_name;
+            $propose['account'] = $propose->account;
             $propose['avatar'] = $propose->account->avatar;
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;;
             unset($propose['account']);
