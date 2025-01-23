@@ -40,7 +40,6 @@ class ProposeController extends Controller
             $propose['account'] = $propose->account;
             $propose['avatar'] = $propose->account->avatar;
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;;
-            unset($propose['account']);
             unset($propose['date_holidays']);
             unset($propose['propose_category']);
             unset($propose['account_id']);
