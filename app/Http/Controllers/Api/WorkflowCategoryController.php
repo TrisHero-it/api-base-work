@@ -20,7 +20,7 @@ class WorkflowCategoryController extends Controller
 
     public function index()
     {
-        $categories = WorkflowCategory::query()->get();
+        $categories = WorkflowCategory::query()->with('workflows')->get();
         $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
         $arrWorkflowId = [];
         foreach ($workflows as $workflow) {
@@ -30,7 +30,7 @@ class WorkflowCategoryController extends Controller
         $arrCategoryId = $categories->pluck('id');
         $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account'])->get();
         foreach ($categories as $category) {
-            $category['workflows'] = $workflows->where('workflow_category_id', $category->id);
+            // $category['workflows'] = $workflows->where('workflow_category_id', $category->id);
             $arrMembers = [];
             $members2 = $members->where('workflow_category_id', $category->id);
             foreach ($members2 as $member) {
