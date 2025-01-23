@@ -59,7 +59,7 @@ class AttendanceController extends Controller
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
         $attendance = Attendance::where('account_id', Auth::id())->latest('id')->first();
         $arrId = [];
-        $department = Department::where('name', 'Phòng sale')->first()->id;
+        $department = Department::where('name', 'Phòng sales')->first()->id;
         $accountDepartments = AccountDepartment::where('department_id', $department)->get();
         foreach ($accountDepartments as $accountDepartment) {
             $arrId[] = $accountDepartment->account_id;
@@ -69,8 +69,10 @@ class AttendanceController extends Controller
         foreach ($saleMembers as $saleMember) {
             $arrAccountId[] = $saleMember['id'];
         }
-        if (!$currentTime->between($startTime, $endTime)) {
-            if (empty($attendance) || in_array(Auth::id(), $arrAccountId)) {
+        // check xem có trong khoảng giờ nghỉ trưa hay không
+        if (!$currentTime->between($startTime, $endTime) || in_array(Auth::id(), $arrAccountId)) {
+            // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
+            if (!(Carbon::parse($attendance->checkin)->isToday()) || in_array(Auth::id(), $arrAccountId)) {
                 Attendance::query()
                     ->create([
                         'account_id' => Auth::id(),
