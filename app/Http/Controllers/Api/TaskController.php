@@ -112,9 +112,9 @@ class TaskController extends Controller
 
             if ($stage->isFailStage() && !$account->isSeniorAdmin()) {
                 return response()->json([
-                    'message' => 'Bạn không thể cho nhiệm vụ thất bại',
+                    'message' => 'Bạn không có quyền đánh thất bại nhiệm vụ',
                     'errors' => [
-                        'task' => 'Bạn không thể cho nhiệm vụ thất bại'
+                        'task' => 'Bạn không có quyền đánh thất bại nhiệm vụ'
                     ]
                 ], 403);
             };

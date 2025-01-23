@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\Attendance;
+use App\Models\Department;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
 use Carbon\Carbon;
@@ -55,22 +57,40 @@ class AttendanceController extends Controller
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
+        $attendance = Attendance::where('account_id', Auth::id())->latest('id')->first();
+        $arrId = [];
+        $department = Department::where('name', 'Phòng sale')->first()->id;
+        $accountDepartments = AccountDepartment::where('department_id', $department)->get();
+        foreach ($accountDepartments as $accountDepartment) {
+            $arrId[] = $accountDepartment->account_id;
+        }
+        $saleMembers = Account::whereIn('id', $arrId)->get()->toArray();
+        $arrAccountId = [];
+        foreach ($saleMembers as $saleMember) {
+            $arrAccountId[] = $saleMember['id'];
+        }
         if (!$currentTime->between($startTime, $endTime)) {
-            Attendance::query()
-                ->create([
-                    'account_id' => Auth::id(),
-                    'checkin' => now()
-                ]);
-
-            return response()
-                ->json([
-                    'success' => 'Đã điểm danh'
-                ]);
+            if (empty($attendance) || in_array(Auth::id(), $arrAccountId)) {
+                Attendance::query()
+                    ->create([
+                        'account_id' => Auth::id(),
+                        'checkin' => now()
+                    ]);
+                return response()
+                    ->json([
+                        'success' => 'Đã điểm danh'
+                    ]);
+            } else {
+                return response()
+                    ->json([
+                        'error' => 'Hôm nay bạn đã điểm danh rồi'
+                    ], 403);
+            }
         } else {
             return response()
                 ->json([
                     'error' => 'Không được điểm danh vào thời gian này'
-                ], 423);
+                ], 403);
         }
     }
 
