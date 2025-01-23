@@ -96,6 +96,13 @@ class AttendanceController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        $attendance = Attendance::findOrFail($id);
+
+        return response()->json([$attendance]);
+    }
+
     public function checkOut(Request $request)
     {
         $isToday = false;
