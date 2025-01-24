@@ -8,27 +8,31 @@ use App\Http\Requests\WorkflowUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflow;
 use App\Models\Field;
-use App\Models\FieldTask;
 use App\Models\Stage;
 use App\Models\Task;
 use App\Models\Workflow;
 use App\Models\WorkflowCategoryStage;
-use App\Models\WorkflowCategoryStageReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WorkflowController extends Controller
 {
     public function index(Request $request)
     {
         $arrWorkflow = [];
+        $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
+        $arrWorkflowId = [];
+        foreach ($workflows as $workflow) {
+            $arrWorkflowId[] = $workflow->workflow_id;
+        }
         if (isset($request->type)) {
             if ($request->type == "open") {
-                $query = Workflow::where('is_close', '0');
+                $query = Workflow::where('is_close', '0')->whereIn('id', $arrWorkflowId);
             } elseif ($request->type == "close") {
-                $query = Workflow::where('is_close', '1');
+                $query = Workflow::where('is_close', '1')->whereIn('id', $arrWorkflowId);
             }
         } else {
-            $query = Workflow::query();
+            $query = Workflow::query()->whereIn('id', $arrWorkflowId);
         }
 
         if (isset($request->workflow_category_id)) {
