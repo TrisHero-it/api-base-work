@@ -45,7 +45,7 @@ class ProposeController extends Controller
                 $b = Attendance::whereDate('checkin', $a)->first();
                 if ($b != null) {
                     $propose['old_check_in'] = $b->checkin;
-                    $propose['old_check_out'] = $b->checkout ?? 'chưa check out';
+                    $propose['old_check_out'] = $b->checkout ?? null;
                 }
             }
             unset($propose['date_holidays']);
