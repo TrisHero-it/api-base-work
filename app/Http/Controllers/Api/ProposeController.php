@@ -39,7 +39,15 @@ class ProposeController extends Controller
             $propose['date'] = $propose->date_holidays;
             $propose['account'] = $propose->account;
             $propose['avatar'] = $propose->account->avatar;
-            $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;;
+            $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;
+            if ($propose->start_time != null) {
+                $a = explode(' ', $propose->start_time)[0];
+                $b = Attendance::whereDate('checkin', $a)->first();
+                if ($b != null) {
+                    $propose['old_check_in'] = $b->checkin;
+                    $proposes['old_check_out'] = $b->checkout;
+                }
+            }
             unset($propose['date_holidays']);
             unset($propose['propose_category']);
             unset($propose['account_id']);
