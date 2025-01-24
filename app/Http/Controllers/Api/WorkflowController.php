@@ -35,7 +35,7 @@ class WorkflowController extends Controller
             $query = Workflow::query();
         }
 
-        if (!Auth::user()->isSeniorAdmin) {
+        if (!Auth::user()->isSeniorAdmin()) {
             $query = $query->whereIn('id', $arrWorkflowId);
         }
 
