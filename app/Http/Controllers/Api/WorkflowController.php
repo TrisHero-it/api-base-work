@@ -27,12 +27,16 @@ class WorkflowController extends Controller
         }
         if (isset($request->type)) {
             if ($request->type == "open") {
-                $query = Workflow::where('is_close', '0')->whereIn('id', $arrWorkflowId);
+                $query = Workflow::where('is_close', '0');
             } elseif ($request->type == "close") {
-                $query = Workflow::where('is_close', '1')->whereIn('id', $arrWorkflowId);
+                $query = Workflow::where('is_close', '1');
             }
         } else {
-            $query = Workflow::query()->whereIn('id', $arrWorkflowId);
+            $query = Workflow::query();
+        }
+
+        if (!Auth::user()->isSeniorAdmin) {
+            $query = $query->whereIn('id', $arrWorkflowId);
         }
 
         if (isset($request->workflow_category_id)) {
