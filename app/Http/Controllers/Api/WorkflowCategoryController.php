@@ -20,7 +20,7 @@ class WorkflowCategoryController extends Controller
 
     public function index()
     {
-        $categories = WorkflowCategory::query()->with('workflows')->get();
+        $categories = WorkflowCategory::query()->get();
         $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
         $arrWorkflowId = [];
         foreach ($workflows as $workflow) {
@@ -60,7 +60,6 @@ class WorkflowCategoryController extends Controller
                 ], 403);
             }
         }
-
         $category = WorkflowCategory::query()->findOrFail($id);
         $category->update($request->all());
         if (isset($request->members)) {
