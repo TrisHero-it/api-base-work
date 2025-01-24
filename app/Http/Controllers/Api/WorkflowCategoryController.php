@@ -26,8 +26,11 @@ class WorkflowCategoryController extends Controller
         foreach ($workflows as $workflow) {
             $arrWorkflowId[] = $workflow->workflow_id;
         }
-        $workflows = Workflow::whereIn('id', $arrWorkflowId)->get();
-        
+        if (Auth::user()->isSeniorAdmin()) {
+            $workflows = Workflow::get();
+        } else {
+            $workflows = Workflow::whereIn('id', $arrWorkflowId)->get();
+        }
         $arrCategoryId = $categories->pluck('id');
         $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account'])->get();
         foreach ($categories as $category) {
