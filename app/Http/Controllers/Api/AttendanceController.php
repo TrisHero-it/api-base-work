@@ -7,12 +7,7 @@ use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\Department;
-use App\Models\Propose;
-use App\Models\ProposeCategory;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use IPTools\IP;
 
 class AttendanceController extends Controller
 {
@@ -72,7 +67,7 @@ class AttendanceController extends Controller
         // check xem có trong khoảng giờ nghỉ trưa hay không
         if (!$currentTime->between($startTime, $endTime) || in_array(Auth::id(), $arrAccountId)) {
             // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
-            if (!(Carbon::parse($attendance->checkin)->isToday()) || in_array(Auth::id(), $arrAccountId)) {
+            if (in_array(Auth::id(), $arrAccountId)) {
                 Attendance::query()
                     ->create([
                         'account_id' => Auth::id(),
@@ -83,6 +78,24 @@ class AttendanceController extends Controller
                         'success' => 'Đã điểm danh'
                     ]);
             } else {
+                if ($attendance != null) {
+                    if (!(Carbon::parse($attendance->checkin)->isToday())) {
+                        return response()
+                            ->json([
+                                'error' => 'Hôm nay bạn đã điểm danh rồi'
+                            ], 403);
+                    } else {
+                        Attendance::query()
+                            ->create([
+                                'account_id' => Auth::id(),
+                                'checkin' => now()
+                            ]);
+                        return response()
+                            ->json([
+                                'success' => 'Đã điểm danh'
+                            ]);
+                    }
+                }
                 return response()
                     ->json([
                         'error' => 'Hôm nay bạn đã điểm danh rồi'
