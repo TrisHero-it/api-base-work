@@ -7,7 +7,12 @@ use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\Department;
+use App\Models\Propose;
+use App\Models\ProposeCategory;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use IPTools\IP;
 
 class AttendanceController extends Controller
 {
@@ -96,10 +101,6 @@ class AttendanceController extends Controller
                             ]);
                     }
                 }
-                return response()
-                    ->json([
-                        'error' => 'Hôm nay bạn đã điểm danh rồi'
-                    ], 403);
             }
         } else {
             return response()
