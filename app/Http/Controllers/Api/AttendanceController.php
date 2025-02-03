@@ -84,7 +84,7 @@ class AttendanceController extends Controller
                     ]);
             } else {
                 if ($attendance != null) {
-                    if (!(Carbon::parse($attendance->checkin)->isToday())) {
+                    if ((Carbon::parse($attendance->checkin)->isToday())) {
                         return response()
                             ->json([
                                 'error' => 'Hôm nay bạn đã điểm danh rồi'
@@ -100,6 +100,16 @@ class AttendanceController extends Controller
                                 'success' => 'Đã điểm danh'
                             ]);
                     }
+                } else {
+                    Attendance::query()
+                        ->create([
+                            'account_id' => Auth::id(),
+                            'checkin' => now()
+                        ]);
+                    return response()
+                        ->json([
+                            'success' => 'Đã điểm danh'
+                        ]);
                 }
             }
         } else {
