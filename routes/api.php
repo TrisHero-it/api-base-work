@@ -25,7 +25,6 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\ScheduleWorkController;
-use App\Models\Comment;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
