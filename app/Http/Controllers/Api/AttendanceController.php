@@ -81,7 +81,9 @@ class AttendanceController extends Controller
             ->where('go_to_work', true)
             ->first();
             if (isset($schedule)) {
-                $atten = Attendance::whereDate('checkin', $date2)->first();
+                $atten = Attendance::whereDate('checkin', $date2)
+                ->where('account_id', $request->account_id)
+                ->first();
                 if (isset($atten)) {
                     $dayoff++;
                 }
