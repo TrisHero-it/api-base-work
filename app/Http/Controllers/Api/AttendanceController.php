@@ -27,7 +27,7 @@ class AttendanceController extends Controller
             $attendance = Attendance::query();
             //  Loc theo ngày
             if (isset($request->start) && isset($request->end)) {
-                $attendance->where('created_at', operator: '>=', $request->start)
+                $attendance->where('created_at', '>=', $request->start)
                     ->where('created_at', '<=', $request->end);
             }
             //  Lọc theo tháng
