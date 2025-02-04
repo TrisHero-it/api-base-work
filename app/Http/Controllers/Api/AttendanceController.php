@@ -74,18 +74,18 @@ class AttendanceController extends Controller
             $data['number_of_working_days'] = $numberWorkingDays;
             $dayoff = 0;
         for ($date = $startMonth; $date->lte($now); $date->addDay()) {
-            $schedule = Schedule::whereDate('day_of_week', $date)
+            $date2 = $date->format('Y-m-d');
+            $schedule = Schedule::whereDate('day_of_week', $date2)
             ->where('go_to_work', true)
             ->first();
-            if ($schedule != null) {
-                $atten = Attendance::whereDate('checkin', $date)->first();
-                if ($atten == null) {
+            if (isset($schedule)) {
+                $atten = Attendance::whereDate('checkin', $date2)->first();
+                if (isset($atten)) {
                     $dayoff++;
                 }
             }
         }
             $data['day_off'] = $dayoff;
-
         } else {
             $data = $attendance;
         }
