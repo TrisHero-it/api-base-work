@@ -7,6 +7,8 @@ use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\Department;
+use App\Models\Propose;
+use App\Models\ProposeCategory;
 use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -84,8 +86,22 @@ class AttendanceController extends Controller
                     $dayoff++;
                 }
             }
+            $category_propose = ProposeCategory::where('name', 'Đăng ký OT')
+            ->first();
+            $proposes = Propose::where('id', $category_propose->id)
+            ->where('account_id', $request->account_id)
+            ->get();
+            $timeOverTime = 0;
+            foreach ($proposes as $propose) {
+                $startTime = $propose->start_time;
+                $endTime = $propose->end_time;  
+                $diffHour = $endTime->diff($startTime);
+                $diffHour = $diffHour->days * 24 + $diffHour->h + ($diffHour->i / 60);
+                $timeOverTime+= round($diffHour/9, 2);  
+            }
         }
-            $data['day_off'] = $dayoff;
+            $data['total_over_time'] = $timeOverTime;
+            $data['day_off_without_pay'] = $dayoff;
         } else {
             $data = $attendance;
         }
