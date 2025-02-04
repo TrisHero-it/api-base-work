@@ -48,8 +48,6 @@ class AttendanceController extends Controller
                 $attendance->where('account_id', $request->account_id);
             }
             $attendance = $attendance->get();
-
-            
         }
         if(isset($request->account_id)) {
             $month = Carbon::now()->month;
@@ -61,10 +59,21 @@ class AttendanceController extends Controller
             ->where('go_to_work', 1)
             ->get()
             ->count();
+            $numberWorkingDays = 0;
+            foreach($attendance as $item) {
+                if ($item->checkout != null) {
+                    $checkOut = Carbon::parse($item->checkout);
+                    $checkIn = Carbon::parse($item->checkin);
+                    $diff = $checkOut->diff($checkIn);
+                    $totalHours = $diff->days * 24 + $diff->h + ($diff->i / 60);
+                    $numberWorkingDays += $totalHours/9;
+                }
+            }
+            $data['number_of_working_days'] = $numberWorkingDays;
         } else {
-        $data = $attendance;
+            $data = $attendance;
         }
-        
+
         return response()->json($data);
     }
 
