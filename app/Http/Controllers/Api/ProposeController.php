@@ -60,6 +60,12 @@ class ProposeController extends Controller
     {
         $propose = Propose::with(['account', 'date_holidays', 'propose_category'])
         ->findOrFail($id);
+        $a = explode(' ', $propose->start_time)[0];
+        $b = Attendance::whereDate('checkin', $a)->first();
+        if ($b != null) {
+            $propose['old_check_in'] = $b->checkin;
+            $propose['old_check_out'] = $b->checkout ?? null;
+        }
 
         return response()->json($propose);
     }
