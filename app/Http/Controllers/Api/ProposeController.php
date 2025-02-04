@@ -91,11 +91,13 @@ class ProposeController extends Controller
 
     public function update(int $id, Request $request)
     {
-        if (!Auth::user()->isSeniorAdmin()) {
-            return response()->json([
-                'message' => 'Bạn không có quyền thao tác',
-                'errors' => 'Bạn không có quyền thao tác'
-            ], status: 403);
+        if (isset($request->status)) {
+            if (!Auth::user()->isSeniorAdmin()) {
+                return response()->json([
+                    'message' => 'Bạn không có quyền thao tác',
+                    'errors' => 'Bạn không có quyền thao tác'
+                ], status: 403);
+            }
         }
         $propose = Propose::query()->with('propose_category')->findOrFail($id);
         $propose->update($request->all());

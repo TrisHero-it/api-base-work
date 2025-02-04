@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\TagValueUpdateRequest;
 use App\Models\StickerTask;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -33,7 +32,7 @@ class TagValueController extends Controller
             $task = Task::query()->findOrFail($id);
             StickerTask::query()->where('task_id', $task->id)->delete();
             $tag = [];
-            foreach ($arrTag as $tagId) {
+            foreach ($arrTag as $tagId) {   
                 $tag[] = StickerTask::query()->create([
                     'task_id' => $task->id,
                     'sticker_id' => $tagId
