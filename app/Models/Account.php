@@ -25,7 +25,7 @@ class Account extends Authenticatable
     ];
 
     public function isAdmin()
-    {
+    { 
 
         return $this->role_id == 1 || $this->role_id == 2 ;
     }

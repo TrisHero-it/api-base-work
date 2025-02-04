@@ -7,12 +7,10 @@ use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\Department;
-use App\Models\Propose;
-use App\Models\ProposeCategory;
+use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use IPTools\IP;
 
 class AttendanceController extends Controller
 {
@@ -29,7 +27,7 @@ class AttendanceController extends Controller
             $attendance = Attendance::query();
             //  Loc theo ngày
             if (isset($request->start) && isset($request->end)) {
-                $attendance->where('created_at', '>=', $request->start)
+                $attendance->where('created_at', operator: '>=', $request->start)
                     ->where('created_at', '<=', $request->end);
             }
             //  Lọc theo tháng
@@ -46,10 +44,24 @@ class AttendanceController extends Controller
             if (!isset($request->start) && !isset($request->date)) {
                 $attendance->whereMonth('created_at', date('m'));
             }
+            if(isset($request->account_id)) {
+                $attendance->where('account_id', $request->account_id);
+            }
             $attendance = $attendance->get();
+
+            if(isset($request->account_id)) {
+                $month = Carbon::now()->month;
+                $data= [];
+                $data['attendances'] = $attendance;
+                $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)
+                ->where('go_to_work', 1)
+                ->get()->count();
+            } else {
+                $data = $attendance;
+            }
         }
 
-        return response()->json($attendance);
+        return response()->json($data);
     }
 
     public function checkIn(Request $request)

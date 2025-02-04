@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
