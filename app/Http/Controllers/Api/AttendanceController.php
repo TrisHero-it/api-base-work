@@ -84,10 +84,12 @@ class AttendanceController extends Controller
             ->first();
             if (isset($schedule) && $schedule!= null) {
                 $atten = null;
+                // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
                 $atten = Attendance::whereDate('checkin', $date2)
                 ->where('account_id', $request->account_id)
                 ->first();
-                if (isset($atten) && $atten!= null) {
+                // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
+                if (!(isset($atten) && $atten != null)) {
                     $dayoff++;
                 }
             }
