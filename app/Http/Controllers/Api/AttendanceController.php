@@ -66,7 +66,7 @@ class AttendanceController extends Controller
                     $checkIn = Carbon::parse($item->checkin);
                     $diff = $checkOut->diff($checkIn);
                     $totalHours = $diff->days * 24 + $diff->h + ($diff->i / 60);
-                    $numberWorkingDays += $totalHours/9;
+                    $numberWorkingDays += round($totalHours/9, 2);
                 }
             }
             $data['number_of_working_days'] = $numberWorkingDays;
