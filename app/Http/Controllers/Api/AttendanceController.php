@@ -51,16 +51,16 @@ class AttendanceController extends Controller
 
             if(isset($request->account_id)) {
                 $month = Carbon::now()->month;
+                $year = Carbon::now()->year;
                 $data= [];
                 $data['attendances'] = $attendance;
                 $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)
+                ->whereYear('day_of_week', $year)
                 ->where('go_to_work', 1)
                 ->get()->count();
-            } else {
-                $data = $attendance;
             }
         }
-
+        $data = $attendance;
         return response()->json($data);
     }
 
