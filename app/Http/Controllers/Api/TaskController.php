@@ -66,6 +66,13 @@ class TaskController extends Controller
             'stage_id' => $stage->id,
         ]);
         if (isset($account)) {
+            event(new NotificationEvent([
+                'full_name' => $account->full_name,
+                'task_name' => $task->name,
+                'workflow_id' => $task->stage->workflow_id,
+                'account_id' => $request->account_id,
+                'manager_id' => Auth::id(),
+            ]));
             if (isset($stage->expired_after_hours)) {
                 $dateTime = Carbon::parse($request->created_at);
                 $task = Task::query()
