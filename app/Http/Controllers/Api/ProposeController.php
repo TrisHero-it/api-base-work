@@ -56,6 +56,14 @@ class ProposeController extends Controller
         return response()->json($proposes);
     }
 
+    public function show(int $id, Request $request)
+    {
+        $propose = Propose::with(['account', 'date_holidays', 'propose_category'])
+        ->findOrFail($id);
+
+        return response()->json($propose);
+    }
+
     public function store(Request $request)
     {
         $a = Auth::user();

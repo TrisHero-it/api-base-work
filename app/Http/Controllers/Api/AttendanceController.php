@@ -77,6 +77,7 @@ class AttendanceController extends Controller
             $dayoff = 0;
         for ($date = $startMonth; $date->lte($now); $date->addDay()) {
             $date2 = $date->format('Y-m-d');
+            // Đây là ngày đi làm
             $schedule = Schedule::whereDate('day_of_week', $date2)
             ->where('go_to_work', true)
             ->first();
