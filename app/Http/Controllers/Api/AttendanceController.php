@@ -16,6 +16,8 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
+        $startMonth = Carbon::now()->startOfMonth();
+        $now = Carbon::now();
         if (isset($request->me)) {
             $account = Auth::user();
             $attendance = Attendance::query()
@@ -70,6 +72,20 @@ class AttendanceController extends Controller
                 }
             }
             $data['number_of_working_days'] = $numberWorkingDays;
+            $dayoff = 0;
+        for ($date = $startMonth; $date->lte($now); $date->addDay()) {
+            $schedule = Schedule::whereDate('day_of_week', $date)
+            ->where('go_to_work', true)
+            ->first();
+            if ($schedule != null) {
+                $atten = Attendance::whereDate('checkin', $date)->first();
+                if ($atten == null) {
+                    $dayoff++;
+                }
+            }
+        }
+            $data['day_off'] = $dayoff;
+
         } else {
             $data = $attendance;
         }

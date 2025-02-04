@@ -13,7 +13,8 @@ class Workflow extends Model
         'name',
         'description',
         'workflow_category_id',
-        'is_close'
+        'is_close',
+        'require_link_youtube'
     ];
 
     public function stages() {

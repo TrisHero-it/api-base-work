@@ -80,7 +80,7 @@ Route::middleware(['check.login'])->group(function () {
     ]);
     // Nhãn dán
     Route::get('my-account', [AccountController::class, 'myAccount']);
-    Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
+    Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);  
 
     // Điểm danh
     Route::apiResource('attendances', AttendanceController::class);
