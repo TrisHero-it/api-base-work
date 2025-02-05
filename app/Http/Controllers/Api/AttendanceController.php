@@ -98,9 +98,10 @@ class AttendanceController extends Controller
             ->first();
             $proposes = Propose::where('propose_category_id', $category_propose->id)
             ->where('account_id', Auth::id())
+            ->where('status', 'approved')
             ->get();
             $timeOverTime = 0;
-            if (isset($proposes) && $proposes->count() > 0) {
+            if ($proposes->count()> 0) {
                 foreach ($proposes as $propose) {
                     $startTime = $propose->start_time;
                     $endTime = $propose->end_time;  
