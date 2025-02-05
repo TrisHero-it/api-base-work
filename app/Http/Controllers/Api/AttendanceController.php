@@ -27,6 +27,7 @@ class AttendanceController extends Controller
                 ->whereDate('checkin', Carbon::today())
                 ->orderBy('id')
                 ->get();
+                $data = $attendance;
         } else {
             $attendance = Attendance::query();
             //  Loc theo ngày
