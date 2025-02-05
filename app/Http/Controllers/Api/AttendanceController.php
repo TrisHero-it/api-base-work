@@ -73,9 +73,9 @@ class AttendanceController extends Controller
                     $numberWorkingDays += round($totalHours/9, 2);
                 }
             }
-            $data['number_of_working_days'] = $numberWorkingDays;
+            $data['number_of_working_days'] = $numberWorkingDays;       
             $dayoff = 0;
-        for ($date = $startMonth; $date->lte($now); $date->addDay()) {
+            for ($date = $startMonth; $date->lte($now); $date->addDay()) {
             $date2 = $date->format('Y-m-d');
             $schedule = null;
             // Đây là ngày đi làm
