@@ -101,7 +101,7 @@ class AttendanceController extends Controller
             ->where('status', 'approved')
             ->get();
             $timeOverTime = 0;
-            if ($proposes->count()> 0) {
+            if ($proposes->count() > 0) {
                 foreach ($proposes as $propose) {
                     $startTime = $propose->start_time;
                     $endTime = $propose->end_time;  
