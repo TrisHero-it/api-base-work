@@ -7,7 +7,10 @@ use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
+use App\Models\DateHoliday;
 use App\Models\Department;
+use App\Models\Propose;
+use App\Models\ProposeCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -62,7 +65,19 @@ class AccountController extends Controller
                     $accounts[] = $item->account;
                 }
             }else {
-                $accounts = Account::query()->where('username', 'like', "%$name%")->get()->toArray();
+                $accounts = Account::query()->where('username', 'like', "%$name%")->get();
+            }
+            $month = now()->month;
+            $year = now()->year;
+            $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
+            $proposes = Propose::where('propose_category_id', $category->id)
+            ->where('status', 'approved')
+            ->get()->pluck('id');
+            // Lấy ra tất cả các ngày xin nghỉ
+            $holidays = DateHoliday::whereIn('propose_id', $proposes)->get();
+            
+            foreach ($accounts as $account) {
+                $account['day_off_used'] = 0;
             }
 
         return response()->json($accounts);

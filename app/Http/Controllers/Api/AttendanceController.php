@@ -48,12 +48,12 @@ class AttendanceController extends Controller
             if (!isset($request->start) && !isset($request->date)) {
                 $attendance->whereMonth('created_at', date('m'));
             }
-            if(isset($request->account_id)) {
-                $attendance->where('account_id', $request->account_id);
-            }
+            
             $attendance = $attendance->get();
+            foreach ($attendance as $item) {
+                $item['check_out_regulation'] = Carbon::parse($item->checkin)->addHours(9)->format('Y-m-d H:i:s');
+            }
         }
-        if(isset($request->account_id)) {
             $month = Carbon::now()->month;
             $year = Carbon::now()->year;
             $data= [];
@@ -72,7 +72,7 @@ class AttendanceController extends Controller
                     $totalHours = $diff->days * 24 + $diff->h + ($diff->i / 60);
                     $numberWorkingDays += round($totalHours/9, 2);
                 }
-            }
+            }   
             $data['number_of_working_days'] = $numberWorkingDays;       
             $dayoff = 0;
             for ($date = $startMonth; $date->lte($now); $date->addDay()) {
@@ -86,7 +86,7 @@ class AttendanceController extends Controller
                 $atten = null;
                 // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
                 $atten = Attendance::whereDate('checkin', $date2)
-                ->where('account_id', $request->account_id)
+                ->where('account_id', Auth::id())
                 ->first();
                 // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
                 if (!(isset($atten) && $atten != null)) {
@@ -95,8 +95,8 @@ class AttendanceController extends Controller
             }
             $category_propose = ProposeCategory::where('name', 'Đăng ký OT')
             ->first();
-            $proposes = Propose::where('id', $category_propose->id)
-            ->where('account_id', $request->account_id)
+            $proposes = Propose::where('propose_category_id', $category_propose->id)
+            ->where('account_id', Auth::id())
             ->get();
             $timeOverTime = 0;
             foreach ($proposes as $propose) {
@@ -107,12 +107,21 @@ class AttendanceController extends Controller
                 $timeOverTime+= round($diffHour/9, 2);  
             }
         }
+        // số ngày nghỉ có phép của tài khoản
+            $accountDayOff = Auth::user()->day_off;
+            $a = $dayoff-$accountDayOff;
+            // nếu như số ngày nghỉ vẫn trong khoảng thời gian cho phép
+            if ($dayoff < $accountDayOff) {
+                $data['day_off_with_pay'] = $dayoff;
+                $data['day_off_without_pay'] = 0;
+                $data['day_off_account'] = $accountDayOff-$dayoff;
+            }else {
+                $data['day_off_with_pay'] = $accountDayOff;
+                $data['day_off_without_pay'] = $a;
+                $data['day_off_account'] = 0;
+            }
             $data['total_over_time'] = $timeOverTime;
-            $data['day_off_without_pay'] = $dayoff;
-        } else {
-            $data = $attendance;
-        }
-
+        
         return response()->json($data);
     }
 

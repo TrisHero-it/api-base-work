@@ -22,6 +22,7 @@ class Account extends Authenticatable
         'manager_id',
         'avatar',
         'role_id',
+        'day_off'
     ];
 
     public function isAdmin()
