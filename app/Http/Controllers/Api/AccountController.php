@@ -11,6 +11,7 @@ use App\Models\DateHoliday;
 use App\Models\Department;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -72,12 +73,21 @@ class AccountController extends Controller
             $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
             $proposes = Propose::where('propose_category_id', $category->id)
             ->where('status', 'approved')
-            ->get()->pluck('id');
+            ->get()
+            ->pluck('id');
             // Lấy ra tất cả các ngày xin nghỉ
-            $holidays = DateHoliday::whereIn('propose_id', $proposes)->get();
-            
+            $holidays = DateHoliday::whereIn('propose_id', $proposes)
+            ->get();
+            $a = 0;
+            foreach ($holidays as $date) {
+                $endDate = Carbon::parse($date->end_date);
+                $startDate = Carbon::parse($date->start_date);
+                $diffMinutes = $endDate->diffInMinutes($startDate);
+                $a += $diffMinutes;
+            }
+            $a = round($a/1440,2);
             foreach ($accounts as $account) {
-                $account['day_off_used'] = 0;
+                $account['day_off_used'] = $a;
             }
 
         return response()->json($accounts);
