@@ -100,12 +100,14 @@ class AttendanceController extends Controller
             ->where('account_id', Auth::id())
             ->get();
             $timeOverTime = 0;
-            foreach ($proposes as $propose) {
-                $startTime = $propose->start_time;
-                $endTime = $propose->end_time;  
-                $diffHour = $endTime->diff($startTime);
-                $diffHour = $diffHour->days * 24 + $diffHour->h + ($diffHour->i / 60);
-                $timeOverTime+= round($diffHour/9, 2);  
+            if (isset($proposes) && $proposes->count() > 0) {
+                foreach ($proposes as $propose) {
+                    $startTime = $propose->start_time;
+                    $endTime = $propose->end_time;  
+                    $diffHour = $endTime->diff($startTime);
+                    $diffHour = $diffHour->days * 24 + $diffHour->h + ($diffHour->i / 60);
+                    $timeOverTime+= round($diffHour/9, 2);  
+                }
             }
         }
         // số ngày nghỉ có phép của tài khoản
