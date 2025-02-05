@@ -53,7 +53,7 @@ class AttendanceController extends Controller
             foreach ($attendance as $item) {
                 $item['check_out_regulation'] = Carbon::parse($item->checkin)->addHours(9)->format('Y-m-d H:i:s');
             }
-        }
+
             $month = Carbon::now()->month;
             $year = Carbon::now()->year;
             $data= [];
@@ -121,6 +121,8 @@ class AttendanceController extends Controller
                 $data['day_off_account'] = 0;
             }
             $data['total_over_time'] = $timeOverTime;
+        }
+            
         
         return response()->json($data);
     }
