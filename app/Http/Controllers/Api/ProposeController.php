@@ -16,7 +16,7 @@ class ProposeController extends Controller
     public function index(Request $request)
     {
         $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays']);
-        if (isset($request->status)) {
+        if (isset($request->status) && $request->status != 'all') {
             $proposes = $proposes->where('status', $request->status);
         }else {
             $proposes = $proposes->where('status', 'pending');
@@ -25,8 +25,6 @@ class ProposeController extends Controller
         if (isset($request->propose_category_id)) {
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
         }
-
-       
 
         if (isset($request->account_id)) {
             $proposes = $proposes->where('account_id', $request->account_id);

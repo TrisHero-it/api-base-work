@@ -118,7 +118,6 @@ class AccountController extends Controller
                 'error' => 'Bạn chưa đăng nhập'
             ]);
         }
-
         $account = Auth::user();
             if ($account->role_id == 1 ){
                 $account['role'] = 'Admin';
@@ -145,6 +144,9 @@ class AccountController extends Controller
                 $a += $diffMinutes;
             }
             $a = round($a/1440,2);
+            if ($a >= $account->day_off) {
+                $a = $account->day_off;
+            }
             $account['day_off_used'] = $a;
             
         return response()->json($account);
