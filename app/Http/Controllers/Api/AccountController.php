@@ -72,6 +72,7 @@ class AccountController extends Controller
             $year = now()->year;
             $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
             $proposes = Propose::where('propose_category_id', $category->id)
+            ->where('account_id', Auth::id())
             ->where('status', 'approved')
             ->get()
             ->pluck('id');

@@ -24,6 +24,10 @@ class ProposeController extends Controller
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
         }
 
+        if (Auth::user()->isSeniorAdmin()) {
+            $proposes = $proposes->where('status', 'pending');
+        }
+
         if (isset($request->account_id)) {
             $proposes = $proposes->where('account_id', $request->account_id);
         }
@@ -75,7 +79,6 @@ class ProposeController extends Controller
                 $totalHoursHoliday+= $diffMinutes;
             }
             $propose['days_holiday'] = round($totalHoursHoliday/540,2);
-
         }
         $b = Attendance::whereDate('checkin', $a)->first();
         if ($b != null) {
@@ -93,7 +96,6 @@ class ProposeController extends Controller
         $data['account_id'] = $a->id;
         $arr = [];
         $propose = Propose::query()->create($data);
-
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
                 $a =  ['propose_id' => $propose->id];
