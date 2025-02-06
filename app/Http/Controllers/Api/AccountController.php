@@ -77,6 +77,8 @@ class AccountController extends Controller
             ->pluck('id');
             // Lấy ra tất cả các ngày xin nghỉ
             $holidays = DateHoliday::whereIn('propose_id', $proposes)
+            ->whereMonth('start_date', $month)
+            ->whereYear('start_date', $year)
             ->get();
             $a = 0;
             foreach ($holidays as $date) {

@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Notification;
 use App\Models\Propose;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -61,6 +62,21 @@ class ProposeController extends Controller
         $propose = Propose::with(['account', 'date_holidays', 'propose_category'])
         ->findOrFail($id);
         $a = explode(' ', $propose->start_time)[0];
+        $totalHoursHoliday = 0;
+        if ($propose->date_holidays != null) {
+            foreach ($propose->date_holidays as $date) {
+                $diffMinutes = 0;
+                $startDate = Carbon::parse($date->start_date);
+                $endDate = Carbon::parse($date->end_date);
+                $diffMinutes = $endDate->diffInMinutes($startDate);
+                if ($diffMinutes > 540) {
+                    $diffMinutes = 540;
+                }
+                $totalHoursHoliday+= $diffMinutes;
+            }
+            $propose['days_holiday'] = round($totalHoursHoliday/540,2);
+
+        }
         $b = Attendance::whereDate('checkin', $a)->first();
         if ($b != null) {
             $propose['old_check_in'] = $b->checkin;

@@ -32,7 +32,7 @@ class AttendanceController extends Controller
             $attendance = Attendance::query();
             //  Loc theo ngày
             if (isset($request->start) && isset($request->end)) {
-                $attendance->where('created_at', '>=', $request->start)
+                $attendance->where('created_at', '>=', $request->start)                                                 
                     ->where('created_at', '<=', $request->end);
             }
             //  Lọc theo tháng
@@ -52,7 +52,9 @@ class AttendanceController extends Controller
             
             $attendance = $attendance->get();
             foreach ($attendance as $item) {
-                $item['check_out_regulation'] = Carbon::parse($item->checkin)->addHours(9)->format('Y-m-d H:i:s');
+                $item['check_out_regulation'] = Carbon::parse($item->checkin)
+                ->addHours(9)
+                ->format('Y-m-d H:i:s');
             }
 
             $month = Carbon::now()->month;
@@ -74,9 +76,13 @@ class AttendanceController extends Controller
                     $numberWorkingDays += round($totalHours/9, 2);
                 }
             }   
-            $data['number_of_working_days'] = $numberWorkingDays;       
+            if (Auth::user()->isSeniorAdmin()) {
+                $data['number_of_working_days'] = 0;       
+            }else {
+                $data['number_of_working_days'] = $numberWorkingDays;       
+            }
             $dayoff = 0;
-            for ($date = $startMonth; $date->lte($now); $date->addDay()) {
+            for ($date = $startMonth; $date->lte($now); $date->addDay()) {      
             $date2 = $date->format('Y-m-d');
             $schedule = null;
             // Đây là ngày đi làm
@@ -126,7 +132,6 @@ class AttendanceController extends Controller
             }
             $data['total_over_time'] = $timeOverTime;
         }
-            
         
         return response()->json($data);
     }
