@@ -18,15 +18,15 @@ class ProposeController extends Controller
         $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays']);
         if (isset($request->status)) {
             $proposes = $proposes->where('status', $request->status);
+        }else {
+            $proposes = $proposes->where('status', 'pending');
         }
 
         if (isset($request->propose_category_id)) {
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
         }
 
-        if (Auth::user()->isSeniorAdmin()) {
-            $proposes = $proposes->where('status', 'pending');
-        }
+       
 
         if (isset($request->account_id)) {
             $proposes = $proposes->where('account_id', $request->account_id);
