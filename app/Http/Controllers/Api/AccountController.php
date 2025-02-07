@@ -7,6 +7,7 @@ use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflowCategory;
+use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Department;
 use App\Models\Propose;
@@ -89,8 +90,27 @@ class AccountController extends Controller
                 $a += $diffMinutes;
             }
             $a = round($a/1440,2);
+            $month = now()->month;
+            $year = now()->year;
+            $attendances = Attendance::whereMonth('checkin', $month)
+            ->whereYear('checkin', $year)
+            ->get();
             foreach ($accounts as $account) {
+                // Lọc từng tài khoản để tính ngày công
+                $newAttendances = null;
+                $newAttendances = $attendances->where('account_id', $account->id);
+                foreach ($newAttendances as $newAttendance) {
+                    $checkout = null;
+                    $checkin = null;
+                    if ($newAttendance->checkout != null) {
+                        $checkout = Carbon::parse($newAttendance->checkout);
+                        $diff = $checkout->diffInMinutes($newAttendance->checkin);
+                        $hours = round($diff/60, 2);
+                        $workday = round($hours/9, 2); 
+                    }
+                }
                 $account['day_off_used'] = $a;
+                $account['workday'] = $workday;
             }
 
         return response()->json($accounts);

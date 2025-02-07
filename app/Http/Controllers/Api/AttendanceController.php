@@ -58,7 +58,6 @@ class AttendanceController extends Controller
                 ->addHours(9)
                 ->format('Y-m-d H:i:s');
             }
-
             
             $data= [];
             $data['attendances'] = $attendance;
