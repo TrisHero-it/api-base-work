@@ -103,7 +103,6 @@ class AccountController extends Controller
             ->whereYear('checkin', $year2)
             ->get();
             foreach ($accounts as $account) {
-                
                 $totalWorkDay = 0;
                 // Lọc từng tài khoản để tính ngày công
                 $newAttendances = null;
@@ -113,12 +112,11 @@ class AccountController extends Controller
                 $hours =0;
                 $workday = 0;
                     $checkout = null;
-                    $checkin = null;
                     if ($newAttendance->checkout != null) {
                         $checkout = Carbon::parse($newAttendance->checkout);
                         $diff = $checkout->diffInMinutes($newAttendance->checkin);
-                        $hours = round($diff/60, 2);
-                        $workday = round($hours/9, 2); 
+                        $hours = round($diff/60, 3);
+                        $workday = round($hours/9, 3); 
                     }
                     $totalWorkDay += $workday;
                 }
