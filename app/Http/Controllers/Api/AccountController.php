@@ -96,10 +96,15 @@ class AccountController extends Controller
             ->whereYear('checkin', $year)
             ->get();
             foreach ($accounts as $account) {
+                
+                $totalWorkDay = 0;
                 // Lọc từng tài khoản để tính ngày công
                 $newAttendances = null;
                 $newAttendances = $attendances->where('account_id', $account->id);
                 foreach ($newAttendances as $newAttendance) {
+                    $diff =0;
+                $hours =0;
+                $workday = 0;
                     $checkout = null;
                     $checkin = null;
                     if ($newAttendance->checkout != null) {
@@ -108,6 +113,7 @@ class AccountController extends Controller
                         $hours = round($diff/60, 2);
                         $workday = round($hours/9, 2); 
                     }
+                    $totalWorkDay += $workday;
                 }
                 $account['day_off_used'] = $a;
                 $account['workday'] = $workday;
