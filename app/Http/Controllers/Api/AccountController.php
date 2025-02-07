@@ -115,8 +115,8 @@ class AccountController extends Controller
                     if ($newAttendance->checkout != null) {
                         $checkout = Carbon::parse($newAttendance->checkout);
                         $diff = $checkout->diffInMinutes($newAttendance->checkin);
-                        $hours = round($diff/60, 3);
-                        $workday = round($hours/9, 3); 
+                        $hours = number_format($diff/60, 3);
+                        $workday = number_format($hours/9, 3); 
                     }
                     $totalWorkDay += $workday;
                 }
