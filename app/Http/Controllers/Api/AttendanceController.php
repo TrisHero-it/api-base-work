@@ -18,6 +18,8 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
+        $month = Carbon::now()->month;
+        $year = Carbon::now()->year;
         $startMonth = Carbon::now()->startOfMonth();
         $now = Carbon::now();
         if (isset($request->me)) {
@@ -57,8 +59,7 @@ class AttendanceController extends Controller
                 ->format('Y-m-d H:i:s');
             }
 
-            $month = Carbon::now()->month;
-            $year = Carbon::now()->year;
+            
             $data= [];
             $data['attendances'] = $attendance;
             $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)
