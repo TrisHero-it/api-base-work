@@ -101,8 +101,9 @@ class AccountController extends Controller
                 // Lọc từng tài khoản để tính ngày công
                 $newAttendances = null;
                 $newAttendances = $attendances->where('account_id', $account->id);
+                $newAttendances = array_values($newAttendances->toArray());
                 foreach ($newAttendances as $newAttendance) {
-                    $diff =0;
+                $diff =0;
                 $hours =0;
                 $workday = 0;
                     $checkout = null;
