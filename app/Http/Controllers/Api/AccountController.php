@@ -90,10 +90,17 @@ class AccountController extends Controller
                 $a += $diffMinutes;
             }
             $a = round($a/1440,2);
-            $month = now()->month;
-            $year = now()->year;
-            $attendances = Attendance::whereMonth('checkin', $month)
-            ->whereYear('checkin', $year)
+            
+            if (isset($request->date)) {
+                $a = explode('-', $request->date);
+                $month2 = $a[1];
+                $year2 = $a[0];
+            }else {
+                $month2 = now()->month;
+                $year2 = now()->year;
+            }
+            $attendances = Attendance::whereMonth('checkin', $month2)
+            ->whereYear('checkin', $year2)
             ->get();
             foreach ($accounts as $account) {
                 
