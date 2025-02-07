@@ -116,7 +116,7 @@ class AccountController extends Controller
                     $totalWorkDay += $workday;
                 }
                 $account['day_off_used'] = $a;
-                $account['workday'] = $workday;
+                $account['workday'] = $totalWorkDay;
             }
 
         return response()->json($accounts);
