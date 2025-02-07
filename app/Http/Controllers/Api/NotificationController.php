@@ -40,4 +40,15 @@ class NotificationController extends Controller
             'success' => 'Xoá thành công'
         ]);
     }
+
+    public function seenNotification(Request $request)
+    {
+        $notifications = Notification::where('account_id', Auth::id())
+        ->where('new', true)
+        ->update([
+            'new' => false
+        ]);
+
+        return response()->json($notifications);
+    }
 }

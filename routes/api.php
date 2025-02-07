@@ -83,6 +83,7 @@ Route::middleware(['check.login'])->group(function () {
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);  
 
     // Điểm danh
+    Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::apiResource('attendances', AttendanceController::class);
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);

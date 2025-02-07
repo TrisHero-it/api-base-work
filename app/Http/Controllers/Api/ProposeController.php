@@ -67,7 +67,7 @@ class ProposeController extends Controller
             $propose['old_check_out'] = $b->checkout ?? null;
         }
 
-        return response()->json($propose);
+        return response()->json($propose);  
     }
 
     public function store(Request $request)
