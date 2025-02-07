@@ -116,13 +116,12 @@ class AccountController extends Controller
                         $checkout = Carbon::parse($newAttendance->checkout);
                         $diff = $checkout->diffInMinutes($newAttendance->checkin);
                         $hours = $diff/60;
-                        $hours = $hours/9;
-                        $workday = number_format($hours, 3); 
+                        $workday = $hours/9; 
                     }
                     $totalWorkDay += $workday;
                 }
                 $account['day_off_used'] = $a;
-                $account['workday'] = number_format($totalWorkDay, 3);
+                $account['workday'] = $totalWorkDay=0 ? $totalWorkDay : number_format($totalWorkDay, 3);
             }
 
         return response()->json($accounts);
