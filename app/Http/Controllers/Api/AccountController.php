@@ -122,7 +122,7 @@ class AccountController extends Controller
                     $totalWorkDay += $workday;
                 }
                 $account['day_off_used'] = $a;
-                $account['workday'] = $totalWorkDay;
+                $account['workday'] = number_format($totalWorkDay, 3);
             }
 
         return response()->json($accounts);
