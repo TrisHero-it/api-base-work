@@ -75,6 +75,7 @@ class AccountController extends Controller
             $proposes = Propose::where('propose_category_id', $category->id)
             ->where('account_id', Auth::id())
             ->where('status', 'approved')
+            ->where('name', 'Nghỉ có hưởng lương')
             ->get()
             ->pluck('id');
             // Lấy ra tất cả các ngày xin nghỉ
@@ -111,7 +112,7 @@ class AccountController extends Controller
                 $diff =0;
                 $hours =0;
                 $workday = 0;
-                    $checkout = null;
+                $checkout = null;
                     if ($newAttendance->checkout != null) {
                         $checkout = Carbon::parse($newAttendance->checkout);
                         $diff = $checkout->diffInMinutes($newAttendance->checkin);
