@@ -96,6 +96,7 @@ class StageController extends Controller
         if (isset($request->index)) {
             $stages = Stage::query()
                 ->where('workflow_id', $stage->workflow_id)
+                ->whereNotIn('index', [0, 1])
                 ->get();
             //  chuyển từ cái to thành cái nhỏ (từ trái qua phải)
             if ($request->index < $stage->index) {
@@ -112,8 +113,7 @@ class StageController extends Controller
                 }
             }
         }
-        $stage->update($request->validated());
-
+        $stage->update($request->all());
 
         return \response()->json($stage);
     }
