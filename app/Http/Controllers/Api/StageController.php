@@ -113,7 +113,11 @@ class StageController extends Controller
                 }
             }
         }
-        $stage->update($request->all());
+        $data = $request->except('index');
+        if (isset($request->index)) {
+            $data['index'] = $request->index + 1;
+        }
+        $stage->update($data);
 
         return \response()->json($stage);
     }
