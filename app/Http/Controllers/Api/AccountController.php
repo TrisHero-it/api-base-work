@@ -92,7 +92,7 @@ class AccountController extends Controller
             }
             $a = round($a/1440,2);
             
-            if (isset($request->date)) {d
+            if (isset($request->date)) {
                 $a = explode('-', $request->date);
                 $month2 = $a[1];
                 $year2 = $a[0];
