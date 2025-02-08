@@ -57,6 +57,7 @@ class AccountController extends Controller
     public function index(Request $request) {
         // Lấy tên từ username đẩy lên
             $name = str_replace('@', '', $request->username);
+            $a = 0;
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
             if (isset($request->category_id)) {
                 $accounts = [];
@@ -83,7 +84,6 @@ class AccountController extends Controller
             ->whereMonth('start_date', $month)
             ->whereYear('start_date', $year)
             ->get();
-            $a = 0;
             foreach ($holidays as $date) {
                 $endDate = Carbon::parse($date->end_date);
                 $startDate = Carbon::parse($date->start_date);
