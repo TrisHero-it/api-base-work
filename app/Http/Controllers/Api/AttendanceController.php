@@ -114,7 +114,6 @@ class AttendanceController extends Controller
                 $data['day_off_without_pay'] = $a;
                 $data['day_off_account'] = 0;
             }
-            $data['total_over_time'] = $timeOverTime;
         }
 
         return response()->json($data);
