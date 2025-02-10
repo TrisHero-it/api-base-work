@@ -299,7 +299,7 @@ class TaskController extends Controller
     {
         if (Auth::user()->isSeniorAdmin()) {
             $task = Task::findOrFail($id);
-            if (isset($request->account_id) && $request->account_id != Auth::user()->id) {
+            if (isset($request->account_id)) {
                 $task->update(attributes: [
                     'job_assigner' => Auth::id(),
                     'the_person_assiged_the_job' => $request->account_id

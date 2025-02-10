@@ -40,7 +40,7 @@ class Task extends Model
     public function tags()
     {
 
-        return $this->belongsToMany(Sticker::class, 'sticker_tasks','task_id', 'sticker_id');
+        return $this->belongsToMany(Sticker::class, 'sticker_tasks', 'task_id', 'sticker_id');
     }
 
     public function account()
@@ -48,7 +48,8 @@ class Task extends Model
         return $this->belongsTo(Account::class);
     }
 
-    public function isNextStage($index) {
+    public function isNextStage($index)
+    {
 
         return $this->stage->index > $index;
     }
