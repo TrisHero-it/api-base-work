@@ -51,8 +51,9 @@ class WorkflowController extends Controller
 
         $workflows = $query->get();
         $arrWorkflowId = $workflows->pluck('id');
+        $stages = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->get();
         $stagesCompletedAndFailed = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->whereIn('index', [0, 1])->get();
-        $tasks = Task::get();
+        $tasks = Task::whereIn('workflow_id', $arrWorkflowId)->get();
         $members = AccountWorkflow::query()->whereIn('workflow_id', $arrWorkflowId)->get();
         $arrAccountId = $members->pluck('account_id');
         $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
@@ -61,6 +62,7 @@ class WorkflowController extends Controller
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
             // lấy ra stage thất bại
+            $allStage = $stages->where('workflow_id', $workflow->id)->pluck('id');
             $stageFailed = $stagesCompletedAndFailed
                 ->where('workflow_id', $workflow->id)
                 ->where('index', 0)
@@ -71,7 +73,7 @@ class WorkflowController extends Controller
                 ->where('index', 1)
                 ->pluck('id');
             $countTaskSuccess = $tasks->whereIn('stage_id', $stageCompleted)->count();
-            $countTask = $tasks->where('workflow_id', $workflow->id)->count();
+            $countTask = $tasks->whereIn('workflow_id', $allStage)->count();
             $members2 = $members->where('workflow_id', $workflow->id);
             $arr = [
                 'totalTask' => $countTask,
