@@ -50,9 +50,11 @@ class ProposeController extends Controller
                     $propose['old_check_out'] = $b->checkout ?? null;
                 }
             }
-            unset($propose['date_holidays']);
-            unset($propose['propose_category']);
-            unset($propose['account_id']);
+            unset(
+                $propose['date_holidays'],
+                $propose['propose_category'],
+                $propose['account_id']
+            );
         }
 
         return response()->json($proposes);
