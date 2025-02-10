@@ -98,6 +98,7 @@ class StageController extends Controller
                 ->where('workflow_id', $stage->workflow_id)
                 ->where('index', '>=', $request->index)
                 ->where('index', '<', $stage->index)
+                ->whereNotIn('id', [0, 1])
                 ->get();
             //  chuyển từ cái to thành cái nhỏ (từ trái qua phải) 
             if ($request->index < $stage->index) {
