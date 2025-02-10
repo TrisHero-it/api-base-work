@@ -29,12 +29,12 @@ class AttendanceController extends Controller
                 ->whereDate('checkin', Carbon::today())
                 ->orderBy('id')
                 ->get();
-                $data = $attendance;
+            $data = $attendance;
         } else {
             $attendance = Attendance::query();
             //  Loc theo ngày
             if (isset($request->start) && isset($request->end)) {
-                $attendance->where('created_at', '>=', $request->start)                                                 
+                $attendance->where('created_at', '>=', $request->start)
                     ->where('created_at', '<=', $request->end);
             }
             //  Lọc theo tháng
@@ -51,88 +51,72 @@ class AttendanceController extends Controller
             if (!isset($request->start) && !isset($request->date)) {
                 $attendance->whereMonth('created_at', date('m'));
             }
-            
+
             $attendance = $attendance->get();
             foreach ($attendance as $item) {
                 $item['check_out_regulation'] = Carbon::parse($item->checkin)
-                ->addHours(9)
-                ->format('Y-m-d H:i:s');
+                    ->addHours(9)
+                    ->format('Y-m-d H:i:s');
             }
-            
-            $data= [];
+
+            $data = [];
             $data['attendances'] = $attendance;
             $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)
-            ->whereYear('day_of_week', $year)
-            ->where('go_to_work', 1)
-            ->get()
-            ->count();
+                ->whereYear('day_of_week', $year)
+                ->where('go_to_work', 1)
+                ->get()
+                ->count();
             $numberWorkingDays = 0;
-            foreach($attendance as $item) {
+            foreach ($attendance as $item) {
                 if ($item->checkout != null) {
                     $checkOut = Carbon::parse($item->checkout);
                     $checkIn = Carbon::parse($item->checkin);
                     $diff = $checkOut->diff($checkIn);
                     $totalHours = $diff->days * 24 + $diff->h + ($diff->i / 60);
-                    $numberWorkingDays += round($totalHours/9, 2);
+                    $numberWorkingDays += round($totalHours / 9, 2);
                 }
-            }   
+            }
             if (Auth::user()->isSeniorAdmin()) {
-                $data['number_of_working_days'] = 0;       
-            }else {
-                $data['number_of_working_days'] = $numberWorkingDays;       
+                $data['number_of_working_days'] = 0;
+            } else {
+                $data['number_of_working_days'] = $numberWorkingDays;
             }
             $dayoff = 0;
-            for ($date = $startMonth; $date->lte($now); $date->addDay()) {      
-            $date2 = $date->format('Y-m-d');
-            $schedule = null;
-            // Đây là ngày đi làm
-            $schedule = Schedule::whereDate('day_of_week', $date2)
-            ->where('go_to_work', true)
-            ->first();
-            if (isset($schedule) && $schedule!= null) {
-                $atten = null;
-                // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
-                $atten = Attendance::whereDate('checkin', $date2)
-                ->where('account_id', Auth::id())
-                ->first();
-                // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
-                if (!(isset($atten) && $atten != null)) {
-                    $dayoff++;
+            for ($date = $startMonth; $date->lte($now); $date->addDay()) {
+                $date2 = $date->format('Y-m-d');
+                $schedule = null;
+                // Đây là ngày đi làm
+                $schedule = Schedule::whereDate('day_of_week', $date2)
+                    ->where('go_to_work', true)
+                    ->first();
+                if (isset($schedule) && $schedule != null) {
+                    $atten = null;
+                    // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
+                    $atten = Attendance::whereDate('checkin', $date2)
+                        ->where('account_id', Auth::id())
+                        ->first();
+                    // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
+                    if (!(isset($atten) && $atten != null)) {
+                        $dayoff++;
+                    }
                 }
             }
-            $category_propose = ProposeCategory::where('name', 'Đăng ký OT')
-            ->first();
-            $proposes = Propose::where('propose_category_id', $category_propose->id)
-            ->where('account_id', Auth::id())
-            ->where('status', 'approved')
-            ->get();
-            $timeOverTime = 0;
-            if ($proposes->count() > 0) {
-                foreach ($proposes as $propose) {
-                    $startTime = $propose->start_time;
-                    $endTime = $propose->end_time;  
-                    $diffHour = $endTime->diff($startTime);
-                    $diffHour = $diffHour->days * 24 + $diffHour->h + ($diffHour->i / 60);
-                    $timeOverTime+= round($diffHour/9, 2);  
-                }
-            }
-        }
-        // số ngày nghỉ có phép của tài khoản
+            // số ngày nghỉ có phép của tài khoản
             $accountDayOff = Auth::user()->day_off;
-            $a = $dayoff-$accountDayOff;
+            $a = $dayoff - $accountDayOff;
             // nếu như số ngày nghỉ vẫn trong khoảng thời gian cho phép
             if ($dayoff < $accountDayOff) {
                 $data['day_off_with_pay'] = $dayoff;
                 $data['day_off_without_pay'] = 0;
-                $data['day_off_account'] = $accountDayOff-$dayoff;
-            }else {
+                $data['day_off_account'] = $accountDayOff - $dayoff;
+            } else {
                 $data['day_off_with_pay'] = $accountDayOff;
                 $data['day_off_without_pay'] = $a;
                 $data['day_off_account'] = 0;
             }
             $data['total_over_time'] = $timeOverTime;
         }
-        
+
         return response()->json($data);
     }
 
