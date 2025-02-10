@@ -79,7 +79,7 @@ class TaskController extends Controller
                     ->where('id', $task->id)
                     ->first() ?? null;
                 $task->update([
-                    'expired' => $dateTime->addHour($stage->expired_after_hours),
+                    'expired' => $dateTime->addHours($stage->expired_after_hours),
                     'started_at' => $dateTime
                 ]);
             }
