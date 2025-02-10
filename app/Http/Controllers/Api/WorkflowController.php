@@ -52,8 +52,7 @@ class WorkflowController extends Controller
         $workflows = $query->get();
         $arrWorkflowId = $workflows->pluck('id');
         $stagesCompletedAndFailed = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->whereIn('index', [0, 1])->get();
-        $arrIdFailedAndIdCompleted = $stagesCompletedAndFailed->pluck('id');
-        $tasks = Task::query()->whereIn('id', $arrIdFailedAndIdCompleted)->get();
+        $tasks = Task::get();
         $members = AccountWorkflow::query()->whereIn('workflow_id', $arrWorkflowId)->get();
         $arrAccountId = $members->pluck('account_id');
         $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
@@ -100,6 +99,7 @@ class WorkflowController extends Controller
             $a['members'] = $arrMember;
             $arrWorkflow[] = $a;
         }
+
         return response()->json($arrWorkflow);
     }
 
