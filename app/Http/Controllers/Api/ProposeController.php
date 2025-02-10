@@ -25,7 +25,7 @@ class ProposeController extends Controller
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
         }
 
-        if (isset($request->account_id)) {
+        if (isset($request->account_id)) {  
             $proposes = $proposes->where('account_id', $request->account_id);
         }
 

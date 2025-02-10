@@ -65,7 +65,7 @@ Route::middleware(['check.login'])->group(function () {
         'propose-categories' => ProposeCategoryController::class,
         'attendances' => AttendanceController::class,
     ]);
-    Route::put('assign-work', [TaskController::class, 'assignWork']);
+    Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
 

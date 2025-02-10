@@ -50,7 +50,7 @@ class TaskController extends Controller
             if ($flag == 0) {
                 return response()->json([
                     'errors' => 'Bạn không phải là thành viên của workflow này'
-                ], 403);
+                ], 401);
             }
         }
         if ($stage->isSuccessStage()) {
@@ -111,7 +111,7 @@ class TaskController extends Controller
                 'errors' => [
                     'task' => 'Nhiệm vụ này không phải của bạn'
                 ]
-            ], 403);
+            ], 401);
         }
         if (isset($request->stage_id)) {
             //  Lấy ra stage mà mình muốn chuyển đến
@@ -123,7 +123,7 @@ class TaskController extends Controller
                     'errors' => [
                         'task' => 'Bạn không có quyền đánh thất bại nhiệm vụ'
                     ]
-                ], 403);
+                ], 401);
             }
             ;
         }
@@ -156,7 +156,7 @@ class TaskController extends Controller
                         'errors' => [
                             'task' => 'Bạn không có quyền gỡ nhiệm vụ này, load lại đi men'
                         ],
-                    ], 403);
+                    ], 401);
                 }
             }
         }
@@ -169,7 +169,7 @@ class TaskController extends Controller
                         'errors' => [
                             'task' => 'Nhiệm vụ này đã có người nhận, load lại đi men'
                         ],
-                    ], 403);
+                    ], 401);
                 }
             }
             $data['started_at'] = now();
@@ -313,9 +313,15 @@ class TaskController extends Controller
                     'manager_id' => Auth::id(),
                 ]));
             }
+
+            return response()->json($task);
+
+        } else {
+            return response()->json([
+                'message' => 'Bạn không có quyền giao nhiệm vụ'
+            ], 401);
         }
 
-        return response()->json($task);
     }
 
 
