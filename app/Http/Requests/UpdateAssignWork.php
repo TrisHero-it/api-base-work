@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StageStoreRequest extends FormRequest
+class UpdateAssignWork extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,11 +22,9 @@ class StageStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'workflow_id' => 'required|integer| :workflows,id',
-            'description' => 'string',
-            'expired_after_hours' => 'integer|nullable',
+            "account_id" => "integer|exists:accounts,id",
+            "job_assigner" => "integer|exists:accounts,id",
+            "the_person_assiged_the_job" => "integer|exists:accounts,id", 
         ];
     }
-
 }

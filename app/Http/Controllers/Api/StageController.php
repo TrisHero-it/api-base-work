@@ -94,14 +94,13 @@ class StageController extends Controller
     {
         $stage = Stage::query()->findOrFail($id);
         if (isset($request->index)) {
-
             $stages = Stage::query()
                 ->where('workflow_id', $stage->workflow_id)
                 ->where('index', '>', $request->index)
                 ->where('index', '<', $stage->index)
                 ->get();
             //  chuyển từ cái to thành cái nhỏ (từ trái qua phải) 
-            if ($request->index < $stage->index) {
+            if ($request->index < $stage->index) {  
                 foreach ($stages as $stage2) {
                     $stage2->update([
                         'index' => $stage2->index + 1,

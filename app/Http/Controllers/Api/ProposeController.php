@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendEmail;
+use App\Models\Account;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Notification;
@@ -59,7 +61,7 @@ class ProposeController extends Controller
     public function show(int $id, Request $request)
     {
         $propose = Propose::with(['account', 'date_holidays', 'propose_category'])
-        ->findOrFail($id);
+            ->findOrFail($id);
         $a = explode(' ', $propose->start_time)[0];
         $b = Attendance::whereDate('checkin', $a)->where('account_id', $propose->account_id)->first();
         if ($b != null) {
@@ -67,7 +69,7 @@ class ProposeController extends Controller
             $propose['old_check_out'] = $b->checkout ?? null;
         }
 
-        return response()->json($propose);  
+        return response()->json($propose);
     }
 
     public function store(Request $request)
@@ -80,12 +82,15 @@ class ProposeController extends Controller
 
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
-                $a =  ['propose_id' => $propose->id];
+                $a = ['propose_id' => $propose->id];
                 $arr[] = array_merge($a, $date);
             }
         }
         DateHoliday::query()->insert($arr);
-
+        $accounts = Account::where('role_id', 2)->get();
+        foreach ($accounts as $account) {
+            SendEmail::dispatch($account->email, "Có một yêu cầu $request->name được gửi tới bạn !!");
+        }
         return response()->json($propose);
     }
 

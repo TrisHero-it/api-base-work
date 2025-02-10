@@ -33,24 +33,13 @@ Route::apiResource('accounts', AccountController::class);
 
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
 
-Route::get('/test', function () {
-    $allowedIp = [
-        '58.186.22.148',
-        '127.0.0.1',
-    ];
-    echo request()->ip();
-    dd(in_array(request()->ip(), $allowedIp));
-});
-
 Route::middleware('auth.basic')->group(function () {
     Route::get('a', fn() => redirect('https://docs.google.com/spreadsheets/d/1vnOG_vqJipGhDy0HDCHCVk46XQknztLnwJ7lt4Uk4xg/edit'));
     Route::get('b', fn() => redirect('https://docs.google.com/spreadsheets/d/121Q0A0LhDw6G_jXbewOcW6iazt2K6nmFZP3eI7oJZes/edit'));
 });
 
 Route::middleware(['check.login'])->group(function () {
-
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
-    
     Route::apiResources([
         'day-off' => DayScheduleController::class,
         'roles' => RoleController::class,
@@ -76,6 +65,7 @@ Route::middleware(['check.login'])->group(function () {
         'propose-categories' => ProposeCategoryController::class,
     ]);
     // Nhãn dán
+    Route::put('assign-work',[TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);  
 

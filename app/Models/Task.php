@@ -27,7 +27,9 @@ class Task extends Model
         'code_youtube',
         'date_posted',
         'status',
-        'completed_at'
+        'completed_at',
+        'job_assigner',
+        'the_person_assiged_the_job'
     ];
 
     public function stage()

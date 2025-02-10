@@ -124,7 +124,8 @@ class TaskController extends Controller
                         'task' => 'Bạn không có quyền đánh thất bại nhiệm vụ'
                     ]
                 ], 403);
-            };
+            }
+            ;
         }
         // Cập nhập thông tin nhiệm vụ
         $data = $request->all();
@@ -283,7 +284,8 @@ class TaskController extends Controller
                 if ($kpi !== null) {
                     $kpi->delete();
                 }
-            };
+            }
+            ;
         }
         $task->update($data);
         if (isset($tag)) {
@@ -292,6 +294,30 @@ class TaskController extends Controller
 
         return $task;
     }
+
+    public function assignWork(int $id, Request $request)
+    {
+        if (Auth::user()->isSeniorAdmin()) {
+            $task = Task::findOrFail($id);
+            if (isset($request->account_id) && $request->account_id != Auth::user()->id) {
+                $task->update(attributes: [
+                    'job_assigner' => Auth::id(),
+                    'the_person_assiged_the_job' => $request->account_id
+                ]);
+                $account = Account::findOrFail($request->account_id);
+                event(new NotificationEvent([
+                    'full_name' => $account->full_name,
+                    'task_name' => $task->name,
+                    'workflow_id' => $task->stage->workflow_id,
+                    'account_id' => $request->account_id,
+                    'manager_id' => Auth::id(),
+                ]));
+            }
+        }
+
+        return response()->json($task);
+    }
+
 
     public function show(int $id)
     {
