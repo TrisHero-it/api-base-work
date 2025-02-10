@@ -302,7 +302,7 @@ class TaskController extends Controller
             if (isset($request->account_id)) {
                 $task->update(attributes: [
                     'job_assigner' => Auth::id(),
-                    'the_person_assiged_the_job' => $request->account_id
+                    'account_id' => $request->account_id
                 ]);
                 $account = Account::findOrFail($request->account_id);
                 event(new NotificationEvent([
