@@ -62,14 +62,16 @@ class WorkflowController extends Controller
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
             // lấy ra stage thất bại
-            $stageFailed = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 0)->pluck('id');
-            if (isset($stageFailed)) {
-                $countTaskFailed = $tasks->whereIn('stage_id', $stageFailed)->count();
-            }
-            $stageCompleted = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 1)->pluck('id');
-            if (isset($stageCompleted)) {
-                $countTaskSuccess = $tasks->whereIn('stage_id', $stageCompleted)->count();
-            }
+            $stageFailed = $stagesCompletedAndFailed
+                ->where('workflow_id', $workflow->id)
+                ->where('index', 0)
+                ->pluck('id');
+            $countTaskFailed = $tasks->whereIn('stage_id', $stageFailed)->count();
+            $stageCompleted = $stagesCompletedAndFailed
+                ->where('workflow_id', $workflow->id)
+                ->where('index', 1)
+                ->pluck('id');
+            $countTaskSuccess = $tasks->whereIn('stage_id', $stageCompleted)->count();
             $stages = $tasks->where('workflow_id', $workflow->id)->count();
             $totalTask = $stages;
             $members2 = $members->where('workflow_id', $workflow->id);
