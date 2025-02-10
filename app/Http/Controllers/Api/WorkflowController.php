@@ -73,7 +73,7 @@ class WorkflowController extends Controller
                 ->where('index', 1)
                 ->pluck('id');
             $countTaskSuccess = $tasks->whereIn('stage_id', $stageCompleted)->count();
-            $countTask = $tasks->whereIn('workflow_id', $allStage)->count();
+            $countTask = $tasks->whereIn('stage_id', $allStage)->count();
             $members2 = $members->where('workflow_id', $workflow->id);
             $arr = [
                 'totalTask' => $countTask,
