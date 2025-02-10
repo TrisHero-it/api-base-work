@@ -51,14 +51,12 @@ class AttendanceController extends Controller
             if (!isset($request->start) && !isset($request->date)) {
                 $attendance->whereMonth('created_at', date('m'));
             }
-
             $attendance = $attendance->get();
             foreach ($attendance as $item) {
                 $item['check_out_regulation'] = Carbon::parse($item->checkin)
                     ->addHours(9)
                     ->format('Y-m-d H:i:s');
             }
-
             $data = [];
             $data['attendances'] = $attendance;
             $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)

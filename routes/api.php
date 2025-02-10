@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
@@ -63,15 +63,15 @@ Route::middleware(['check.login'])->group(function () {
         'departments' => DepartmentController::class,
         'proposes' => ProposeController::class,
         'propose-categories' => ProposeCategoryController::class,
+        'attendances' => AttendanceController::class,
     ]);
     // Nhãn dán
-    Route::put('assign-work',[TaskController::class, 'assignWork']);
+    Route::put('assign-work', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
-    Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);  
+    Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
 
     // Điểm danh
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
-    Route::apiResource('attendances', AttendanceController::class);
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
