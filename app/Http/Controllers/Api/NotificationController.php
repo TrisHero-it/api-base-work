@@ -8,7 +8,7 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class NotificationController extends Controller
+class  NotificationController extends Controller
 {
     public function index(Request $request)
     {
@@ -28,13 +28,13 @@ class NotificationController extends Controller
         return response()->json($notification);
     }
 
-    public function destroy(int $id, Request $request)
+    public function delete(int $id, Request $request)
     {
         if (isset($request->all)) {
             Notification::where('account_id', Auth::id())->delete();
         } else {
             $notification = Notification::find($id)->delete();
-        }
+        } 
 
         return response()->json([
             'success' => 'Xoá thành công'
@@ -44,10 +44,10 @@ class NotificationController extends Controller
     public function seenNotification(Request $request)
     {
         $notifications = Notification::where('account_id', Auth::id())
-            ->where('new', true)
-            ->update([
-                'new' => false
-            ]);
+        ->where('new', true)
+        ->update([
+            'new' => false
+        ]);
 
         return response()->json($notifications);
     }

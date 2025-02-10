@@ -65,17 +65,14 @@ Route::middleware(['check.login'])->group(function () {
         'propose-categories' => ProposeCategoryController::class,
         'attendances' => AttendanceController::class,
     ]);
-    // Nhãn dán
     Route::put('assign-work', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
 
-    // Điểm danh
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
 
-    // Thời gian của nhiệm vụ trong từng giai đoạn
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
 });
