@@ -67,6 +67,23 @@ class StageController extends Controller
                     'index' => $request->index,
                     'expired_after_hours' => $request->expired_after_hours ?? null
                 ]);
+            } else if (isset($request->left)) {
+                $stages = Stage::query()->where('workflow_id', $request->workflow_id)
+                    ->where('index', '>', $request->index)
+                    ->get();
+
+                foreach ($stages as $stage) {
+                    $stage->update([
+                        'index' => $stage->index + 1
+                    ]);
+                }
+                $stages = Stage::create([
+                    'name' => $request->name,
+                    'workflow_id' => $request->workflow_id,
+                    'description' => $request->description,
+                    'index' => $request->index + 1,
+                    'expired_after_hours' => $request->expired_after_hours ?? null
+                ]);
             } else {
                 $stages = Stage::query()
                     ->where('workflow_id', $request->workflow_id)
