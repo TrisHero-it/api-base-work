@@ -35,6 +35,11 @@ class ProposeController extends Controller
             $month = $date[1];
             $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
+        $dates = $proposes->pluck('start_time')->map(function ($time) {
+            return $time ? explode(' ', $time)[0] : null;
+        })->filter()->unique();
+
+        $attendances = Attendance::whereIn('checkin', $dates)->get()->keyBy('checkin');
 
         $proposes = $proposes->get();
         foreach ($proposes as $propose) {
@@ -44,10 +49,9 @@ class ProposeController extends Controller
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;
             if ($propose->start_time != null) {
                 $a = explode(' ', $propose->start_time)[0];
-                $b = Attendance::whereDate('checkin', $a)->first();
-                if ($b != null) {
-                    $propose['old_check_in'] = $b->checkin;
-                    $propose['old_check_out'] = $b->checkout ?? null;
+                if (isset($attendances[$a])) {
+                    $propose['old_check_in'] = $attendances[$a]->checkin;
+                    $propose['old_check_out'] = $attendances[$a]->checkout ?? null;
                 }
             }
             unset(
