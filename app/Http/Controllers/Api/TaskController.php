@@ -88,7 +88,6 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-
     public function update($id, TaskStoreRequest $request)
     {
         $account = Auth::user();
@@ -173,20 +172,18 @@ class TaskController extends Controller
                 }
             }
             $data['started_at'] = now();
-            if ($task->stage->expired_after_hours != null) {
+            if ($task->stage->expired_after_hours != null && $task->expired == null) {
                 $dateTime = new \DateTime($data['started_at']);
                 $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
                 $data['expired'] = $dateTime->format('Y-m-d H:i:s');
-            } else {
-                $data['expired'] = null;
             }
-            event(new NotificationEvent([
-                'full_name' => $account->full_name,
-                'task_name' => $task->name,
-                'workflow_id' => $task->stage->workflow_id,
-                'account_id' => $request->account_id,
-                'manager_id' => Auth::id(),
-            ]));
+            // event(new NotificationEvent([
+            //     'full_name' => $account->full_name,
+            //     'task_name' => $task->name,
+            //     'workflow_id' => $task->stage->workflow_id,
+            //     'account_id' => $request->account_id,
+            //     'manager_id' => Auth::id(),
+            // ]));
         }
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
@@ -298,12 +295,18 @@ class TaskController extends Controller
     public function assignWork(int $id, Request $request)
     {
         if (Auth::user()->isSeniorAdmin()) {
-            $task = Task::findOrFail($id);
+            $task = Task::with('stage')->findOrFail($id);
+            $data = [];
+
             if (isset($request->account_id)) {
-                $task->update(attributes: [
-                    'job_assigner' => Auth::id(),
-                    'account_id' => $request->account_id
-                ]);
+                if ($task->stage->expired_after_hours) {
+                    $dateTime = Carbon::now();
+                    $dateTime->addHours($task->stage->expired_after_hours);
+                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                }
+                $data['job_assigner'] = Auth::id();
+                $data['account_id'] = $request->account_id;
+                $task->update($data);
                 $account = Account::findOrFail($request->account_id);
                 event(new NotificationEvent([
                     'full_name' => $account->full_name,
@@ -315,14 +318,13 @@ class TaskController extends Controller
             }
 
             return response()->json($task);
-
         } else {
+
             return response()->json([
                 'message' => 'Bạn không có quyền giao nhiệm vụ'
             ], 401);
         }
     }
-
 
     public function show(int $id)
     {
@@ -337,10 +339,12 @@ class TaskController extends Controller
         try {
             $task = Task::query()->findOrFail($id);
             $task->delete();
+
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
         } catch (\Exception $exception) {
+
             return response()->json([
                 'error' => 'Đã xảy ra lỗi : ' . $exception->getMessage()
             ]);

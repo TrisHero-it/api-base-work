@@ -61,15 +61,14 @@ class WorkflowController extends Controller
         foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
             $countTaskSuccess = 0;
-            $stageFailed = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 0);
-            $stageFailed = array_values($stageFailed->toArray());
+            // lấy ra stage thất bại
+            $stageFailed = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 0)->pluck('id');
             if (isset($stageFailed)) {
-                $countTaskFailed = $tasks->where('stage_id', $stageFailed[0]['id'])->count();
+                $countTaskFailed = $tasks->whereIn('stage_id', $stageFailed)->count();
             }
-            $stageCompleted = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 1);
-            $stageCompleted = array_values($stageCompleted->toArray());
+            $stageCompleted = $stagesCompletedAndFailed->where('workflow_id', $workflow->id)->where('index', 1)->pluck('id');
             if (isset($stageCompleted)) {
-                $countTaskSuccess = $tasks->where('stage_id', $stageCompleted[0]['id'])->count();
+                $countTaskSuccess = $tasks->whereIn('stage_id', $stageCompleted)->count();
             }
             $stages = $tasks->where('workflow_id', $workflow->id)->count();
             $totalTask = $stages;
@@ -105,7 +104,7 @@ class WorkflowController extends Controller
     public function store(WorkflowStoreRequest $request)
     {
         $error = [];
-        $name =  Workflow::query()->where('workflow_category_id', $request->input('workflow_category_id'))->where('name', $request->name)->first();
+        $name = Workflow::query()->where('workflow_category_id', $request->input('workflow_category_id'))->where('name', $request->name)->first();
         if (isset($name)) {
             $error['name'] = 'Workflow đã tồn tại';
         }
@@ -133,10 +132,10 @@ class WorkflowController extends Controller
             }
         }
         //  Truy cập vào bảng workflow_category_stages để lấy ra cac stage được quy định sẵn từ workflow_category
-        $stageRules =  WorkflowCategoryStage::query()->where('workflow_category_id', $workflow->workflow_category_id)->get();
+        $stageRules = WorkflowCategoryStage::query()->where('workflow_category_id', $workflow->workflow_category_id)->get();
         $numberIndex = $stageRules->count() + 2;
         foreach ($stageRules as $stageRule) {
-            $stage =  Stage::query()->create([
+            $stage = Stage::query()->create([
                 'name' => $stageRule->name,
                 'workflow_id' => $workflow->id,
                 'index' => $numberIndex
