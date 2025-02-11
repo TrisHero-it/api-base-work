@@ -134,8 +134,14 @@ class ScheduleWorkController extends Controller
         }
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            $myTask = Task::where('started_at', '!=', null)
+                ->whereDate('started_at', $date->format('Y-m-d'))
+                ->get();
+            $hours17h30 = Carbon::parse($date->format('Y-m-d') . ' 17:30:00');
             $arr[$date->format('Y-m-d')] = $date->format('Y-m-d');
-            
+            foreach ($myTask as $task) {
+
+            }
         }
         return $arr;
     }

@@ -35,13 +35,7 @@ Route::apiResource('accounts', AccountController::class);
 
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
 Route::get('/test', function () {
-    $agent = new Agent();
-    $isMobile = $agent->isMobile();
-    $ip = request()->ip();
-    return response()->json([
-        'ip' => $ip,
-        'isMobile' => $isMobile
-    ]);
+   dd(now()->format('H'));
 });
 
 Route::middleware('auth.basic')->group(function () {
