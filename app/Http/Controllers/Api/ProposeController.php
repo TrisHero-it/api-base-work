@@ -91,13 +91,13 @@ class ProposeController extends Controller
                         $diff2 = $date->setTime(13, 30, 0)->floatDiffInHours($date);
                         if ($diff >= 0 && $diff8h >= 0) {
                             $newStartDate = $startDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - 1.5) / 7.5, 3);
+                            $numberHoliDay = $numberHoliDay + round(($newStartDate->diffInHours($date) - 1.5) / 7.5, 3);
                         } else if ($diff2 >= 0) {
                             $newStartDate = $startDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - $diff2) / 7.5, 3);
+                            $numberHoliDay = $numberHoliDay + round(($newStartDate->diffInHours($date) - $diff2) / 7.5, 3);
                         } else if ($date->setTime(17, 30, 0)->floatDiffInHours($date) >= 0) {
                             $newStartDate = $startDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate)) / 7.5, 3);
+                            $numberHoliDay = $numberHoliDay + round(($newStartDate->diffInHours($date)) / 7.5, 3);
                         } else if ($diff8h >= 0) {
                             $numberHoliDay++;
                         }
@@ -112,7 +112,7 @@ class ProposeController extends Controller
                         $diff8h = $date->floatDiffInHours($date8h);
                         if ($diff17h30 < 0 && $diff13h30 >= 0) {
                             $newEndDate = $endDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($newEndDate->diffInHours($date)) / 7.5, 3);
+                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate)) / 7.5, 3);
                         } else if ($diff12h <= 0 && $diff8h >= 0) {
                             $newEndDate = $endDate->setTime(17, 30, 0);
                             $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate) - 1.5) / 7.5, 3);
