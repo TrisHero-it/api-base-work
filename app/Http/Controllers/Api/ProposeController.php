@@ -55,57 +55,10 @@ class ProposeController extends Controller
                     $propose['old_check_out'] = $attendances[$a]->checkout ?? null;
                 }
             }
-            if ($propose->propose_category->name == 'Đăng ký nghỉ') {
-                $numberHoliDay = 0;
-                foreach ($propose->date_holidays as $date) {
-                    $startDate = Carbon::parse($date->start_date);
-                    $endDate = Carbon::parse($date->end_date);
-                    for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-                        // Nếu như không phải ngày đầu hay là ngày cuối, thì sẽ +1 ngày công luôn
-                        if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
-                            $numberHoliDay++;
-                        } else if ($date->format('Y-m-d') == $startDate->format('Y-m-d')) {
-                            $date8h = $startDate->setTime(8, 0, 0);
-                            $date12h = $startDate->setTime(12, 0, 0);
-                            $diff8h = $date->floatDiffInHours($date8h);
-                            $diff = $date12h->floatDiffInHours($date);
-                            $diff2 = $date->setTime(13, 30, 0)->floatDiffInHours($date);
-                            if ($diff >= 0 && $diff8h >= 0) {
-                                $newStartDate = $startDate->setTime(17, 30, 0);
-                                $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - 1.5) / 7.5, 3);
-                            } else if ($diff2 >= 0) {
-                                $newStartDate = $startDate->setTime(17, 30, 0);
-                                $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - $diff2) / 7.5, 3);
-                            } else if ($date->setTime(17, 30, 0)->floatDiffInHours($date) >= 0) {
-                                $newStartDate = $startDate->setTime(17, 30, 0);
-                                $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate)) / 7.5, 3);
-                            }
-                        } else if ($date->format('Y-m-d') == $endDate->format('Y-m-d')) {
-                            $date17h30 = $endDate->setTime(17, 30, 0);
-                            $date13h30 = $endDate->setTime(13, 30, 0);
-                            $date12h = $endDate->setTime(12, 0, 0);
-                            $date8h = $endDate->setTime(8, 0, 0);
-                            $diff17h30 = $date->floatDiffInHours($date17h30);
-                            $diff13h30 = $date->floatDiffInHours($date13h30);
-                            $diff12h = $date->floatDiffInHours($date12h);
-                            $diff8h = $date->floatDiffInHours($date8h);
-                            if ($date17h30 < 0 && $diff13h30 >= 0) {
-                                $newEndDate = $endDate->setTime(17, 30, 0);
-                                $numberHoliDay = $numberHoliDay + round(($newEndDate->diffInHours($date)) / 7.5, 3);
-                            } else if ($diff12h <= 0 && $diff8h >= 0) {
-                                $newEndDate = $endDate->setTime(17, 30, 0);
-                                $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate) - 1.5) / 7.5, 3);
-                            }
-                        }
-                    }
-                }
-                $propose['number_holiday'] = $numberHoliDay;
 
-                unset($propose['date_holidays']);
-                unset($propose['propose_category']);
-                unset($propose['account_id']);
-            }
-
+            unset($propose['date_holidays']);
+            unset($propose['propose_category']);
+            unset($propose['account_id']);
             return response()->json($proposes);
         }
     }
@@ -119,6 +72,55 @@ class ProposeController extends Controller
         if ($b != null) {
             $propose['old_check_in'] = $b->checkin;
             $propose['old_check_out'] = $b->checkout ?? null;
+        }
+
+        if ($propose->propose_category->name == 'Đăng ký nghỉ') {
+            $numberHoliDay = 0;
+            foreach ($propose->date_holidays as $date) {
+                $startDate = Carbon::parse($date->start_date);
+                $endDate = Carbon::parse($date->end_date);
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    // Nếu như không phải ngày đầu hay là ngày cuối, thì sẽ +1 ngày công luôn
+                    if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
+                        $numberHoliDay++;
+                    } else if ($date->format('Y-m-d') == $startDate->format('Y-m-d')) {
+                        $date8h = $startDate->setTime(8, 0, 0);
+                        $date12h = $startDate->setTime(12, 0, 0);
+                        $diff8h = $date->floatDiffInHours($date8h);
+                        $diff = $date12h->floatDiffInHours($date);
+                        $diff2 = $date->setTime(13, 30, 0)->floatDiffInHours($date);
+                        if ($diff >= 0 && $diff8h >= 0) {
+                            $newStartDate = $startDate->setTime(17, 30, 0);
+                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - 1.5) / 7.5, 3);
+                        } else if ($diff2 >= 0) {
+                            $newStartDate = $startDate->setTime(17, 30, 0);
+                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - $diff2) / 7.5, 3);
+                        } else if ($date->setTime(17, 30, 0)->floatDiffInHours($date) >= 0) {
+                            $newStartDate = $startDate->setTime(17, 30, 0);
+                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate)) / 7.5, 3);
+                        }
+                    } else if ($date->format('Y-m-d') == $endDate->format('Y-m-d')) {
+                        $date17h30 = $endDate->setTime(17, 30, 0);
+                        $date13h30 = $endDate->setTime(13, 30, 0);
+                        $date12h = $endDate->setTime(12, 0, 0);
+                        $date8h = $endDate->setTime(8, 0, 0);
+                        $diff17h30 = $date->floatDiffInHours($date17h30);
+                        $diff13h30 = $date->floatDiffInHours($date13h30);
+                        $diff12h = $date->floatDiffInHours($date12h);
+                        $diff8h = $date->floatDiffInHours($date8h);
+                        if ($diff17h30 < 0 && $diff13h30 >= 0) {
+                            $newEndDate = $endDate->setTime(17, 30, 0);
+                            $numberHoliDay = $numberHoliDay + round(($newEndDate->diffInHours($date)) / 7.5, 3);
+                        } else if ($diff12h <= 0 && $diff8h >= 0) {
+                            $newEndDate = $endDate->setTime(17, 30, 0);
+                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate) - 1.5) / 7.5, 3);
+                        }
+                    }
+                }
+            }
+            $propose['number_holiday'] = $numberHoliDay;
+
+
         }
 
         return response()->json($propose);
