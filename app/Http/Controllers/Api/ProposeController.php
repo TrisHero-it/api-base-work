@@ -98,7 +98,8 @@ class ProposeController extends Controller
                         } else if ($date->setTime(17, 30, 0)->floatDiffInHours($date) >= 0) {
                             $newStartDate = $startDate->setTime(17, 30, 0);
                             $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate)) / 7.5, 3);
-                        }
+                        } else if ($diff8h < 0) {
+                            $numberHoliDay++;
                     } else if ($date->format('Y-m-d') == $endDate->format('Y-m-d')) {
                         $date17h30 = $endDate->setTime(17, 30, 0);
                         $date13h30 = $endDate->setTime(13, 30, 0);
