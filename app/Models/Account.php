@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Account extends Authenticatable
 {
-    use HasFactory,Notifiable;
+    use HasFactory, Notifiable;
     protected $fillable = [
         "username",
         "email",
@@ -22,13 +22,14 @@ class Account extends Authenticatable
         'manager_id',
         'avatar',
         'role_id',
-        'day_off'
+        'day_off',
+        'attendance_at_home'
     ];
 
     public function isAdmin()
-    { 
+    {
 
-        return $this->role_id == 1 || $this->role_id == 2 ;
+        return $this->role_id == 1 || $this->role_id == 2;
     }
 
     public function isSeniorAdmin()

@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\Department;
+use App\Models\ipWifi;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
 use App\Models\Schedule;
@@ -119,6 +120,14 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        $account = Auth::user();
+        $ipWifi = ipWifi::where('ip', $request->ip())->first();
+        if (!$account->attendance_at_home || !$ipWifi) {
+            return response()->json([
+                'error' => 'Lỗi không xác định'
+            ], 403);
+        }
+
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
@@ -126,14 +135,9 @@ class AttendanceController extends Controller
         $arrId = [];
         $department = Department::where('name', 'Phòng sales')->first()->id;
         $accountDepartments = AccountDepartment::where('department_id', $department)->get();
-        foreach ($accountDepartments as $accountDepartment) {
-            $arrId[] = $accountDepartment->account_id;
-        }
-        $saleMembers = Account::whereIn('id', $arrId)->get()->toArray();
-        $arrAccountId = [];
-        foreach ($saleMembers as $saleMember) {
-            $arrAccountId[] = $saleMember['id'];
-        }
+        $arrId = $accountDepartments->pluck('account_id')->toArray();
+        $saleMembers = Account::whereIn('id', $arrId)->get();
+        $arrAccountId = $saleMembers->pluck('id')->toArray();
         // check xem có trong khoảng giờ nghỉ trưa hay không
         if (!$currentTime->between($startTime, $endTime) || in_array(Auth::id(), $arrAccountId)) {
             // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh

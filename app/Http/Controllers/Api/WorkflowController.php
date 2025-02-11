@@ -52,11 +52,18 @@ class WorkflowController extends Controller
         $workflows = $query->get();
         $arrWorkflowId = $workflows->pluck('id');
         $stages = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->get();
-        $stagesCompletedAndFailed = Stage::query()->whereIn('workflow_id', $arrWorkflowId)->whereIn('index', [0, 1])->get();
-        $tasks = Task::whereIn('workflow_id', $arrWorkflowId)->get();
-        $members = AccountWorkflow::query()->whereIn('workflow_id', $arrWorkflowId)->get();
+        $stagesCompletedAndFailed = Stage::query()
+            ->whereIn('workflow_id', $arrWorkflowId)
+            ->whereIn('index', [0, 1])
+            ->get();
+        $tasks = Task::get();
+        $members = AccountWorkflow::query()
+            ->whereIn('workflow_id', $arrWorkflowId)
+            ->get();
         $arrAccountId = $members->pluck('account_id');
-        $accounts = Account::query()->whereIn('id', $arrAccountId)->get();
+        $accounts = Account::query()
+            ->whereIn('id', $arrAccountId)
+            ->get();
 
         foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
