@@ -135,7 +135,7 @@ class ScheduleWorkController extends Controller
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
             $arr[$date->format('Y-m-d')] = $date->format('Y-m-d');
-            $myTaskToday = Task::
+            
         }
         return $arr;
     }
