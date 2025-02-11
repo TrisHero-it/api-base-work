@@ -76,46 +76,40 @@ class ProposeController extends Controller
 
         if ($propose->propose_category->name == 'Đăng ký nghỉ') {
             $numberHoliDay = 0;
-            foreach ($propose->date_holidays as $date) {
-                $startDate = Carbon::parse($date->start_date);
-                $endDate = Carbon::parse($date->end_date);
+            foreach ($propose->date_holidays as $date2) {
+                $startDate = Carbon::parse($date2->start_date);
+                $endDate = Carbon::parse($date2->end_date);
                 for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
                     // Nếu như không phải ngày đầu hay là ngày cuối, thì sẽ +1 ngày công luôn
                     if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
                         $numberHoliDay++;
-                    } else if ($date->format('Y-m-d') == $startDate->format('Y-m-d')) {
-                        $date8h = $startDate->setTime(8, 0, 0);
-                        $date12h = $startDate->setTime(12, 0, 0);
-                        $diff8h = $date->floatDiffInHours($date8h);
-                        $diff = $date12h->floatDiffInHours($date);
-                        $diff2 = $date->setTime(13, 30, 0)->floatDiffInHours($date);
-                        if ($diff >= 0 && $diff8h >= 0) {
-                            $newStartDate = $startDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($newStartDate->diffInHours($date) - 1.5) / 7.5, 3);
-                        } else if ($diff2 >= 0) {
-                            $newStartDate = $startDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($newStartDate->diffInHours($date) - $diff2) / 7.5, 3);
-                        } else if ($date->setTime(17, 30, 0)->floatDiffInHours($date) >= 0) {
-                            $newStartDate = $startDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($newStartDate->diffInHours($date)) / 7.5, 3);
-                        } else if ($diff8h >= 0) {
+                    } else if ($startDate->format("Y-m-d") == $endDate->format("Y-m-d")) {
+                        $innerStart = Carbon::parse($date->format("Y-m-d") . " 08:00:00");
+                        $innerEnd = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
+                        if ($innerStart->greaterThanOrEqualTo($startDate) && $innerEnd->lessThanOrEqualTo($endDate)) {
                             $numberHoliDay++;
+                        } else {
+                            $validStart = max($innerStart, $startDate);
+                            $validEnd = min($innerEnd, $endDate);
+                            if ($validStart->lessThan($validEnd)) {
+                                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                                $numberHoliDay += $validHours;
+                            }
                         }
-                    } else if ($date->format('Y-m-d') == $endDate->format('Y-m-d')) {
-                        $date17h30 = $endDate->setTime(17, 30, 0);
-                        $date13h30 = $endDate->setTime(13, 30, 0);
-                        $date12h = $endDate->setTime(12, 0, 0);
-                        $date8h = $endDate->setTime(8, 0, 0);
-                        $diff17h30 = $date->floatDiffInHours($date17h30);
-                        $diff13h30 = $date->floatDiffInHours($date13h30);
-                        $diff12h = $date->floatDiffInHours($date12h);
-                        $diff8h = $date->floatDiffInHours($date8h);
-                        if ($diff17h30 < 0 && $diff13h30 >= 0) {
-                            $newEndDate = $endDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate)) / 7.5, 3);
-                        } else if ($diff12h <= 0 && $diff8h >= 0) {
-                            $newEndDate = $endDate->setTime(17, 30, 0);
-                            $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate) - 1.5) / 7.5, 3);
+                    } else {
+                        if ($date->format('Y-m-d') == $startDate->format('Y-m-d')) {
+                            $innerStart = $date;
+                            $innerEnd = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
+                            if ($innerStart->greaterThanOrEqualTo($startDate) && $innerEnd->lessThanOrEqualTo($endDate)) {
+                                $numberHoliDay++;
+                            } else {
+                                $validStart = max($innerStart, $startDate);
+                                $validEnd = min($innerEnd, $endDate);
+                                if ($validStart->lessThan($validEnd)) {
+                                    $validHours = $validStart->floatDiffInHours($validEnd, true);
+                                    $numberHoliDay += $validHours;
+                                }
+                            }
                         }
                     }
                 }
