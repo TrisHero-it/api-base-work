@@ -120,7 +120,6 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        dd($request->ip());
         $account = Auth::user();
         $ipWifi = ipWifi::where('ip', $request->ip())->first();
         if (!isset($ipWifi)) {
