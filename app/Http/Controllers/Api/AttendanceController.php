@@ -10,7 +10,6 @@ use App\Models\Department;
 use App\Models\ipWifi;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
-use Jenssegers\Agent\Agent;
 
 use App\Models\Schedule;
 use Carbon\Carbon;
@@ -134,6 +133,7 @@ class AttendanceController extends Controller
                 ], 403);
             }
         }
+
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
