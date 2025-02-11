@@ -110,6 +110,19 @@ class ProposeController extends Controller
                                     $numberHoliDay += $validHours;
                                 }
                             }
+                        } else if ($date->format('Y-m-d' == $endDate->format('Y-m-d'))) {
+                            $innerStart = Carbon::parse($date->format("Y-m-d") . " 08:00:00");
+                            $innerEnd = Carbon::parse($date);
+                            if ($innerStart->greaterThanOrEqualTo($startDate) && $innerEnd->lessThanOrEqualTo($endDate)) {
+                                $numberHoliDay++;
+                            } else {
+                                $validStart = max($innerStart, $startDate);
+                                $validEnd = min($innerEnd, $endDate);
+                                if ($validStart->lessThan($validEnd)) {
+                                    $validHours = $validStart->floatDiffInHours($validEnd, true);
+                                    $numberHoliDay += $validHours;
+                                }
+                            }
                         }
                     }
                 }
