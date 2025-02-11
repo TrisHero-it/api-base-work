@@ -76,7 +76,7 @@ class ProposeController extends Controller
                             } else if ($diff2 >= 0) {
                                 $newStartDate = $startDate->setTime(17, 30, 0);
                                 $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate) - $diff2) / 7.5, 3);
-                            } else if($date->setTime(17, 30, 0)->floatDiffInHours($date)>=0){
+                            } else if ($date->setTime(17, 30, 0)->floatDiffInHours($date) >= 0) {
                                 $newStartDate = $startDate->setTime(17, 30, 0);
                                 $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newStartDate)) / 7.5, 3);
                             }
@@ -92,21 +92,22 @@ class ProposeController extends Controller
                             if ($date17h30 < 0 && $diff13h30 >= 0) {
                                 $newEndDate = $endDate->setTime(17, 30, 0);
                                 $numberHoliDay = $numberHoliDay + round(($newEndDate->diffInHours($date)) / 7.5, 3);
-                            }else if ($diff12h <= 0 && $diff8h >= 0) {
+                            } else if ($diff12h <= 0 && $diff8h >= 0) {
                                 $newEndDate = $endDate->setTime(17, 30, 0);
                                 $numberHoliDay = $numberHoliDay + round(($date->diffInHours($newEndDate) - 1.5) / 7.5, 3);
-                            } 
+                            }
                         }
+                    }
                 }
+                $propose['number_holiday'] = $numberHoliDay;
+
+                unset($propose['date_holidays']);
+                unset($propose['propose_category']);
+                unset($propose['account_id']);
             }
-            $propose['number_holiday'] = $numberHoliDay;
 
-            unset($propose['date_holidays']);
-            unset($propose['propose_category']);
-            unset($propose['account_id']);
+            return response()->json($proposes);
         }
-
-        return response()->json($proposes);
     }
 
     public function show(int $id, Request $request)
