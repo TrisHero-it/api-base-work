@@ -10,6 +10,8 @@ use App\Models\Department;
 use App\Models\ipWifi;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use Jenssegers\Agent\Agent;
+
 use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
