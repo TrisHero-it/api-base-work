@@ -121,11 +121,17 @@ class AttendanceController extends Controller
     public function checkIn(Request $request)
     {
         $account = Auth::user();
-        $ipWifi = ipWifi::where('ip', $request->ip())->first();
-        if (!$account->attendance_at_home || !$ipWifi) {
+        if (!$account->attendance_at_home) {
             return response()->json([
                 'error' => 'Lỗi không xác định'
             ], 403);
+        }else {
+            $ipWifi = ipWifi::where('ip', $request->ip())->first();
+            if (!$ipWifi) {
+                return response()->json([
+                    'error' => 'Lỗi không xác định'
+                ], 403);
+            }
         }
 
         $currentTime = Carbon::now();

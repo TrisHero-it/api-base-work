@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ipWifi;
+use Auth;
 use Illuminate\Http\Request;
 
 class IpWifiController extends Controller
@@ -17,12 +18,14 @@ class IpWifiController extends Controller
 
     public function store(Request $request)
     {
-        $ip = request()->ip();
-        $ipWifi = ipWifi::where('ip', $ip)->first();
-        if (!$ipWifi) {
-            $ipWifi = ipWifi::create([
-                'ip' => $ip
-            ]);
+        if (Auth::user()->role_id == 2) {
+            $ip = request()->ip();
+            $ipWifi = ipWifi::where('ip', $ip)->first();
+            if (!$ipWifi) {
+                $ipWifi = ipWifi::create([
+                    'ip' => $ip
+                ]);
+            }
         }
 
         return response()->json($ipWifi);
