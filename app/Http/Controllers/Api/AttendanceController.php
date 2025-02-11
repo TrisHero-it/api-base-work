@@ -122,12 +122,12 @@ class AttendanceController extends Controller
     {
         $account = Auth::user();
         $ipWifi = ipWifi::where('ip', $request->ip())->first();
-        if (!$ipWifi) {
+        if (!isset($ipWifi)) {
             if (!$account->attendance_at_home) {
                 return response()->json([
-                    'message' => 'Lỗi không xác định',
+                    'message' => $request->ip(),
                     'errors' => [
-                        'task' => 'Lỗi không xác định'
+                        'task' => $request->ip()
                     ]
                 ], 403);
             }
