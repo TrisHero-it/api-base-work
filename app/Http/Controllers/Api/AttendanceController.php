@@ -125,11 +125,13 @@ class AttendanceController extends Controller
         if (!$ipWifi) {
             if (!$account->attendance_at_home) {
                 return response()->json([
-                    'error' => 'Lỗi không xác định'
+                    'message' => 'Lỗi không xác định',
+                    'errors' => [
+                        'task' => 'Lỗi không xác định'
+                    ]
                 ], 403);
             }
         }
-
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
@@ -200,6 +202,18 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
+        $account = Auth::user();
+        $ipWifi = ipWifi::where('ip', $request->ip())->first();
+        if (!$ipWifi) {
+            if (!$account->attendance_at_home) {
+                return response()->json([
+                    'message' => 'Lỗi không xác định',
+                    'errors' => [
+                        'task' => 'Lỗi không xác định'
+                    ]
+                ], 403);
+            }
+        }
         $isToday = false;
         $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();

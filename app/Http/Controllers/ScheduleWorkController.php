@@ -122,4 +122,21 @@ class ScheduleWorkController extends Controller
 
         return $arr;
     }
+
+    public function workTime(Request $request)
+    {
+        if (isset($request->end)) {
+            $startDate = Carbon::parse($request->start);
+            $endDate = Carbon::parse($request->end);
+        } else {
+            $endDate = Carbon::now()->endOfWeek();
+            $startDate = Carbon::now()->startOfWeek();
+        }
+        $arr = [];
+        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            $arr[$date->format('Y-m-d')] = $date->format('Y-m-d');
+            $myTaskToday = Task::
+        }
+        return $arr;
+    }
 }

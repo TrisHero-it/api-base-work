@@ -33,6 +33,12 @@ Route::post('login', [LoginController::class, 'store'])->name('api.login.store')
 Route::apiResource('accounts', AccountController::class);
 
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
+Route::get('/test', function () {
+    $ip = request()->ip();
+    return response()->json([
+        'ip' => $ip,
+    ]);
+});
 
 Route::middleware('auth.basic')->group(function () {
     Route::get('a', fn() => redirect('https://docs.google.com/spreadsheets/d/1vnOG_vqJipGhDy0HDCHCVk46XQknztLnwJ7lt4Uk4xg/edit'));
@@ -67,6 +73,7 @@ Route::middleware(['check.login'])->group(function () {
         'attendances' => AttendanceController::class,
         'ip-wifis' => IpWifiController::class,
     ]);
+    Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);

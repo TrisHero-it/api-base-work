@@ -364,11 +364,9 @@ class TaskController extends Controller
             $a[] = $stage->id;
         }
         $tasks = $tasks->whereIn('stage_id', $a)->get();
-
         foreach ($tasks as $task) {
             $videoId = $task->code_youtube; // Thay VIDEO_ID bằng ID của video YouTube
             $apiKey = 'AIzaSyCHenqeRKYnGVIJoyETsCgXba4sQAuHGtA'; // Thay YOUR_API_KEY bằng API key của bạn
-
             $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
             $response = file_get_contents($url);
             $data = json_decode($response, true);
