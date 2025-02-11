@@ -32,7 +32,12 @@ Route::post('login', [LoginController::class, 'store'])->name('api.login.store')
 Route::apiResource('accounts', AccountController::class);
 
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
-
+Route::get('get-ip-wifi', function () {
+    $ip = request()->ip();
+    return response()->json([
+        'ip' => $ip,
+    ]);
+});
 Route::middleware('auth.basic')->group(function () {
     Route::get('a', fn() => redirect('https://docs.google.com/spreadsheets/d/1vnOG_vqJipGhDy0HDCHCVk46XQknztLnwJ7lt4Uk4xg/edit'));
     Route::get('b', fn() => redirect('https://docs.google.com/spreadsheets/d/121Q0A0LhDw6G_jXbewOcW6iazt2K6nmFZP3eI7oJZes/edit'));
