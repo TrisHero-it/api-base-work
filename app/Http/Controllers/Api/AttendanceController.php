@@ -120,12 +120,13 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        dd($request->ip());
         $account = Auth::user();
         $ipWifi = ipWifi::where('ip', $request->ip())->first();
         if (!isset($ipWifi)) {
             if (!$account->attendance_at_home) {
                 return response()->json([
-                    'message' => $request->ip(),
+                    'messages' => $request->ip(),
                     'errors' => [
                         'task' => $request->ip()
                     ]
