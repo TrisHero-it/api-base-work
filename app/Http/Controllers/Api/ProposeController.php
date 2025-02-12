@@ -117,6 +117,7 @@ class ProposeController extends Controller
             $data['old_check_out'] = $attendance->checkout;
         }
         if ($request->name == "Nghỉ có hưởng lương") {
+            $numberHoliDay = 0;
             foreach ($request->holiday as $date2) {
                 $startDate = Carbon::parse($date2['start_date']);
                 $endDate = Carbon::parse($date2['end_date']);
