@@ -122,19 +122,19 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        // $account = Auth::user();
-        // $agent = new Agent();
-        // $isMobile = $agent->isMobile();
-        // if ($isMobile) {
-        //     if (!$account->attendance_at_home) {
-        //         return response()->json([
-        //             'messages' => "Lỗi không xác định",
-        //             'errors' => [
-        //                 'task' => "Lỗi không xác định"
-        //             ]
-        //         ], 403);
-        //     }
-        // }
+        $account = Auth::user();
+        $agent = new Agent();
+        $isMobile = $agent->isMobile();
+        if ($isMobile) {
+            if (!$account->attendance_at_home) {
+                return response()->json([
+                    'messages' => "Lỗi không xác định",
+                    'errors' => [
+                        'task' => "Lỗi không xác định"
+                    ]
+                ], 403);
+            }
+        }
 
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
@@ -206,19 +206,19 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
-        // $account = Auth::user();
-        // $agent = new Agent();
-        // $isMobile = $agent->isMobile();
-        // if ($isMobile) {
-        //     if (!$account->attendance_at_home) {
-        //         return response()->json([
-        //             'messages' => "Lỗi không xác định",
-        //             'errors' => [
-        //                 'task' => "Lỗi không xác định"
-        //             ]
-        //         ], 403);
-        //     }
-        // }
+        $account = Auth::user();
+        $agent = new Agent();
+        $isMobile = $agent->isMobile();
+        if ($isMobile) {
+            if (!$account->attendance_at_home) {
+                return response()->json([
+                    'messages' => "Lỗi không xác định",
+                    'errors' => [
+                        'task' => "Lỗi không xác định"
+                    ]
+                ], 403);
+            }
+        }
         $isToday = false;
         $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();

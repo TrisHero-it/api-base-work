@@ -93,7 +93,7 @@ class ProposeController extends Controller
                             $validEnd = min($innerEnd, $endDate);
                             if ($validStart->lessThan($validEnd)) {
                                 $validHours = $validStart->floatDiffInHours($validEnd, true);
-                                $numberHoliDay += $validHours;
+                                $numberHoliDay += number_format($validHours / 9, 3);
                             }
                         }
                     } else {
@@ -107,7 +107,7 @@ class ProposeController extends Controller
                                 $validEnd = min($innerEnd, $endDate);
                                 if ($validStart->lessThan($validEnd)) {
                                     $validHours = $validStart->floatDiffInHours($validEnd, true);
-                                    $numberHoliDay += $validHours;
+                                    $numberHoliDay += number_format($validHours / 9, 3);
                                 }
                             }
                         } else if ($date->format('Y-m-d' == $endDate->format('Y-m-d'))) {
@@ -120,7 +120,7 @@ class ProposeController extends Controller
                                 $validEnd = min($innerEnd, $endDate);
                                 if ($validStart->lessThan($validEnd)) {
                                     $validHours = $validStart->floatDiffInHours($validEnd, true);
-                                    $numberHoliDay += $validHours;
+                                    $numberHoliDay += number_format($validHours / 9, 3);
                                 }
                             }
                         }
@@ -128,7 +128,6 @@ class ProposeController extends Controller
                 }
             }
             $propose['number_holiday'] = $numberHoliDay;
-
 
         }
 
@@ -154,6 +153,7 @@ class ProposeController extends Controller
         foreach ($accounts as $account) {
             SendEmail::dispatch($account->email, "Có một yêu cầu $request->name được gửi tới bạn !!");
         }
+
         return response()->json($propose);
     }
 
