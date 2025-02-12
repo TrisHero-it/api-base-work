@@ -84,16 +84,29 @@ class ProposeController extends Controller
                     if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
                         $numberHoliDay++;
                     } else if ($startDate->format("Y-m-d") == $endDate->format("Y-m-d")) {
-                        $innerStart = Carbon::parse($date->format("Y-m-d") . " 08:00:00");
-                        $innerEnd = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
-                        if ($innerStart->greaterThanOrEqualTo($startDate) && $innerEnd->lessThanOrEqualTo($endDate)) {
-                            $numberHoliDay++;
+                        $innerStart1 = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
+                        $innerEnd1 = Carbon::parse($date->format("Y-m-d") . " 12:00:00");
+                        $innerStart2 = Carbon::parse($date->format("Y-m-d") . " 13:30:00");
+                        $innerEnd2 = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
+                        if ($innerStart1->greaterThanOrEqualTo($startDate) && $innerEnd1->lessThanOrEqualTo($endDate)) {
+                            $numberHoliDay = $numberHoliDay + number_format(3.5 / 7.5, 3);
                         } else {
-                            $validStart = max($innerStart, $startDate);
-                            $validEnd = min($innerEnd, $endDate);
+                            $validStart = max($innerStart1, $startDate);
+                            $validEnd = min($innerEnd1, $endDate);
                             if ($validStart->lessThan($validEnd)) {
                                 $validHours = $validStart->floatDiffInHours($validEnd, true);
-                                $numberHoliDay += number_format($validHours / 9, 3);
+                                $numberHoliDay += number_format($validHours / 7.5, 3);
+                            }
+                        }
+
+                        if ($innerStart2->greaterThanOrEqualTo($startDate) && $innerEnd2->lessThanOrEqualTo($endDate)) {
+                            $numberHoliDay = $numberHoliDay + number_format(4 / 7.5, 3);
+                        } else {
+                            $validStart = max($innerStart2, $startDate);
+                            $validEnd = min($innerEnd2, $endDate);
+                            if ($validStart->lessThan($validEnd)) {
+                                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                                $numberHoliDay += number_format($validHours / 7.5, 3);
                             }
                         }
                     } else {
