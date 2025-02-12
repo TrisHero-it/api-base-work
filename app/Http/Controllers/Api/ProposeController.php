@@ -118,9 +118,15 @@ class ProposeController extends Controller
 
     public function store(Request $request)
     {
-        $a = Auth::user();
         $data = $request->except('holiday');
-        $data['account_id'] = $a->id;
+        $data['account_id'] = Auth::id();
+        if ($request->name == 'Sửa giờ vào ra') {
+            $attendance = Attendance::whereDate('checkin', $request->start_time)
+                ->where('account_id', Auth::id())
+                ->first();
+            $data['old_check_in'] = $attendance->checkin;
+            $data['old_check_out'] = $attendance->checkout;
+        }
         $arr = [];
         $propose = Propose::query()->create($data);
 
