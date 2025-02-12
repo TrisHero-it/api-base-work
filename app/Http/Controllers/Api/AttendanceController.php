@@ -123,6 +123,10 @@ class AttendanceController extends Controller
     public function checkIn(Request $request)
     {
         $agent = new Agent();
+        return response()->json([
+            'user' => Auth::user(),
+            'attendance_at_home' => Auth::user()->attendance_at_home == false
+        ]);
         $isMobile = $agent->isMobile();
         if ($isMobile) {
             if (Auth::user()->attendance_at_home == false) {
@@ -133,6 +137,7 @@ class AttendanceController extends Controller
                     ]
                 ], 403);
             }
+            dd(1);
         }
 
         $currentTime = Carbon::now();
