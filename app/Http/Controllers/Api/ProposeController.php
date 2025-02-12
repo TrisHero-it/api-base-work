@@ -110,7 +110,7 @@ class ProposeController extends Controller
         $data = $request->except('holiday');
         $data['account_id'] = Auth::id();
         if ($request->name == 'Sửa giờ vào ra') {
-            $attendance = Attendance::whereDate('checkin', $request->start_time)
+            $attendance = Attendance::whereDate('checkin', $request->start_time->format('Y-m-d'))
                 ->where('account_id', Auth::id())
                 ->first();
             $data['old_check_in'] = $attendance->checkin;
