@@ -22,6 +22,7 @@ class MyJobController extends Controller
             if ($task->stage_id != null) {
                 $task['stage_name'] = $task->stage->name;
                 $task['workflow_name'] = $task->stage->workflow->name;
+                $task['workflow_id'] = $task->stage->workflow->id;
                 unset($task->stage);
                 unset($task->workflow);
             }
@@ -49,7 +50,7 @@ class MyJobController extends Controller
         if (isset($request->success)) {
             Kpi::query()->create([
                 'task_id' => $id,
-                'account_id'=> $task->account_id
+                'account_id' => $task->account_id
             ]);
         }
         $data['status'] = 'completed';
