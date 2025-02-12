@@ -56,7 +56,7 @@ class TaskController extends Controller
         if ($stage->isSuccessStage()) {
             return response()->json([
                 'errors' => 'Chưa có giai đoạn'
-            ], 500);
+            ], 401);
         }
 
         $task = Task::query()->create([
@@ -202,7 +202,7 @@ class TaskController extends Controller
                 if ($task->account_id == null) {
                     return response()->json([
                         'errors' => 'Nhiệm vụ chưa được giao'
-                    ], 500);
+                    ], 401);
                 } else {
                     $data['completed_at'] = now();
                     $data['status'] = 'completed';
