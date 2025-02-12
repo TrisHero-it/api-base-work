@@ -122,11 +122,10 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        $account = Auth::user();
         $agent = new Agent();
         $isMobile = $agent->isMobile();
         if ($isMobile) {
-            if ($account->attendance_at_home == 0) {
+            if (Auth::user()->attendance_at_home == false) {
                 return response()->json([
                     'messages' => "Lỗi không xác định",
                     'errors' => [
