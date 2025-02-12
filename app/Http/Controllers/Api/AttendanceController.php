@@ -164,7 +164,7 @@ class AttendanceController extends Controller
                     if ((Carbon::parse($attendance->checkin)->isToday())) {
                         return response()
                             ->json([
-                                'error' => 'Hôm nay bạn đã điểm danh rồi'
+                                'messages' => 'Hôm nay bạn đã điểm danh rồi'
                             ], 403);
                     } else {
                         Attendance::query()
@@ -192,7 +192,7 @@ class AttendanceController extends Controller
         } else {
             return response()
                 ->json([
-                    'error' => 'Không được điểm danh vào thời gian này'
+                    'messages' => 'Không được điểm danh vào thời gian này'
                 ], 403);
         }
     }
