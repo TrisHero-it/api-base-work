@@ -36,11 +36,6 @@ class ProposeController extends Controller
             $month = $date[1];
             $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
-        $dates = $proposes->pluck('start_time')->map(function ($time) {
-            return $time ? explode(' ', $time)[0] : null;
-        })->filter()->unique();
-
-        $attendances = Attendance::whereIn('checkin', $dates)->get()->keyBy('checkin');
 
         $proposes = $proposes->get();
         foreach ($proposes as $propose) {
@@ -48,16 +43,10 @@ class ProposeController extends Controller
             $propose['account'] = $propose->account;
             $propose['avatar'] = $propose->account->avatar;
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;
-            if ($propose->start_time != null) {
-                $a = explode(' ', $propose->start_time)[0];
-                if (isset($attendances[$a])) {
-                    $propose['old_check_in'] = $attendances[$a]->checkin;
-                    $propose['old_check_out'] = $attendances[$a]->checkout ?? null;
-                }
-            }
 
-            return response()->json($proposes);
         }
+
+        return response()->json($proposes);
     }
 
     public function show(int $id, Request $request)
