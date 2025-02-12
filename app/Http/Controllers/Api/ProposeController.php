@@ -118,8 +118,8 @@ class ProposeController extends Controller
         }
         if ($request->name == "Nghỉ có hưởng lương") {
             foreach ($request->holiday as $date2) {
-                $startDate = Carbon::parse($date2->start_date);
-                $endDate = Carbon::parse($date2->end_date);
+                $startDate = Carbon::parse($date2['start_date']);
+                $endDate = Carbon::parse($date2['end_date']);
                 for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
                     // Nếu như không phải ngày đầu hay là ngày cuối, thì sẽ +1 ngày công luôn
                     if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
