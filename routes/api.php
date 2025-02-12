@@ -37,19 +37,7 @@ Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'se
 Route::get('/test', function () {
     $agent = new Agent();
     $isMobile = $agent->isMobile();
-    $account = Auth::user();
-    if ($isMobile) {
-        if (!$account->attendance_at_home) {
-            return response()->json([
-                'messages' => "Lỗi không xác định",
-                'errors' => [
-                    'task' => "Lỗi không xác định"
-                ]
-            ], 403);
-        }
-    }
-
-    dd(!$account->attendance_at_home);
+    dd($isMobile);
 });
 
 Route::middleware('auth.basic')->group(function () {

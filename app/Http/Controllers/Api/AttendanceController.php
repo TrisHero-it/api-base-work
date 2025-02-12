@@ -126,7 +126,7 @@ class AttendanceController extends Controller
         $agent = new Agent();
         $isMobile = $agent->isMobile();
         if ($isMobile) {
-            if (!$account->attendance_at_home) {
+            if ($account->attendance_at_home == 0) {
                 return response()->json([
                     'messages' => "Lỗi không xác định",
                     'errors' => [
