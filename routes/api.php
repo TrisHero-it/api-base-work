@@ -37,6 +37,7 @@ Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'se
 Route::get('/test', function () {
     $agent = new Agent();
     $isMobile = $agent->isMobile();
+    dd($isMobile);
 });
 
 Route::middleware('auth.basic')->group(function () {
