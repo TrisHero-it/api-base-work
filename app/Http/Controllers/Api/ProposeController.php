@@ -159,7 +159,11 @@ class ProposeController extends Controller
 
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
-                $a = ['propose_id' => $propose->id];
+                $a = [
+                    'propose_id' => $propose->id,
+                    'number_of_days' => $numberHoliDay
+                ];
+
                 $arr[] = array_merge($a, $date);
             }
         }
