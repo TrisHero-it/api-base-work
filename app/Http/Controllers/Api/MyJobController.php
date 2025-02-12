@@ -13,9 +13,13 @@ class MyJobController extends Controller
     {
         $tasks = Task::query()->with(['stage.workflow', 'account']);
         if (isset($request->account_id)) {
-            $tasks = $tasks->where('account_id', $request->account_id)->where('completed_at', null);
+            $tasks = $tasks
+                ->where('account_id', $request->account_id)
+                ->where('completed_at', null);
         } else {
-            $tasks = $tasks->where('account_id', '!=', null)->where('completed_at', null);
+            $tasks = $tasks
+                ->where('account_id', '!=', null)
+                ->where('completed_at', null);
         }
         $tasks = $tasks->get();
         foreach ($tasks as $task) {

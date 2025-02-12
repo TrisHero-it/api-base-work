@@ -36,6 +36,12 @@ class Propose extends Model
         return $this->belongsTo(Account::class);
     }
 
+    public function approved_by()
+    {
+
+        return $this->belongsTo(Account::class, 'approved_by', 'id');
+    }
+
     public function propose_category()
     {
 

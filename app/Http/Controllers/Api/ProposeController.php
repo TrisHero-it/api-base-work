@@ -17,7 +17,7 @@ class ProposeController extends Controller
 {
     public function index(Request $request)
     {
-        $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays']);
+        $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays', 'approved_by']);
         if (isset($request->status)) {
             $proposes = $proposes->where('status', $request->status);
         }
@@ -43,7 +43,6 @@ class ProposeController extends Controller
             $propose['account'] = $propose->account;
             $propose['avatar'] = $propose->account->avatar;
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;
-
         }
 
         return response()->json($proposes);
@@ -84,7 +83,6 @@ class ProposeController extends Controller
                                 $numberHoliDay += number_format($validHours / 7.5, 3);
                             }
                         }
-
                         if ($innerStart2->greaterThanOrEqualTo($startDate) && $innerEnd2->lessThanOrEqualTo($endDate)) {
                             $numberHoliDay = $numberHoliDay + number_format(4 / 7.5, 3);
                         } else {
@@ -109,6 +107,7 @@ class ProposeController extends Controller
     {
         $data = $request->except('holiday');
         $data['account_id'] = Auth::id();
+
         if ($request->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $request->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)
@@ -116,6 +115,43 @@ class ProposeController extends Controller
                 ->first();
             $data['old_check_in'] = $attendance->checkin;
             $data['old_check_out'] = $attendance->checkout;
+        }
+        if ($request->name == "Nghỉ có hưởng lương") {
+            foreach ($request->holiday as $date2) {
+                $startDate = Carbon::parse($date2->start_date);
+                $endDate = Carbon::parse($date2->end_date);
+                for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                    // Nếu như không phải ngày đầu hay là ngày cuối, thì sẽ +1 ngày công luôn
+                    if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
+                        $numberHoliDay++;
+                    } else {
+                        $innerStart1 = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
+                        $innerEnd1 = Carbon::parse($date->format("Y-m-d") . " 12:00:00");
+                        $innerStart2 = Carbon::parse($date->format("Y-m-d") . " 13:30:00");
+                        $innerEnd2 = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
+                        if ($innerStart1->greaterThanOrEqualTo($startDate) && $innerEnd1->lessThanOrEqualTo($endDate)) {
+                            $numberHoliDay = $numberHoliDay + number_format(3.5 / 7.5, 3);
+                        } else {
+                            $validStart = max($innerStart1, $startDate);
+                            $validEnd = min($innerEnd1, $endDate);
+                            if ($validStart->lessThan($validEnd)) {
+                                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                                $numberHoliDay += number_format($validHours / 7.5, 3);
+                            }
+                        }
+                        if ($innerStart2->greaterThanOrEqualTo($startDate) && $innerEnd2->lessThanOrEqualTo($endDate)) {
+                            $numberHoliDay = $numberHoliDay + number_format(4 / 7.5, 3);
+                        } else {
+                            $validStart = max($innerStart2, $startDate);
+                            $validEnd = min($innerEnd2, $endDate);
+                            if ($validStart->lessThan($validEnd)) {
+                                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                                $numberHoliDay += number_format($validHours / 7.5, 3);
+                            }
+                        }
+                    }
+                }
+            }
         }
         $arr = [];
         $propose = Propose::query()->create($data);
@@ -142,11 +178,15 @@ class ProposeController extends Controller
                 return response()->json([
                     'message' => 'Bạn không có quyền thao tác',
                     'errors' => 'Bạn không có quyền thao tác'
-                ], status: 403);
+                ], status: 401);
             }
         }
         $propose = Propose::query()->with('propose_category')->findOrFail($id);
-        $propose->update($request->all());
+        $data = $request->all();
+        if (isset($request->status)) {
+            $data['approved_by'] = Auth::id();
+        }
+        $propose->update($data);
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $propose->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)->where('account_id', $propose->account_id)
