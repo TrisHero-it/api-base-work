@@ -16,28 +16,31 @@ use Illuminate\Support\Facades\Auth;
 
 class WorkflowCategoryController extends Controller
 {
-    const IMAGE_PATH =  '/images/workflow-categories';
+    const IMAGE_PATH = '/images/workflow-categories';
 
     public function index()
     {
         $categories = WorkflowCategory::query()->get();
         $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
-        $arrWorkflowId = [];
-        foreach ($workflows as $workflow) {
-            $arrWorkflowId[] = $workflow->workflow_id;
-        }
+        $arrWorkflowId = $workflows->pluck('workflow_id');
+        $arrCategoryId = $categories->pluck('id');
+
         if (Auth::user()->isSeniorAdmin()) {
             $workflows = Workflow::get();
         } else {
             $workflows = Workflow::whereIn('id', $arrWorkflowId)->get();
         }
-        $arrCategoryId = $categories->pluck('id');
-        $members =  AccountWorkflowCategory::query()->whereIn('workflow_category_id', $arrCategoryId)->with(['account'])->get();
+        
+        $members = AccountWorkflowCategory::query()
+            ->whereIn('workflow_category_id', $arrCategoryId)
+            ->with('account')
+            ->get();
+
         foreach ($categories as $category) {
             $arrMembers = [];
             $members2 = $members->where('workflow_category_id', $category->id);
             foreach ($members2 as $member) {
-                $arrMembers[]  = $member->account;
+                $arrMembers[] = $member->account;
             }
             $category['members'] = $arrMembers;
             $category['workflows'] = array_values($workflows->where('workflow_category_id', $category->id)->toArray());

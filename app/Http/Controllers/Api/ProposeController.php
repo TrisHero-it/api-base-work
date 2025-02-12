@@ -56,9 +56,6 @@ class ProposeController extends Controller
                 }
             }
 
-            unset($propose['date_holidays']);
-            unset($propose['propose_category']);
-            unset($propose['account_id']);
             return response()->json($proposes);
         }
     }
