@@ -48,6 +48,15 @@ class ScheduleWorkController extends Controller
                 foreach ($a as $task) {
                     $task['account_name'] = $task->account->full_name;
                     $task['avatar'] = $task->account->avatar;
+                    $now = Carbon::now();
+                    $start = Carbon::parse($task->started_at);
+                    $end = Carbon::parse($task->started_at)->setTime(17, 30);
+                    if ($now->format('Y-m-d') == $start->format('Y-m-d')) {
+                        $diff = $now->floatDiffInHours($start);
+                    } else {
+                        $diff = $end->floatDiffInHours($start);
+                    }
+                    $task['hours_work'] = $diff;
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
@@ -123,23 +132,4 @@ class ScheduleWorkController extends Controller
         return $arr;
     }
 
-    public function workTime(Request $request)
-    {
-        if (isset($request->end)) {
-            $startDate = Carbon::parse($request->start);
-            $endDate = Carbon::parse($request->end);
-        } else {
-            $endDate = Carbon::now()->endOfWeek();
-            $startDate = Carbon::now()->startOfWeek();
-        }
-        $arr = [];
-        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $arr[$date->format('Y-m-d')] = $date->format('Y-m-d');
-            $myTask = Task::where('started_at', '!=', null)
-                ->whereDate('started_at', $date->format('Y-m-d'))
-                ->get();
-                
-        }
-        return $arr;
-    }
 }
