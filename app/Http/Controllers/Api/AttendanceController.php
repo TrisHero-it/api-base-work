@@ -122,7 +122,7 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        $ipWifi = ipWifi::where('ip', $request->header('ip-address'))->first();
+        $ipWifi = ipWifi::where('ip', $request->ip_wifi)->first();
         if ($ipWifi == null) {
             if (Auth::user()->attendance_at_home == false) {
                 return response()->json([
