@@ -44,19 +44,41 @@ class ScheduleWorkController extends Controller
                 })
                 ->orderBy('expired_at')
                 ->get();
+            $hoursWork = 0;
             if (!empty($a)) {
                 foreach ($a as $task) {
-                    $task['account_name'] = $task->account->full_name;
-                    $task['avatar'] = $task->account->avatar;
-                    $now = Carbon::now();
                     $start = Carbon::parse($task->started_at);
-                    $end = Carbon::parse($task->started_at)->setTime(17, 30);
-                    if ($now->format('Y-m-d') == $start->format('Y-m-d')) {
-                        $diff = $now->floatDiffInHours($start);
+                    if ($start->format('Y-m-d') == now()->format('Y-m-d')) {
+                        $end = now();
                     } else {
-                        $diff = $end->floatDiffInHours($start);
+                        $end = Carbon::parse($task->started_at)->setTime(17, 30);
                     }
-                    $task['hours_work'] = $diff;
+
+                    $innerStart1 = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
+                    $innerEnd1 = Carbon::parse($date->format("Y-m-d") . " 12:00:00");
+                    $innerStart2 = Carbon::parse($date->format("Y-m-d") . " 13:30:00");
+                    $innerEnd2 = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
+                    if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
+                        $hoursWork = $hoursWork + number_format(3.5, 3);
+                    } else {
+                        $validStart = max($innerStart1, $start);
+                        $validEnd = min($innerEnd1, $end);
+                        if ($validStart->lessThan($validEnd)) {
+                            $validHours = $validStart->floatDiffInHours($validEnd, true);
+                            $hoursWork += number_format($validHours, 3);
+                        }
+                    }
+                    if ($innerStart2->greaterThanOrEqualTo($start) && $innerEnd2->lessThanOrEqualTo($end)) {
+                        $hoursWork = $hoursWork + number_format(4, 3);
+                    } else {
+                        $validStart = max($innerStart2, $start);
+                        $validEnd = min($innerEnd2, $end);
+                        if ($validStart->lessThan($validEnd)) {
+                            $validHours = $validStart->floatDiffInHours($validEnd, true);
+                            $hoursWork += number_format($validHours, 3);
+                        }
+                    }
+
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
