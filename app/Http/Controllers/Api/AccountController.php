@@ -171,14 +171,7 @@ class AccountController extends Controller
             ->get();
         $a = 0;
         foreach ($holidays as $date) {
-            $endDate = Carbon::parse($date->end_date);
-            $startDate = Carbon::parse($date->start_date);
-            $diffMinutes = $endDate->diffInMinutes($startDate);
-            $a += $diffMinutes;
-        }
-        $a = round($a / 1440, 2);
-        if ($a >= $account->day_off) {
-            $a = $account->day_off;
+            $a += $date->number_of_days;
         }
         $account['day_off_used'] = $a;
 
