@@ -122,17 +122,10 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        $agent = new Agent();
-        $isMobile = $agent->isMobile();
-        if ($isMobile) {
-            if (Auth::user()->attendance_at_home == false) {
-                return response()->json([
-                    'messages' => "Lỗi không xác định",
-                    'errors' => [
-                        'task' => "Lỗi không xác định"
-                    ]
-                ], 401);
-            }
+        if ($request->ip_wifi != '') {
+            return response()->json([
+                'messages' => 'ip không được cho phép'
+            ], 401);
         }
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
