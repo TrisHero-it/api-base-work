@@ -122,7 +122,8 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        if ($request->ip_wifi != '') {
+        $ipWifi = ipWifi::where('ip', $request->ip_wifi)->first();
+        if ($ipWifi == null) {
             return response()->json([
                 'message' => 'ip không được cho phép',
                 'errors' => [
