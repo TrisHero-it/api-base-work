@@ -50,42 +50,7 @@ class ScheduleWorkController extends Controller
                 ->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
-                    $hoursWork = 0;
-                    if (Carbon::parse($task->started_at)->format('Y-m-d') == $date->format('Y-m-d')) {
-                        $start = Carbon::parse($task->started_at);
-                    } else {
-                        $start = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
-                    }
-                    if ($start->format('Y-m-d') == now()->format('Y-m-d')) {
-                        $end = now();
-                    } else {
-                        $end = Carbon::parse($start)->setTime(17, 30);
-                    }
-                    $innerStart1 = Carbon::parse($start->format("Y-m-d") . " 08:30:00");
-                    $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
-                    $innerStart2 = Carbon::parse($start->format("Y-m-d") . " 13:30:00");
-                    $innerEnd2 = Carbon::parse($start->format("Y-m-d") . " 17:30:00");
-                    if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
-                        $hoursWork = $hoursWork + number_format(3.5, 3);
-                    } else {
-                        $validStart = max($innerStart1, $start);
-                        $validEnd = min($innerEnd1, $end);
-                        if ($validStart->lessThan($validEnd)) {
-                            $validHours = $validStart->floatDiffInHours($validEnd, true);
-                            $hoursWork += number_format($validHours, 3);
-                        }
-                    }
-                    if ($innerStart2->greaterThanOrEqualTo($start) && $innerEnd2->lessThanOrEqualTo($end)) {
-                        $hoursWork = $hoursWork + number_format(4, 3);
-                    } else {
-                        $validStart = max($innerStart2, $start);
-                        $validEnd = min($innerEnd2, $end);
-                        if ($validStart->lessThan($validEnd)) {
-                            $validHours = $validStart->floatDiffInHours($validEnd, true);
-                            $hoursWork += number_format($validHours, 3);
-                        }
-                    }
-                    $task['hours_work'] = $hoursWork;
+                    $task['hours_work'] = $this->getHoursWork($task, $date);
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
@@ -132,11 +97,12 @@ class ScheduleWorkController extends Controller
                     ->where('worker', $task->worker)
                     ->orderBy('id', 'desc')
                     ->first();
+
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
                 $task->task_id = $c->id;
                 $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;
-                $task->account_name = $acc->full_name;
+                $task->account_id = $acc->id;
                 $task->avatar = $acc->avatar;
                 $task->started_at = $his->started_at;
                 $task->expired_at = $his->expired_at;
@@ -161,4 +127,45 @@ class ScheduleWorkController extends Controller
         return $arr;
     }
 
+    public function getHoursWork($task, $date)
+    {
+
+        $hoursWork = 0;
+        if (Carbon::parse($task->started_at)->format('Y-m-d') == $date->format('Y-m-d')) {
+            $start = Carbon::parse($task->started_at);
+        } else {
+            $start = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
+        }
+        if ($start->format('Y-m-d') == now()->format('Y-m-d')) {
+            $end = now();
+        } else {
+            $end = Carbon::parse($start)->setTime(17, 30);
+        }
+        $innerStart1 = Carbon::parse($start->format("Y-m-d") . " 08:30:00");
+        $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
+        $innerStart2 = Carbon::parse($start->format("Y-m-d") . " 13:30:00");
+        $innerEnd2 = Carbon::parse($start->format("Y-m-d") . " 17:30:00");
+        if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
+            $hoursWork = $hoursWork + number_format(3.5, 3);
+        } else {
+            $validStart = max($innerStart1, $start);
+            $validEnd = min($innerEnd1, $end);
+            if ($validStart->lessThan($validEnd)) {
+                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                $hoursWork += number_format($validHours, 3);
+            }
+        }
+        if ($innerStart2->greaterThanOrEqualTo($start) && $innerEnd2->lessThanOrEqualTo($end)) {
+            $hoursWork = $hoursWork + number_format(4, 3);
+        } else {
+            $validStart = max($innerStart2, $start);
+            $validEnd = min($innerEnd2, $end);
+            if ($validStart->lessThan($validEnd)) {
+                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                $hoursWork += number_format($validHours, 3);
+            }
+        }
+
+        return $hoursWork;
+    }
 }
