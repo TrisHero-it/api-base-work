@@ -31,14 +31,18 @@ class ScheduleWorkController extends Controller
                 ->whereDate('started_at', '<=', $date)
                 ->where(function ($query) use ($date) {
                     $query->where(function ($subQuery) use ($date) {
-                        $subQuery->whereNotNull('completed_at')
-                            ->whereDate('completed_at', '>=', $date);
+                        $subQuery->whereDate('completed_at', '>=', $date);
                     })
                         ->orWhere(function ($subQuery) use ($date) {
                             $subQuery->whereNull('completed_at')
                                 ->where(function ($subSubQuery) use ($date) {
-                                    $subSubQuery->whereDate('expired', '>=', $date)
-                                        ->orWhereNull('expired');
+                                    $subSubQuery->whereDate('expired', '>=', $date);
+                                    // Nếu $date lớn hơn ngày hiện tại, không lấy task có expired là NULL
+                                    if ($date > now()->toDateString()) {
+                                        $subSubQuery->whereNotNull('expired');
+                                    } else {
+                                        $subSubQuery->orWhereNull('expired');
+                                    }
                                 });
                         });
                 })
