@@ -124,7 +124,10 @@ class AttendanceController extends Controller
     {
         if ($request->ip_wifi != '') {
             return response()->json([
-                'messages' => 'ip không được cho phép'
+                'message' => 'ip không được cho phép',
+                'erorrs' => [
+                    'ip_wifi' => 'ip không được cho phép'
+                ]
             ], 401);
         }
         $currentTime = Carbon::now();
