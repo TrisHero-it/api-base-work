@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
+use App\Http\Controllers\Api\ScheduleAccountController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\WorkflowCategoryController;
@@ -66,6 +67,7 @@ Route::middleware(['check.login'])->group(function () {
         'tags' => StickerController::class,
         'tag-task' => TagValueController::class,
         'schedule' => ScheduleWorkController::class,
+        'schedule-accounts' => ScheduleAccountController::class,
         'my-tasks' => MyJobController::class,
         'departments' => DepartmentController::class,
         'proposes' => ProposeController::class,
