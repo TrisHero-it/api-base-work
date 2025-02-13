@@ -50,15 +50,16 @@ class ProposeController extends Controller
 
     public function show(int $id, Request $request)
     {
-        $propose = Propose::with(['account', 'date_holidays', 'propose_category'])
+        $propose = Propose::with(['account', 'date_holidays', 'propose_category', 'approved_by'])
             ->findOrFail($id);
         $a = explode(' ', $propose->start_time)[0];
-        $b = Attendance::whereDate('checkin', $a)->where('account_id', $propose->account_id)->first();
+        $b = Attendance::whereDate('checkin', $a)
+            ->where('account_id', $propose->account_id)
+            ->first();
         if ($b != null) {
             $propose['old_check_in'] = $b->checkin;
             $propose['old_check_out'] = $b->checkout ?? null;
         }
-
         if ($propose->propose_category->name == 'Đăng ký nghỉ') {
             $numberHoliDay = 0;
             foreach ($propose->date_holidays as $date2) {
@@ -97,7 +98,6 @@ class ProposeController extends Controller
                 }
             }
             $propose['number_holiday'] = $numberHoliDay;
-
         }
 
         return response()->json($propose);
@@ -153,10 +153,19 @@ class ProposeController extends Controller
                     }
                 }
             }
+            if ($numberHoliDay >= Auth::user()->day_off) {
+                return response()->json([
+                    'message' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn',
+                    'errors' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn'
+                ], 401);
+            } else {
+                Auth::user()->update([
+                    'day_off' => Auth::user()->day_off - $numberHoliDay
+                ]);
+            }
         }
         $arr = [];
         $propose = Propose::query()->create($data);
-
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
                 $a = [

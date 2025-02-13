@@ -131,10 +131,9 @@ class AttendanceController extends Controller
                     'errors' => [
                         'task' => "Lỗi không xác định"
                     ]
-                ], 403);
+                ], 401);
             }
         }
-
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
