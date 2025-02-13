@@ -97,7 +97,7 @@ class ScheduleWorkController extends Controller
                     ->where('worker', $task->worker)
                     ->orderBy('id', 'desc')
                     ->first();
-
+                $hoursWork = $this->getHoursWork($his, $date);
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
                 $task->task_id = $c->id;
@@ -115,6 +115,7 @@ class ScheduleWorkController extends Controller
                 } else {
                     $d = 'failed';
                 }
+                $task->hours_work = $hoursWork;
                 $task->status = $d;
                 unset($task->worker);
                 unset($task->old_stage);
