@@ -51,7 +51,7 @@ class ScheduleWorkController extends Controller
             if (!empty($a)) {
                 foreach ($a as $task) {
                     $hoursWork = 0;
-                    if ($task->started_at->format('Y-m-d') === $date->format('Y-m-d')) {
+                    if (Carbon::parse($task->started_at)->format('Y-m-d') === $date->format('Y-m-d')) {
                         $start = Carbon::parse($task->started_at);
                     } else {
                         $start = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
