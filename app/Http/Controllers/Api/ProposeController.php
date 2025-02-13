@@ -168,10 +168,16 @@ class ProposeController extends Controller
         $propose = Propose::query()->create($data);
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
-                $a = [
-                    'propose_id' => $propose->id,
-                    'number_of_days' => $numberHoliDay
-                ];
+                if ($request->name == "Nghỉ có hưởng lương") {
+                    $a = [
+                        'propose_id' => $propose->id,
+                        'number_of_days' => $numberHoliDay
+                    ];
+                } else {
+                    $a = [
+                        'propose_id' => $propose->id,
+                    ];
+                }
 
                 $arr[] = array_merge($a, $date);
             }
