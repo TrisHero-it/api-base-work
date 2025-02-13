@@ -145,12 +145,6 @@ class AccountController extends Controller
 
     public function myAccount(Request $request)
     {
-        $token = $request->header('Authorization');
-        if ($token == null) {
-            return response()->json([
-                'error' => 'Bạn chưa đăng nhập'
-            ]);
-        }
         $account = Auth::user();
         if ($account->role_id == 1) {
             $account['role'] = 'Admin';
@@ -160,10 +154,14 @@ class AccountController extends Controller
             $account['role'] = 'User';
         }
         unset($account->role_id);
-
+        $month = now()->month;
+        $year = now()->year;
         $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
         $proposes = Propose::where('propose_category_id', $category->id)
             ->where('status', 'approved')
+            ->where('account_id', $account->id)
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
             ->get()
             ->pluck('id');
         // Lấy ra tất cả các ngày xin nghỉ
