@@ -167,6 +167,6 @@ class ScheduleWorkController extends Controller
             }
         }
 
-        return $hoursWork;
+        return number_format($hoursWork, 3);
     }
 }
