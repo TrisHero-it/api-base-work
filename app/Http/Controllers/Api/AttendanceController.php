@@ -122,14 +122,16 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        $ipWifi = ipWifi::where('ip', $request->ip_wifi)->first();
+        $ipWifi = ipWifi::where('ip', $request->header('ip_adresss'))->first();
         if ($ipWifi == null) {
-            return response()->json([
-                'message' => 'ip không được cho phép',
-                'errors' => [
-                    'ip_wifi' => 'ip không được cho phép'
-                ]
-            ], 401);
+            if (Auth::user()->attendance_at_home == false) {
+                return response()->json([
+                    'message' => 'ip không được cho phép',
+                    'errors' => [
+                        'ip_wifi' => 'ip không được cho phép'
+                    ]
+                ], 401);
+            }
         }
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
