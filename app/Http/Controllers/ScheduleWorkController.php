@@ -78,7 +78,7 @@ class ScheduleWorkController extends Controller
                             $hoursWork += number_format($validHours, 3);
                         }
                     }
-
+                    $task['hours_work'] = $hoursWork;
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
