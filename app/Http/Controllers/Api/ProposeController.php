@@ -158,10 +158,6 @@ class ProposeController extends Controller
                     'message' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn',
                     'errors' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn'
                 ], 401);
-            } else {
-                Auth::user()->update([
-                    'day_off' => Auth::user()->day_off - $numberHoliDay
-                ]);
             }
         }
         $arr = [];
@@ -214,6 +210,15 @@ class ProposeController extends Controller
             $attendance->update([
                 'checkin' => $propose->start_time,
                 'checkout' => $propose->end_time,
+            ]);
+        }
+        if ($request->status == 'approved' && $propose->propose_category->name == 'Nghỉ có hưởng lương') {
+            $numberHoliDay = 0;
+            foreach ($propose->date_holidays as $date2) {
+                $numberHoliDay += $date2->number_of_days;
+            }
+            Auth::user()->update([
+                'day_off' => Auth::user()->day_off - $numberHoliDay
             ]);
         }
         $name = $propose->propose_category->name;
