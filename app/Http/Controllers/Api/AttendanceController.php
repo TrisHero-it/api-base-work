@@ -125,7 +125,7 @@ class AttendanceController extends Controller
         if ($request->ip_wifi != '') {
             return response()->json([
                 'message' => 'ip không được cho phép',
-                'erorrs' => [
+                'errors' => [
                     'ip_wifi' => 'ip không được cho phép'
                 ]
             ], 401);
