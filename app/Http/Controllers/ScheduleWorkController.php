@@ -180,12 +180,12 @@ class ScheduleWorkController extends Controller
         if (Carbon::parse($his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
             $end = Carbon::parse($his->created_at);
         } else {
-            $end = Carbon::parse($start)->setTime(17, 30);
+            $end = Carbon::parse($date)->setTime(17, 30);
         }
-        $innerStart1 = Carbon::parse($start->format("Y-m-d") . " 08:30:00");
-        $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
-        $innerStart2 = Carbon::parse($start->format("Y-m-d") . " 13:30:00");
-        $innerEnd2 = Carbon::parse($start->format("Y-m-d") . " 17:30:00");
+        $innerStart1 = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
+        $innerEnd1 = Carbon::parse($date->format("Y-m-d") . " 12:00:00");
+        $innerStart2 = Carbon::parse($date->format("Y-m-d") . " 13:30:00");
+        $innerEnd2 = Carbon::parse($date->format("Y-m-d") . " 17:30:00");
         if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
             $hoursWork = $hoursWork + number_format(3.5, 3);
         } else {
