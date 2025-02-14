@@ -36,7 +36,7 @@ class ScheduleWorkController extends Controller
                         ->orWhere(function ($subQuery) use ($date) {
                             $subQuery->whereNull('completed_at')
                                 ->where(function ($subSubQuery) use ($date) {
-                                    $subSubQuery->whereDate('expired', '>=', $date);
+                                    $subSubQuery->whereDate('expired', '>', $date);
                                     // Nếu $date lớn hơn ngày hiện tại, không lấy task có expired là NULL
                                     if ($date > now()->toDateString()) {
                                         $subSubQuery->whereNotNull('expired');
