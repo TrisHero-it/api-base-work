@@ -201,7 +201,10 @@ class TaskController extends Controller
             if ($stage->isSuccessStage()) {
                 if ($task->account_id == null) {
                     return response()->json([
-                        'errors' => 'Nhiệm vụ chưa được giao'
+                        'message' => 'Nhiệm vụ chưa được giao',
+                        'errors' => [
+                            'task' => 'Nhiệm vụ chưa được giao' 
+                        ]
                     ], 401);
                 } else {
                     $data['completed_at'] = now();
