@@ -22,7 +22,7 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
-        // Lặp qua từng ngày
+        // Lặp qua từ   ng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
             $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
@@ -38,7 +38,7 @@ class ScheduleWorkController extends Controller
                                 ->where(function ($subSubQuery) use ($date) {
                                     $subSubQuery->whereDate('expired', '>=', $date);
                                     // Nếu $date lớn hơn ngày hiện tại, không lấy task có expired là NULL
-                                    if ($date > now()->toDateString()) {
+                                    if ($date->format('Y-m-d') > now()->toDateString()) {
                                         $subSubQuery->whereNotNull('expired');
                                     } else {
                                         $subSubQuery->orWhereNull('expired');
