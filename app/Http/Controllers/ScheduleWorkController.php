@@ -50,7 +50,7 @@ class ScheduleWorkController extends Controller
                 ->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
-                    $task['hours_work'] = $this->getHoursWork($task, $date);
+                    $task['hours_work'] = $this->getHoursWork($task->started_at, $date);
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
@@ -97,7 +97,7 @@ class ScheduleWorkController extends Controller
                     ->where('worker', $task->worker)
                     ->orderBy('id', 'desc')
                     ->first();
-                $hoursWork = $this->getHoursWork($his, $date);
+                $hoursWork = $this->getHoursWork($his->created_at, $date);
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
                 $task->task_id = $c->id;
@@ -132,8 +132,8 @@ class ScheduleWorkController extends Controller
     {
 
         $hoursWork = 0;
-        if (Carbon::parse($task->started_at)->format('Y-m-d') == $date->format('Y-m-d')) {
-            $start = Carbon::parse($task->started_at);
+        if (Carbon::parse($task)->format('Y-m-d') == $date->format('Y-m-d')) {
+            $start = Carbon::parse($task);
         } else {
             $start = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
         }
