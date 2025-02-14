@@ -22,7 +22,7 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
-        // Lặp qua từ   ng ngày
+        // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
             $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
@@ -38,7 +38,7 @@ class ScheduleWorkController extends Controller
                                 ->where(function ($subSubQuery) use ($date) {
                                     $subSubQuery->whereDate('expired', '>=', $date);
                                     // Nếu $date lớn hơn ngày hiện tại, không lấy task có expired là NULL
-                                    if ($date->format('Y-m-d') > now()->toDateString()) {
+                                    if ($date > now()->toDateString()) {
                                         $subSubQuery->whereNotNull('expired');
                                     } else {
                                         $subSubQuery->orWhereNull('expired');
@@ -50,7 +50,7 @@ class ScheduleWorkController extends Controller
                 ->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
-                    $task['hours_work'] = $this->getHoursWork($task->started_at, $date);
+                    $task['hours_work'] = $this->getHoursWork($task, $date);
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
@@ -97,7 +97,7 @@ class ScheduleWorkController extends Controller
                     ->where('worker', $task->worker)
                     ->orderBy('id', 'desc')
                     ->first();
-                $hoursWork = $this->getHoursWork($his->created_at, $date);
+                $hoursWork = $this->getHoursWorkHistory($his, $date);
                 $acc = Account::query()->where('id', $task->worker)->first();
                 $task->name_task = $c->name_task;
                 $task->task_id = $c->id;
@@ -132,8 +132,8 @@ class ScheduleWorkController extends Controller
     {
 
         $hoursWork = 0;
-        if (Carbon::parse($task)->format('Y-m-d') == $date->format('Y-m-d')) {
-            $start = Carbon::parse($task);
+        if (Carbon::parse($task->started_at)->format('Y-m-d') == $date->format('Y-m-d')) {
+            $start = Carbon::parse($task->started_at);
         } else {
             $start = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
         }
@@ -141,6 +141,52 @@ class ScheduleWorkController extends Controller
             $end = now();
         } else {
             $end = Carbon::parse($start)->setTime(17, 30);
+        }
+        $innerStart1 = Carbon::parse($start->format("Y-m-d") . " 08:30:00");
+        $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
+        $innerStart2 = Carbon::parse($start->format("Y-m-d") . " 13:30:00");
+        $innerEnd2 = Carbon::parse($start->format("Y-m-d") . " 17:30:00");
+        if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
+            $hoursWork = $hoursWork + number_format(3.5, 3);
+        } else {
+            $validStart = max($innerStart1, $start);
+            $validEnd = min($innerEnd1, $end);
+            if ($validStart->lessThan($validEnd)) {
+                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                $hoursWork += number_format($validHours, 3);
+            }
+        }
+        if ($innerStart2->greaterThanOrEqualTo($start) && $innerEnd2->lessThanOrEqualTo($end)) {
+            $hoursWork = $hoursWork + number_format(4, 3);
+        } else {
+            $validStart = max($innerStart2, $start);
+            $validEnd = min($innerEnd2, $end);
+            if ($validStart->lessThan($validEnd)) {
+                $validHours = $validStart->floatDiffInHours($validEnd, true);
+                $hoursWork += number_format($validHours, 3);
+            }
+        }
+
+        return number_format($hoursWork, 2);
+    }
+
+    public function getHoursWorkHistory($his, $date)
+    {
+
+        $hoursWork = 0;
+        if (Carbon::parse($his->started_at)->format('Y-m-d') == $date->format('Y-m-d')) {
+            $start = Carbon::parse($his->started_at);
+        } else {
+            $start = Carbon::parse($date->format("Y-m-d") . " 08:30:00");
+        }
+        if (Carbon::parse($his->created_at)->format('Y-m-d') == now()->format('Y-m-d')) {
+            $end = Carbon::parse($his->created_at);
+        } else {
+            if ($start->format('Y-m-d') == now()->format('Y-m-d')) {
+                $end = now();
+            } else {
+                $end = Carbon::parse($start)->setTime(17, 30);
+            }
         }
         $innerStart1 = Carbon::parse($start->format("Y-m-d") . " 08:30:00");
         $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
