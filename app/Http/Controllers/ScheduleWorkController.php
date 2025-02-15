@@ -111,7 +111,6 @@ class ScheduleWorkController extends Controller
             : 'failed';
     }
 
-
     public function getHoursWork($task, $date)
     {
         $hoursWork = 0;
