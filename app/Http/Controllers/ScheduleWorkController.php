@@ -50,7 +50,10 @@ class ScheduleWorkController extends Controller
                 ->get();
             if (!empty($a)) {
                 foreach ($a as $task) {
-                    $task['hours_work'] = $this->getHoursWork($task, $date);
+                    $hoursWork = $this->getHoursWork($task, $date);
+                    $task['hours_work'] = $hoursWork['hours_work'];
+                    $task['start'] = $hoursWork['start']->format("Y-m-d H:i:s");
+                    $task['end'] = $hoursWork['end']->format("Y-m-d H:i:s");
                     if ($task->stage_id != null) {
                         $task['stage_name'] = $task->stage->name;
                     }
@@ -115,7 +118,9 @@ class ScheduleWorkController extends Controller
                 } else {
                     $d = 'failed';
                 }
-                $task->hours_work = $hoursWork;
+                $task->hours_work = $hoursWork['hours_work'];
+                $task->start = $hoursWork['start']->format("Y-m-d H:i:s");
+                $task->end = $hoursWork['end']->format("Y-m-d H:i:s");
                 $task->status = $d;
                 unset($task->worker);
                 unset($task->old_stage);
@@ -166,7 +171,7 @@ class ScheduleWorkController extends Controller
             }
         }
 
-        return number_format($hoursWork, 2);
+        return ['hours_work' => number_format($hoursWork, 2), 'start' => $start, 'end' => $end];
     }
 
     public function getHoursWorkHistory($his, $date)
@@ -206,6 +211,8 @@ class ScheduleWorkController extends Controller
                 $hoursWork += number_format($validHours, 3);
             }
         }
+
+        return ['hours_work' => number_format($hoursWork, 2), 'start' => $start, 'end' => $end];
     }
 
 }

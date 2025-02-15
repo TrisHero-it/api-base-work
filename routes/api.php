@@ -41,11 +41,6 @@ Route::get('/test', function () {
     dd($isMobile);
 });
 
-Route::middleware('auth.basic')->group(function () {
-    Route::get('a', fn() => redirect('https://docs.google.com/spreadsheets/d/1vnOG_vqJipGhDy0HDCHCVk46XQknztLnwJ7lt4Uk4xg/edit'));
-    Route::get('b', fn() => redirect('https://docs.google.com/spreadsheets/d/121Q0A0LhDw6G_jXbewOcW6iazt2K6nmFZP3eI7oJZes/edit'));
-});
-
 Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
     Route::apiResources([
