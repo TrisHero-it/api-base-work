@@ -14,124 +14,103 @@ class ScheduleWorkController extends Controller
 {
     public function index(Request $request)
     {
-        // Tuần này
-        if (isset($request->end)) {
-            $startDate = Carbon::parse($request->start);
-            $endDate = Carbon::parse($request->end);
-        } else {
-            $endDate = Carbon::now()->endOfWeek();
-            $startDate = Carbon::now()->startOfWeek();
-        }
-        // Lặp qua từng ngày
-        $arr = [];
-        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
-                ->with(['stage', 'account'])
-                ->where('account_id', '!=', null)
-                ->whereDate('started_at', '<=', $date)
-                ->where(function ($query) use ($date) {
-                    $query->where(function ($subQuery) use ($date) {
-                        $subQuery->whereDate('completed_at', '>=', $date);
-                    })
-                        ->orWhere(function ($subQuery) use ($date) {
-                            $subQuery->whereNull('completed_at')
-                                ->where(function ($subSubQuery) use ($date) {
-                                    $subSubQuery->whereDate('expired', '>=', $date);
-                                    // Nếu $date lớn hơn ngày hiện tại, không lấy task có expired là NULL
-                                    if (Carbon::parse($date)->format('Y-m-d') > now()->toDateString()) {
-                                        $subSubQuery->whereNotNull('expired');
-                                    } else {
-                                        $subSubQuery->orWhereNull('expired');
-                                    }
-                                });
-                        });
-                })
-                ->orderBy('expired_at')
-                ->get();
-            if (!empty($a)) {
-                foreach ($a as $task) {
-                    $hoursWork = $this->getHoursWork($task, $date);
-                    $task['hours_work'] = $hoursWork['hours_work'];
-                    $task['start'] = $hoursWork['start']->format("Y-m-d H:i:s");
-                    $task['end'] = $hoursWork['end']->format("Y-m-d H:i:s");
-                    if ($task->stage_id != null) {
-                        $task['stage_name'] = $task->stage->name;
-                    }
-                    if ($task->expired_at === null) {
-                        if ($task->completed_at === null) {
-                            $d = 'in_progress';
-                        } else {
-                            if (Carbon::parse($task->completed_at)->isSameDay($date)) {
-                                $d = 'completed';
-                            } else {
-                                $d = 'in_progress';
-                            }
-                        }
-                    } else {
-                        if (carbon::parse($task->expired_at)->greaterThan(Carbon::now())) {
-                            $d = 'in_progress';
-                        } else {
-                            $d = 'failed';
-                        }
-                    }
-                    $task->status = $d;
-                    unset($task->account);
-                    unset($task->stage_id);
-                    unset($task->stage);
-                }
-            }
-            $b = DB::table('history_move_tasks')
-                ->select('task_id', 'old_stage', 'worker')
-                ->where('worker', '!=', null);
-            $b->whereDate('started_at', '<=', $date)
-                ->whereDate('created_at', '>=', $date)
-                ->where(function ($query) use ($date) {
-                    $query->whereDate('expired_at', '>=', $date)
-                        ->orWhereNull('expired_at');
-                })
-                ->groupBy('task_id', 'old_stage', 'worker');
-            $b = $b->get();
-            foreach ($b as $task) {
-                $c = Task::query()->select('id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at')
-                    ->where('id', $task->task_id)
-                    ->first();
-                $his = HistoryMoveTask::query()->where('task_id', $task->task_id)
-                    ->where('old_stage', $task->old_stage)
-                    ->where('worker', $task->worker)
-                    ->orderBy('id', 'desc')
-                    ->first();
-                $hoursWork = $this->getHoursWorkHistory($his, $date);
-                $acc = Account::query()->where('id', $task->worker)->first();
-                $task->name_task = $c->name_task;
-                $task->task_id = $c->id;
-                $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;
-                $task->account_id = $acc->id;
-                $task->avatar = $acc->avatar;
-                $task->started_at = $his->started_at;
-                $task->expired_at = $his->expired_at;
-                if (($his->started_at < $his->expired_at) || ($his->worker !== null && $his->expired_at === null)) {
-                    if (Carbon::parse(time: $his->created_at)->format('Y-m-d') == $date->format('Y-m-d')) {
-                        $d = 'completed';
-                    } else {
-                        $d = 'in_progress';
-                    }
-                } else {
-                    $d = 'failed';
-                }
-                $task->hours_work = $hoursWork['hours_work'];
-                $task->start = $hoursWork['start']->format("Y-m-d H:i:s");
-                $task->end = $hoursWork['end']->format("Y-m-d H:i:s");
-                $task->status = $d;
-                unset($task->worker);
-                unset($task->old_stage);
-            }
-            $a = $a->toArray();
-            $b = $b->toArray();
-            $arr[$date->format('Y-m-d')] = array_merge($a, $b);
+        $dates = $this->getDateRange($request);
+        $taskData = [];
+
+        for ($date = $dates['start']; $date->lte($dates['end']); $date->addDay()) {
+            $tasks = $this->getTasksForDate($date);
+            $historyTasks = $this->getHistoryTasksForDate($date);
+            $taskData[$date->format('Y-m-d')] = array_merge($tasks, $historyTasks);
         }
 
-        return $arr;
+        return $taskData;
     }
+
+    private function getDateRange(Request $request)
+    {
+        return $request->has('end') ? [
+            'start' => Carbon::parse($request->start),
+            'end' => Carbon::parse($request->end),
+        ] : [
+            'start' => Carbon::now()->startOfWeek(),
+            'end' => Carbon::now()->endOfWeek(),
+        ];
+    }
+
+    private function getTasksForDate($date)
+    {
+        $tasks = Task::with(['stage:id,name', 'account:id'])
+            ->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
+            ->whereNotNull('account_id')
+            ->whereDate('started_at', '<=', $date)
+            ->where(function ($query) use ($date) {
+                $query->whereDate('completed_at', '>=', $date)
+                    ->orWhere(function ($subQuery) use ($date) {
+                        $subQuery->whereNull('completed_at')
+                            ->where(function ($subSubQuery) use ($date) {
+                                $subSubQuery->whereDate('expired', '>=', $date);
+                                if ($date->gt(now())) {
+                                    $subSubQuery->whereNotNull('expired');
+                                } else {
+                                    $subSubQuery->orWhereNull('expired');
+                                }
+                            });
+                    });
+            })
+            ->orderBy('expired_at')
+            ->get();
+
+        return $tasks->map(fn($task) => [
+            'task_id' => $task->task_id,
+            'name_task' => $task->name_task,
+            'account_id' => $task->account_id,
+            'started_at' => $task->started_at,
+            'expired_at' => $task->expired_at,
+            'hours_work' => $this->getHoursWork($task, $date)['hours_work'],
+            'stage_name' => optional($task->stage)->name,
+            'status' => $this->getTaskStatus($task, $date)
+        ])->toArray();
+    }
+
+    private function getHistoryTasksForDate($date)
+    {
+        $historyTasks = HistoryMoveTask::whereDate('started_at', '<=', $date)
+            ->whereDate('created_at', '>=', $date)
+            ->whereNotNull('worker')
+            ->where(function ($query) use ($date) {
+                $query->whereDate('expired_at', '>=', $date)
+                    ->orWhereNull('expired_at');
+            })
+            ->with(['task:id,name', 'worker:id,avatar', 'oldStage:id,name'])
+            ->get();
+
+        return $historyTasks->map(fn($his) => [
+            'task_id' => $his->task_id,
+            'name_task' => optional($his->task)->name,
+            'stage_name' => optional($his->oldStage)->name,
+            'account_id' => optional($his->worker)->id,
+            'avatar' => optional($his->worker)->avatar,
+            'started_at' => $his->started_at,
+            'expired_at' => $his->expired_at,
+            'hours_work' => $this->getHoursWorkHistory($his, $date)['hours_work'],
+            'status' => $this->getHistoryTaskStatus($his, $date)
+        ])->toArray();
+    }
+
+    private function getTaskStatus($task, $date)
+    {
+        return is_null($task->expired_at)
+            ? (is_null($task->completed_at) || Carbon::parse($task->completed_at)->isSameDay($date) ? 'in_progress' : 'completed')
+            : (Carbon::parse($task->expired_at)->greaterThan(Carbon::now()) ? 'in_progress' : 'failed');
+    }
+
+    private function getHistoryTaskStatus($his, $date)
+    {
+        return ($his->started_at < $his->expired_at || (!is_null($his->worker) && is_null($his->expired_at)))
+            ? (Carbon::parse($his->created_at)->isSameDay($date) ? 'completed' : 'in_progress')
+            : 'failed';
+    }
+
 
     public function getHoursWork($task, $date)
     {

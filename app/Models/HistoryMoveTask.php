@@ -24,16 +24,24 @@ class HistoryMoveTask extends Model
         return $this->belongsTo(Account::class);
     }
 
-    public function task(){
+    public function worker()
+    {
+        return $this->belongsTo(Account::class, 'worker');
+    }
+
+    public function task()
+    {
         return $this->belongsTo(Task::class);
     }
 
-    public function oldStage(){
+    public function oldStage()
+    {
 
         return $this->belongsTo(Stage::class, 'old_stage');
     }
 
-    public function newStage(){
+    public function newStage()
+    {
         return $this->belongsTo(Stage::class, 'new_stage');
     }
 }
