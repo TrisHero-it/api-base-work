@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Attendance;
+use App\Models\DateHoliday;
 use App\Models\Department;
 use App\Models\ipWifi;
 use App\Models\Propose;
@@ -110,12 +111,17 @@ class AttendanceController extends Controller
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->get();
-            $dayOffWithPay = $proposes->where('name', 'Nghỉ có hưởng lương')->count();
+            $dayOffWithPay = 0;
+            $idProposeHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
+            $holidays = DateHoliday::whereIn('propose_id', $idProposeHoliday)->get();
+            foreach ($holidays as $holiday) {
+                $dayOffWithPay += $holiday->number_of_day;
+            }
             $overTime = $proposes->where('name', 'Đăng ký OT')->count();
-            $data['total_over_time'] = $overTime;
-            $data['day_off_with_pay'] = $dayOffWithPay;
-            $data['day_off_account'] = $accountDayOff;
-            $data['day_off_without_pay'] = $dayoff;
+            $data['total_over_time'] = number_format($overTime, 2);
+            $data['day_off_with_pay'] = number_format($dayOffWithPay, 2);
+            $data['day_off_account'] = number_format($accountDayOff, 2);
+            $data['day_off_without_pay'] = number_format($dayoff - $dayOffWithPay, 2);
         }
 
         return response()->json($data);
