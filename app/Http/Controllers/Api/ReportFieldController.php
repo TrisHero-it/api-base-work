@@ -22,7 +22,7 @@ class ReportFieldController extends Controller
             return response()->json([
                 'success' => 'Thêm thành công'
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => $exception->getMessage()
             ], 500);
@@ -33,21 +33,21 @@ class ReportFieldController extends Controller
     {
         if (isset($request->stage_id)) {
             if (isset($request->task_id)) {
-                $reports = Field::query()->where('model', 'report-field')->where('workflow_id', $request->workflow_id)->where('stage_id', $request->stage_id)->get();
+                $reports = Field::query()->where('model', 'report-field')->where('stage_id', $request->stage_id)->get();
                 foreach ($reports as $report) {
                     $task = Task::query()->findOrFail($request->task_id);
                     $a = FieldTask::query()->select('value')->where('fields_id', $report->id)->where('task_id', $task->id)->first();
                     if (isset($a)) {
                         $report['value'] = $a->value;
-                    }else {
+                    } else {
                         $report['value'] = null;
                     }
                 }
-            }else {
-                $reports = Field::query()->where('model', 'report-field')->where('workflow_id', $request->workflow_id)->where('stage_id', $request->stage_id)->get();
+            } else {
+                $reports = Field::query()->where('model', 'report-field')->where('stage_id', $request->stage_id)->get();
             }
-        }else {
-            $reports = Field::query()->where('model', 'report-field')->where('workflow_id', $request->workflow_id)->get();
+        } else {
+            $reports = Field::query()->where('model', 'report-field')->get();
         }
 
         return response()->json($reports);
@@ -62,21 +62,22 @@ class ReportFieldController extends Controller
             return response()->json([
                 'success' => 'Sửa thành công'
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => $exception->getMessage()
             ]);
         }
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         try {
             $report = Field::query()->findOrFail($id);
             $report->delete();
             return response()->json([
                 'success' => 'Xoá thành công'
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => $exception->getMessage()
             ]);

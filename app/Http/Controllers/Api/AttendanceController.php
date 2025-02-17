@@ -102,19 +102,17 @@ class AttendanceController extends Controller
                     }
                 }
             }
-            // số ngày nghỉ có phép của tài khoản
             $accountDayOff = Auth::user()->day_off;
-            $a = $dayoff - $accountDayOff;
-            // nếu như số ngày nghỉ vẫn trong khoảng thời gian cho phép
-            if ($dayoff < $accountDayOff) {
-                $data['day_off_with_pay'] = $dayoff;
-                $data['day_off_without_pay'] = 0;
-                $data['day_off_account'] = $accountDayOff - $dayoff;
-            } else {
-                $data['day_off_with_pay'] = $accountDayOff;
-                $data['day_off_without_pay'] = $a;
-                $data['day_off_account'] = 0;
-            }
+            // số ngày nghỉ có phép của tài khoản
+            $dayOffWithPay = Propose::where('name', 'Nghỉ có hưởng lương')
+                ->where('account_id', Auth::id())
+                ->where('status', 'approved')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->get()->count();
+            $data['day_off_with_pay'] = $dayOffWithPay;
+            $data['day_off_account'] = $accountDayOff;
+            $data['day_off_without_pay'] = $dayoff;
         }
 
         return response()->json($data);

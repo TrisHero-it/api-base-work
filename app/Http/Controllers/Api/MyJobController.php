@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Kpi;
 use App\Models\Task;
+use Auth;
 use Illuminate\Http\Request;
 
 class MyJobController extends Controller
@@ -12,16 +13,10 @@ class MyJobController extends Controller
     public function index(Request $request)
     {
         $tasks = Task::query()->with(['stage.workflow', 'account']);
-        if (isset($request->account_id)) {
-            $tasks = $tasks
-                ->where('account_id', $request->account_id)
-                ->where('completed_at', null);
-        } else {
-            $tasks = $tasks
-                ->where('account_id', '!=', null)
-                ->where('completed_at', null);
-        }
-        $tasks = $tasks->get();
+        $tasks = $tasks
+            ->where('account_id', Auth::id())
+            ->where('completed_at', null)
+            ->get();
         foreach ($tasks as $task) {
             if ($task->stage_id != null) {
                 $task['stage_name'] = $task->stage->name;

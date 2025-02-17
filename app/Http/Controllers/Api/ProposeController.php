@@ -217,8 +217,9 @@ class ProposeController extends Controller
             foreach ($propose->date_holidays as $date2) {
                 $numberHoliDay += $date2->number_of_days;
             }
-            Auth::user()->update([
-                'day_off' => Auth::user()->day_off - $numberHoliDay
+            $account = Account::find($propose->account_id);
+            $account->update([
+                'day_off' => $account->day_off - $numberHoliDay
             ]);
         }
         $name = $propose->propose_category->name;
