@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
 use App\Http\Controllers\Api\ScheduleAccountController;
+use App\Http\Controllers\Api\ScheduleWorkflowController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\WorkflowCategoryController;
@@ -63,6 +64,7 @@ Route::middleware(['check.login'])->group(function () {
         'tag-task' => TagValueController::class,
         'schedule' => ScheduleWorkController::class,
         'schedule-accounts' => ScheduleAccountController::class,
+        'schedule-workflows' => ScheduleWorkflowController::class,
         'my-tasks' => MyJobController::class,
         'departments' => DepartmentController::class,
         'proposes' => ProposeController::class,
@@ -70,6 +72,7 @@ Route::middleware(['check.login'])->group(function () {
         'attendances' => AttendanceController::class,
         'ip-wifis' => IpWifiController::class,
     ]);
+    Route::get('number-notification', [NotificationController::class, 'numberNotification']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);

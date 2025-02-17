@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\HistoryMoveTask;
+use App\Models\Schedule;
 use App\Models\Stage;
 use App\Models\Task;
 use Carbon\Carbon;
@@ -25,6 +26,11 @@ class ScheduleWorkController extends Controller
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            $dayOff = Schedule::whereDate('day_of_week', $date->format('Y-m-d'))->first();
+            if ($dayOff->go_to_work == 0) {
+                $arr[$date->format('Y-m-d')] = [];
+                continue;
+            }
             $a = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
                 ->with(['stage', 'account'])
                 ->where('account_id', '!=', null)
@@ -51,6 +57,9 @@ class ScheduleWorkController extends Controller
             if (!empty($a)) {
                 foreach ($a as $task) {
                     $hoursWork = $this->getHoursWork($task, $date);
+                    if ($task->stage_id != null) {
+                        $task['workflow_name'] = $task->stage->workflow->name;
+                    }
                     $task['hours_work'] = $hoursWork['hours_work'];
                     $task['start'] = $hoursWork['start']->format("Y-m-d H:i:s");
                     $task['end'] = $hoursWork['end']->format("Y-m-d H:i:s");
@@ -102,6 +111,7 @@ class ScheduleWorkController extends Controller
                     ->first();
                 $hoursWork = $this->getHoursWorkHistory($his, $date);
                 $acc = Account::query()->where('id', $task->worker)->first();
+                $task->workflow_name = $his->oldStage->workflow->name;
                 $task->name_task = $c->name_task;
                 $task->task_id = $c->id;
                 $task->stage_name = Stage::query()->where('id', $task->old_stage)->first()->name;

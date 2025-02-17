@@ -104,12 +104,15 @@ class AttendanceController extends Controller
             }
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
-            $dayOffWithPay = Propose::where('name', 'Nghỉ có hưởng lương')
+            $proposes = Propose::whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
                 ->where('account_id', Auth::id())
                 ->where('status', 'approved')
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
-                ->get()->count();
+                ->get();
+            $dayOffWithPay = $proposes->where('name', 'Nghỉ có hưởng lương')->count();
+            $overTime = $proposes->where('name', 'Đăng ký OT')->count();
+            $data['over_time'] = $overTime;
             $data['day_off_with_pay'] = $dayOffWithPay;
             $data['day_off_account'] = $accountDayOff;
             $data['day_off_without_pay'] = $dayoff;
