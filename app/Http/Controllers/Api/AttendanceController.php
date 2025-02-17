@@ -112,7 +112,7 @@ class AttendanceController extends Controller
                 ->get();
             $dayOffWithPay = $proposes->where('name', 'Nghỉ có hưởng lương')->count();
             $overTime = $proposes->where('name', 'Đăng ký OT')->count();
-            $data['over_time'] = $overTime;
+            $data['total_over_time'] = $overTime;
             $data['day_off_with_pay'] = $dayOffWithPay;
             $data['day_off_account'] = $accountDayOff;
             $data['day_off_without_pay'] = $dayoff;
