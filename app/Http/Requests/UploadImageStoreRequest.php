@@ -31,7 +31,7 @@ class UploadImageStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-          'image.required' => 'Ảnh không được ể trống',
+          'image.required' => 'Ảnh không được để trống',
             'image.image' => 'Đây phải là file ảnh',
             'image.mimes' => 'Chỉ chấp nhận file có đuôi là jpeg,png,jpg,gif,svg',
             'image.max' => 'File quá nặng (trên 2MB)'
