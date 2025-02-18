@@ -115,7 +115,7 @@ class AttendanceController extends Controller
             $idProposeHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
             $holidays = DateHoliday::whereIn('propose_id', $idProposeHoliday)->get();
             foreach ($holidays as $holiday) {
-                $dayOffWithPay += $holiday->number_of_day;
+                $dayOffWithPay += $holiday->number_of_days;
             }
             $overTime = $proposes->where('name', 'Đăng ký OT')->count();
             $data['total_over_time'] = number_format($overTime, 2);
