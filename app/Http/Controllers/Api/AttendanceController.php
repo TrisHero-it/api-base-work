@@ -42,13 +42,13 @@ class AttendanceController extends Controller
                     ->where('created_at', '<=', $request->end);
             }
             //  Lọc theo tháng
-            if (isset($request->date)) {
-                $date = explode('-', $request->date);
-                $month = $date[1];
-                $year = $date[0];
-            }
-            $attendance->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year);
+            // if (isset($request->date)) { 
+            //     $date = explode('-', $request->date);
+            //     $month = $date[1];
+            //     $year = $date[0];
+            // }
+            $attendance->whereMonth('checkin', $month)
+                ->whereYear('checkin', $year);
             if (!Auth::user()->isSeniorAdmin()) {
                 $attendance->where('account_id', Auth::id());
             }
