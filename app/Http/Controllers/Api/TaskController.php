@@ -58,13 +58,17 @@ class TaskController extends Controller
                 'errors' => 'Chưa có giai đoạn'
             ], 401);
         }
-
-        $task = Task::query()->create([
+        $data = [
             'name' => $request->name,
             'description' => $request->description ?? null,
             'account_id' => $account->id ?? null,
             'stage_id' => $stage->id,
-        ]);
+            'creator_by' => Auth::id(),
+        ];
+        if (isset($request->account_id)) {
+            $data['delivery_date'] = now();
+        }
+        $task = Task::query()->create($data);
         if (isset($account)) {
             event(new NotificationEvent([
                 'full_name' => $account->full_name,
@@ -177,13 +181,7 @@ class TaskController extends Controller
                 $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
                 $data['expired'] = $dateTime->format('Y-m-d H:i:s');
             }
-            // event(new NotificationEvent([
-            //     'full_name' => $account->full_name,
-            //     'task_name' => $task->name,
-            //     'workflow_id' => $task->stage->workflow_id,
-            //     'account_id' => $request->account_id,
-            //     'manager_id' => Auth::id(),
-            // ]));
+            
         }
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
@@ -203,7 +201,7 @@ class TaskController extends Controller
                     return response()->json([
                         'message' => 'Nhiệm vụ chưa được giao',
                         'errors' => [
-                            'task' => 'Nhiệm vụ chưa được giao' 
+                            'task' => 'Nhiệm vụ chưa được giao'
                         ]
                     ], 401);
                 } else {
@@ -284,8 +282,7 @@ class TaskController extends Controller
                 if ($kpi !== null) {
                     $kpi->delete();
                 }
-            }
-            ;
+            };
         }
         $task->update($data);
         if (isset($tag)) {

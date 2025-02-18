@@ -15,7 +15,6 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
 use App\Http\Controllers\Api\ScheduleAccountController;
-use App\Http\Controllers\Api\ScheduleWorkflowController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\WorkflowCategoryController;
@@ -36,11 +35,6 @@ Route::post('login', [LoginController::class, 'store'])->name('api.login.store')
 Route::apiResource('accounts', AccountController::class);
 
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
-Route::get('/test', function () {
-    $agent = new Agent();
-    $isMobile = $agent->isMobile();
-    dd($isMobile);
-});
 
 Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
@@ -64,7 +58,7 @@ Route::middleware(['check.login'])->group(function () {
         'tag-task' => TagValueController::class,
         'schedule' => ScheduleWorkController::class,
         'schedule-accounts' => ScheduleAccountController::class,
-        'schedule-workflows' => ScheduleWorkflowController::class,
+        'schedule-workflows' => ScheduleWorkf::class,
         'my-tasks' => MyJobController::class,
         'departments' => DepartmentController::class,
         'proposes' => ProposeController::class,

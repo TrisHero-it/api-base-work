@@ -17,6 +17,7 @@ class ScheduleWorkflowController extends Controller
             $successStage = Stage::where('workflow_id', $workflow->id)
                 ->where('index', 1)
                 ->first();
+            $idStage = Stage::where('workflow_id', $workflow->id)->get()->pluck('id');
             $failedStage = Stage::where('workflow_id', $workflow->id)
                 ->where('index', 0)
                 ->first();
@@ -24,9 +25,14 @@ class ScheduleWorkflowController extends Controller
                 ->count();
             $countTaskFailed = Task::where('stage_id', $failedStage->id)
                 ->count();
+            $countTaskNotExpired = Task::where('expired', null)->whereIn('stage_id', $idStage)
+                ->get()
+                ->count();
             $workflow->count_task_completed = $countTaskCompleted;
+            $workflow->count_task_not_expired = $countTaskNotExpired;
             $workflow->count_task_failed = $countTaskFailed;
         }
+
         return response()->json($workflows);
     }
 }

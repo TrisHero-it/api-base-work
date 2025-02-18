@@ -29,7 +29,8 @@ class Task extends Model
         'status',
         'completed_at',
         'job_assigner',
-        'the_person_assiged_the_job'
+        'creator_by',
+        'delivery_date',
     ];
 
     public function stage()
@@ -41,6 +42,11 @@ class Task extends Model
     {
 
         return $this->belongsToMany(Sticker::class, 'sticker_tasks', 'task_id', 'sticker_id');
+    }
+
+    public function creatorBy()
+    {
+        return $this->belongsTo(Account::class, 'creator_by');
     }
 
     public function account()

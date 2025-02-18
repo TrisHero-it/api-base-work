@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kpi;
+use App\Models\Stage;
 use App\Models\Task;
 use Auth;
 use Illuminate\Http\Request;
@@ -12,10 +13,53 @@ class MyJobController extends Controller
 {
     public function index(Request $request)
     {
-        $tasks = Task::query()->with(['stage.workflow', 'account']);
-        $tasks = $tasks
-            ->where('account_id', Auth::id())
-            ->where('completed_at', null)
+        $query = Task::with(['stage.workflow', 'account', 'creatorBy']);
+
+        // Lọc theo workflows
+        if (!empty($request->workflow_id)) {
+            $stageIds = Stage::whereIn('workflow_id', (array) $request->workflow_id)
+                ->pluck('id');
+            $query->whereIn('stage_id', $stageIds);
+        }
+
+        // Sắp xếp theo bộ lọc được chọn
+        $sortableColumns = ['updated_at', 'created_at', 'expired', 'completed_at'];
+        if (!empty($request->filter) && in_array($request->filter, $sortableColumns)) {
+            $query->orderBy($request->filter, 'desc');
+        }
+
+        // Lọc theo người tạo
+        if (!empty($request->creator_by)) {
+            $query->where('creator_by', $request->creator_by);
+        }
+
+        // Lọc theo thời hạn (expired)
+        if (!empty($request->start_expired) || !empty($request->end_expired)) {
+            $query->whereBetween('expired', [
+                $request->start_expired ?? '1970-01-01',
+                $request->end_expired ?? now()
+            ]);
+        }
+
+        // Lọc theo ngày tạo (created_at)
+        if (!empty($request->start_created_at) || !empty($request->end_created_at)) {
+            $query->whereBetween('created_at', [
+                $request->start_created_at ?? '1970-01-01',
+                $request->end_created_at ?? now()
+            ]);
+        }
+
+        // Lọc theo ngày hoàn thành (completed_at)
+        if (!empty($request->start_completed_at) || !empty($request->end_completed_at)) {
+            $query->whereBetween('completed_at', [
+                $request->start_completed_at ?? '1970-01-01',
+                $request->end_completed_at ?? now()
+            ]);
+        }
+
+        // Lọc theo tài khoản đang đăng nhập & chỉ lấy task chưa hoàn thành
+        $tasks = $query->where('account_id', Auth::id())
+            ->whereNull('completed_at')
             ->get();
         foreach ($tasks as $task) {
             if ($task->stage_id != null) {

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Task;
 use Auth;
 use Illuminate\Http\Request;
 use App\Models\Account;
@@ -72,6 +71,7 @@ class ScheduleAccountController extends Controller
             }
             $account['hours_work'] = number_format($hoursWork, 2);
         }
+
         return response()->json($accounts);
     }
 }
