@@ -35,6 +35,9 @@ use Jenssegers\Agent\Agent;
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 
 Route::apiResource('accounts', AccountController::class);
+Route::get('/test', function () {
+    dd(request()->ip());
+});
 
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
 
