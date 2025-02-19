@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginStoreRequest;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,12 +12,21 @@ class LoginController extends Controller
 {
     public function store(LoginStoreRequest $request)
     {
-            if (Auth::attempt(['email'=>$request->email, 'password'=>$request->password], true)) {
-                return response()->json(['token' => Auth::user()->remember_token]);
-            }else {
-                return response()->json(['errors'=> 'Tài khoản hoặc mật khẩu không đúng'],401);
-            }
+        $account = Account::where('email', $request->email)->first();
 
+        if (!$account) {
+            return response()->json([
+                'message' => 'Email không tồn tại',
+            ], 400);
+        }
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $token = $account->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'message' => 'Đăng nhập thành công',
+                'token' => $token,
+            ], 200);
+        }
     }
 
 }

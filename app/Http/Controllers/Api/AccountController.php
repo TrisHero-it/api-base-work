@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AccountController extends Controller
 {
-    public function store(AccountStoreRequest $request)
+    public function register(AccountStoreRequest $request)
     {
         $email = $request->safe()->email;
         $result = explode('@', $email)[0];
@@ -29,6 +29,7 @@ class AccountController extends Controller
             'password' => Hash::make($request->safe()->password),
             'username' => '@' . $result,
             'full_name' => $result,
+            'day_off' => 0
         ]);
 
         return response()->json($account);
@@ -51,7 +52,7 @@ class AccountController extends Controller
             }
         }
         $account->update($data);
-
+        $account->avatar = env('APP_URL') . '/' . $account->avatar;
         return response()->json($account);
     }
 
@@ -120,7 +121,7 @@ class AccountController extends Controller
                 $totalWorkDay += $workday;
             }
             $account['day_off_used'] = $a;
-            $account['avatar'] = env('APP_URL') . $account->avatar;
+            $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
             $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
         }
 
@@ -173,6 +174,7 @@ class AccountController extends Controller
             $a += $date->number_of_days;
         }
         $account['day_off_used'] = $a;
+        $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
 
         return response()->json($account);
     }

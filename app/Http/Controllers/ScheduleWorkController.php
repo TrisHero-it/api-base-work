@@ -23,6 +23,10 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
+        $tasks = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
+            ->with(['stage', 'account'])
+            ->where('started_at', '!=', null)
+            ->get();
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {

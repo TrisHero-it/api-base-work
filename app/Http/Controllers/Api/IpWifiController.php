@@ -35,5 +35,14 @@ class IpWifiController extends Controller
     {
         $ipWifi = ipWifi::find($id);
         $ipWifi->delete();
+
+        return response()->json(['success' => 'Xóa thành công']);
+    }
+
+    public function getIpWifi()
+    {
+        $ip = request()->ip();
+
+        return response()->json($ip);
     }
 }

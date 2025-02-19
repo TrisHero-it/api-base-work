@@ -31,19 +31,15 @@ use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
+Route::post('login', [LoginController::class, 'store']);
 
-Route::apiResource('accounts', AccountController::class);
+Route::post('/register', [AccountController::class, 'register']);
+Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail']);
+Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
 
-Route::get('/test', function () {
-    dd(request()->ip());
-});
-
-Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail'])->name('api.email.send');
-
-Route::middleware(['check.login'])->group(function () {
-    Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
+Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
+        'accounts' => AccountController::class,
         'auth' => AuthController::class,
         'day-off' => DayScheduleController::class,
         'roles' => RoleController::class,
