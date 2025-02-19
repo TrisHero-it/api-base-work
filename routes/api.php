@@ -74,6 +74,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
 
+
+    Route::get('new-schedule', [ScheduleWorkController::class, 'newSchedule']);
+
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);

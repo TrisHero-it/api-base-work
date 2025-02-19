@@ -23,10 +23,6 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
-        $tasks = Task::query()->select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
-            ->with(['stage', 'account'])
-            ->where('started_at', '!=', null)
-            ->get();
         // Lặp qua từng ngày
         $arr = [];
         for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
@@ -146,6 +142,25 @@ class ScheduleWorkController extends Controller
 
         return $arr;
     }
+
+    public function newSchedule(Request $request)
+    {
+        if (isset($request->end)) {
+            $startDate = Carbon::parse($request->start);
+            $endDate = Carbon::parse($request->end);
+        } else {
+            $endDate = Carbon::now()->endOfWeek();
+            $startDate = Carbon::now()->startOfWeek();
+        }
+        $taskInProgress = Task::query()->where('account_id', '!=', null)
+            ->where('started_at', '!=', null)
+            ->get();
+        $arrSchedule = [];
+        
+        return $taskInProgress;
+    }
+
+
 
     public function getHoursWork($task, $date)
     {
