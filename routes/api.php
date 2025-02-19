@@ -30,11 +30,11 @@ use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
-use Jenssegers\Agent\Agent;
 
 Route::post('login', [LoginController::class, 'store'])->name('api.login.store');
 
 Route::apiResource('accounts', AccountController::class);
+
 Route::get('/test', function () {
     dd(request()->ip());
 });
