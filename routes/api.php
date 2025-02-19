@@ -41,7 +41,7 @@ Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'se
 Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
     Route::apiResources([
-        'auth' => AuthController::class ,
+        'auth' => AuthController::class,
         'day-off' => DayScheduleController::class,
         'roles' => RoleController::class,
         'images' => ImageController::class,

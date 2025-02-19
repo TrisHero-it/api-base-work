@@ -45,7 +45,7 @@ class AccountController extends Controller
         if (isset($request->avatar)) {
             if ($request->hasFile('avatar')) {
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
-                $data['avatar'] = env('APP_URL') . Storage::url($data['avatar']);
+                $data['avatar'] = Storage::url($data['avatar']);
             } else {
                 $data['avatar'] = $request->avatar;
             }
@@ -120,6 +120,7 @@ class AccountController extends Controller
                 $totalWorkDay += $workday;
             }
             $account['day_off_used'] = $a;
+            $account['avatar'] = env('APP_URL') . $account->avatar;
             $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
         }
 
