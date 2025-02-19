@@ -21,7 +21,7 @@ class ScheduleAccountController extends Controller
         $token = "Bearer " . Auth::user()->remember_token;
         $data = Http::withHeaders([
             'Authorization' => $token
-        ])->get("https://work.1997.pro.vn/api/schedule?start=" . $date . "&end=" . $date);
+        ])->get(env('APP_URL') . "/api/schedule?start=" . $date . "&end=" . $date);
         $data = $data->json();
         $data = $data[$date];
         foreach ($accounts as $account) {

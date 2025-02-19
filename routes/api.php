@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\FieldController;
@@ -40,6 +41,7 @@ Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'se
 Route::middleware(['check.login'])->group(function () {
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
     Route::apiResources([
+        'auth' => AuthController::class ,
         'day-off' => DayScheduleController::class,
         'roles' => RoleController::class,
         'images' => ImageController::class,
