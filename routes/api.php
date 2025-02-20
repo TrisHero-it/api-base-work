@@ -32,7 +32,6 @@ use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);
-
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
@@ -74,8 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
 
-
-    Route::get('new-schedule', [ScheduleWorkController::class, 'newSchedule']);
+    // Route::get('new-schedule', [ScheduleWorkController::class, 'newSchedule']);
 
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::post('/tag-comment', [CommentController::class, 'notification']);

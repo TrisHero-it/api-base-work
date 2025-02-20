@@ -7,6 +7,7 @@ use App\Http\Requests\WorkflowStoreRequest;
 use App\Http\Requests\WorkflowUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflow;
+use App\Models\AccountWorkflowCategory;
 use App\Models\Field;
 use App\Models\Stage;
 use App\Models\Task;
@@ -118,6 +119,20 @@ class WorkflowController extends Controller
         if (isset($name)) {
             $error['name'] = 'Workflow đã tồn tại';
         }
+        if (!Auth::user()->isSeniorAdmin()) {
+            $members = AccountWorkflowCategory::where('workflow_category_id', $request->input('workflow_category_id'))
+                ->where('account_id', Auth::id())
+                ->first();
+            if (!$members) {
+                return response()->json([
+                    'message' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow',
+                    'errors' => [
+                        'workflow_category_id' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow'
+                    ]
+                ], 403);
+            }
+        }
+
         $accounts = explode(' ', $request->manager);
         foreach ($accounts as $account) {
             $acc = Account::query()->where('username', $account)->first();
@@ -192,6 +207,19 @@ class WorkflowController extends Controller
     {
         $workflow = Workflow::query()->findOrFail($id);
         $data = $request->all();
+        if (!Auth::user()->isSeniorAdmin()) {
+            $members = AccountWorkflowCategory::where('workflow_category_id', $request->input('workflow_category_id'))
+                ->where('account_id', Auth::id())
+                ->first();
+            if (!$members) {
+                return response()->json([
+                    'message' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow',
+                    'errors' => [
+                        'workflow_category_id' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow'
+                    ]
+                ], 403);
+            }
+        }
         if (isset($data['manager'])) {
             AccountWorkflow::query()->where('workflow_id', $id)->delete();
             $arrManager = explode(' ', $data['manager']);
