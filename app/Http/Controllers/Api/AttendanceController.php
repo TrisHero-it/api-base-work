@@ -56,11 +56,35 @@ class AttendanceController extends Controller
                 $attendance->whereMonth('created_at', date('m'));
             }
             $attendance = $attendance->get();
+            $salesDepartment = Department::where('name', 'Phòng sales')->first()->id;
+            $accountDepartment = AccountDepartment::where('department_id', $salesDepartment)
+                ->where('account_id', Auth::id())
+                ->first();
+
             foreach ($attendance as $item) {
+                $hours = 0;
                 $item['check_out_regulation'] = Carbon::parse($item->checkin)
                     ->addHours(9)
                     ->format('Y-m-d H:i:s');
+
+                $checkin = Carbon::parse($item->checkin);
+                $checkout = Carbon::parse($item->checkout);
+                $noonTime = $checkin->copy()->setHour(12)->setMinute(0)->setSecond(0);
+                if ($item->checkout != null) {
+                    if ($accountDepartment == null) {
+                        if ($checkin->greaterThanOrEqualTo($noonTime)) {
+                            $hours = $checkout->floatDiffInHours($checkin);
+                        } else {
+                            $hours = $checkout->floatDiffInHours($checkin) - 1.5;
+                        }
+                    } else {
+                        $hours = $checkout->floatDiffInHours($checkin);
+                    }
+                }
+
+                $item['hours'] = number_format($hours, 2);
             }
+
             $data = [];
             $data['attendances'] = $attendance;
             $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)

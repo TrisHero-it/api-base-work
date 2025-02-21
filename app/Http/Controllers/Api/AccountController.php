@@ -52,7 +52,7 @@ class AccountController extends Controller
             }
         }
         $account->update($data);
-        $account->avatar = env('APP_URL') . '/' . $account->avatar;
+        $account->avatar = env('APP_URL') . $account->avatar;
         return response()->json($account);
     }
 
@@ -174,7 +174,7 @@ class AccountController extends Controller
             $a += $date->number_of_days;
         }
         $account['day_off_used'] = $a;
-        $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
+        $account['avatar'] = env('APP_URL') . $account->avatar;
 
         return response()->json($account);
     }
