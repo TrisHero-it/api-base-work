@@ -22,7 +22,7 @@ class StageController extends Controller
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         $arrStageId = $stages->pluck('id');
 
-        $tasks2 = Task::query()->whereIn('stage_id', $arrStageId)->with('tags')->orderBy('expired', 'desc')->get();
+        $tasks2 = Task::query()->whereIn('stage_id', $arrStageId)->with('tags')->orderBy('expired', 'desc')->orderBy('account_id', 'desc')->get();
         foreach ($stages as $stage) {
             if ($stage->isSuccessStage()) {
                 $tasks = $tasks2->where('stage_id', $stage->id)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])->sortByDesc('completed_at');
