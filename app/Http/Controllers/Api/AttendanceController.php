@@ -102,7 +102,7 @@ class AttendanceController extends Controller
             if (Auth::user()->isSeniorAdmin()) {
                 $data['number_of_working_days'] = 0;
             } else {
-                $data['number_of_working_days'] = $numberWorkingDays;
+                $data['number_of_working_days'] = number_format($numberWorkingDays, 2);
             }
             $dayoff = 0;
             for ($date = $startMonth; $date->lte($now); $date->addDay()) {
