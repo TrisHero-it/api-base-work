@@ -17,6 +17,9 @@ class LoginController extends Controller
         if (!$account) {
             return response()->json([
                 'message' => 'Email không tồn tại',
+                'errors' => [
+                    'email' => 'Email không tồn tại',
+                ],
             ], 400);
         }
 

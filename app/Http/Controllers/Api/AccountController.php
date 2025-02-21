@@ -121,7 +121,9 @@ class AccountController extends Controller
                 $totalWorkDay += $workday;
             }
             $account['day_off_used'] = $a;
-            $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
+            if ($account->avatar != null) {
+                $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
+            }
             $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
         }
 

@@ -65,6 +65,9 @@ class WorkflowController extends Controller
         $accounts = Account::query()
             ->whereIn('id', $arrAccountId)
             ->get();
+        foreach ($accounts as $account) {
+            $account->avatar = $account->avatar != null ? env('APP_URL') . $account->avatar : null;
+        }
 
         foreach ($workflows as $workflow) {
             $countTaskFailed = 0;
