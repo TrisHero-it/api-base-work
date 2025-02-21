@@ -37,4 +37,14 @@ class Account extends Authenticatable
     {
         return $this->role_id == 2;
     }
+
+    public function isSalesMember()
+    {
+        $salesDepartment = Department::where('name', 'Phòng sales')->first()->id;
+        $accountDepartment = AccountDepartment::where('department_id', $salesDepartment)
+            ->where('account_id', $this->id)
+            ->exists();
+
+        return $accountDepartment;
+    }
 }

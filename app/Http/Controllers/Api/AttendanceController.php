@@ -56,10 +56,7 @@ class AttendanceController extends Controller
                 $attendance->whereMonth('created_at', date('m'));
             }
             $attendance = $attendance->get();
-            $salesDepartment = Department::where('name', 'Phòng sales')->first()->id;
-            $accountDepartment = AccountDepartment::where('department_id', $salesDepartment)
-                ->where('account_id', Auth::id())
-                ->first();
+
 
             foreach ($attendance as $item) {
                 $hours = 0;
@@ -71,7 +68,7 @@ class AttendanceController extends Controller
                 $checkout = Carbon::parse($item->checkout);
                 $noonTime = $checkin->copy()->setHour(12)->setMinute(0)->setSecond(0);
                 if ($item->checkout != null) {
-                    if ($accountDepartment == null) {
+                    if (!Auth::user()->isSalesMember()) {
                         if ($checkin->greaterThanOrEqualTo($noonTime)) {
                             $hours = $checkout->floatDiffInHours($checkin);
                         } else {
