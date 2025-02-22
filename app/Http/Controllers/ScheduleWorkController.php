@@ -33,8 +33,8 @@ class ScheduleWorkController extends Controller
         // Lấy các công việc đang tiến hành
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
-                if (!now()->lessThan($date)) {
-                    $taskCopy = clone $task;
+                $taskCopy = clone $task;
+                if (!now()->lessThan($date) || Carbon::parse($taskCopy->started_at)->lessThan($date)) {
                     $hoursWork = $this->getHoursWork($taskCopy, date: $date);
                     $taskCopy->hours_work = $hoursWork['hours_work'];
                     $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
