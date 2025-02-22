@@ -40,7 +40,7 @@ class ScheduleWorkController extends Controller
                     $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
                     $taskCopy->end = $hoursWork['end']->format("Y-m-d H:i:s");
                     if ($taskCopy->stage_id != null) {
-                        $taskCopy->name_stage = $taskCopy->stage->name;
+                        $taskCopy->stage_name = $taskCopy->stage->name;
                         $taskCopy->workflow_name = $worflows->where('id', $taskCopy->stage->workflow_id)->first()->name;
                         unset($taskCopy->stage);
                     }
