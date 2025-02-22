@@ -32,13 +32,13 @@ class MyJobController extends Controller
 
         // Sắp xếp theo bộ lọc được chọn
         $sortableColumns = ['updated_at', 'created_at', 'expired', 'completed_at'];
-        if (!empty($request->order) && in_array($request->order, $sortableColumns)) {
+        if (!empty($request->sort) && in_array($request->order, $sortableColumns)) {
             $query->orderBy($request->order, 'desc');
         }
 
         // Lọc theo người tạo
-        if (!empty($request->creator_by)) {
-            $query->where('creator_by', $request->creator_by);
+        if (!empty($request->created_by)) {
+            $query->where('creator_by', $request->created_by);
         }
 
         // Lọc theo thời hạn (expired)
