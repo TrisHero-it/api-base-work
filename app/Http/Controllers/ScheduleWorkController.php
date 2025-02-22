@@ -34,7 +34,9 @@ class ScheduleWorkController extends Controller
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
                 $taskCopy = clone $task;
-
+                if ($date->lessThan(Carbon::parse($taskCopy->started_at))) {
+                    continue;
+                }
                 if (!now()->lessThan($date)) {
                     $hoursWork = $this->getHoursWork($taskCopy, date: $date);
                     $taskCopy->hours_work = $hoursWork['hours_work'];
@@ -60,6 +62,7 @@ class ScheduleWorkController extends Controller
         // Lấy các công việc đã hoàn thành hoặc là thất bại
         $latestTaskIds = HistoryMoveTask::selectRaw('MAX(id) as id')
             ->whereNotNull('worker')
+            ->whereNotNull('started_at')
             ->groupBy('old_stage', 'new_stage', 'worker')
             ->pluck('id');
         $accounts = Account::all();
