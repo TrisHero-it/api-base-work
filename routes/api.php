@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DayScheduleController;
+use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\FieldController;
 use App\Http\Controllers\Api\FieldValueController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
@@ -33,8 +34,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);
 Route::post('/register', [AccountController::class, 'register']);
-Route::post('send_email', [\App\Http\Controllers\Api\EmailController::class, 'sendEmail']);
+Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
+Route::get('/test', function () {
+    $ip = request()->header('X-Forwarded-For') ?? request()->ip();
+    return response()->json($ip);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
@@ -71,8 +76,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
     Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
-
-    // Route::get('new-schedule', [ScheduleWorkController::class, 'newSchedule']);
 
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::post('/tag-comment', [CommentController::class, 'notification']);

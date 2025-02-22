@@ -22,7 +22,7 @@ class ProposeController extends Controller
                 ->get()
                 ->count();
 
-            return $proposes;
+            return response()->json($proposes);
         }
 
         $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays', 'approved_by']);
