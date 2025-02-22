@@ -96,20 +96,28 @@ class ScheduleAccountController extends Controller
         // Lấy các công việc đang tiến hành
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
+                $taskCopy = clone $task;
+                if ($date->toDateString() < Carbon::parse($taskCopy->started_at)->toDateString()) {
+                    continue;
+                }
                 if (!now()->lessThan($date)) {
-                    $taskCopy = clone $task;
                     $hoursWork = $this->getHoursWork($taskCopy, date: $date);
                     $taskCopy->hours_work = $hoursWork['hours_work'];
                     $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
                     $taskCopy->end = $hoursWork['end']->format("Y-m-d H:i:s");
                     if ($taskCopy->stage_id != null) {
-                        $taskCopy->name_stage = $taskCopy->stage->name;
+                        $taskCopy->stage_name = $taskCopy->stage->name;
                         $taskCopy->workflow_name = $worflows->where('id', $taskCopy->stage->workflow_id)->first()->name;
                         unset($taskCopy->stage);
                     }
+                    $taskCopy->status = 'in_progress';
+                    if ($taskCopy->expired_at != null) {
+                        if (Carbon::parse($taskCopy->expired_at)->lessThan($date)) {
+                            $taskCopy->status = 'overdue';
+                        }
+                    }
                     $taskCopy->avatar = env('APP_URL') . $taskCopy->account->avatar;
                     unset($taskCopy->account);
-
                     $arrSchedule[] = $taskCopy;
                 }
             }
@@ -117,17 +125,21 @@ class ScheduleAccountController extends Controller
         // Lấy các công việc đã hoàn thành hoặc là thất bại
         $latestTaskIds = HistoryMoveTask::selectRaw('MAX(id) as id')
             ->whereNotNull('worker')
-            ->groupBy('old_stage', 'new_stage', 'worker')
+            ->whereNotNull('started_at')
+            ->groupBy('old_stage', 'new_stage', 'worker', 'task_id')
             ->pluck('id');
         $accounts = Account::all();
         $taskInHistory = HistoryMoveTask::whereIn('id', $latestTaskIds)
-            ->with(['oldStage'])
-            ->whereDate('started_at', '>=', $startDate->format('Y-m-d'))
-            ->whereDate('started_at', '<=', $endDate->format('Y-m-d'))
+            ->with(['oldStage', 'newStage', 'task'])
+            ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))
+            ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
             ->get();
         foreach ($taskInHistory as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
-                if (now()->lessThan($date)) {
+                $completedAt = Carbon::parse($task->created_at);
+                $expiredAt = Carbon::parse($task->expired_at);
+                $startedAt = Carbon::parse($task->started_at);
+                if (now()->toDateString() < $date->toDateString() || $date->toDateString() < $startedAt->toDateString() || $completedAt->toDateString() < $date->toDateString()) {
                     continue;
                 }
                 $taskCopy = clone $task;
@@ -135,15 +147,24 @@ class ScheduleAccountController extends Controller
                 if ($accounts->where('id', $taskCopy->worker)->first()->avatar !== null) {
                     $taskCopy->avatar = env('APP_URL') . $accounts->where('id', $taskCopy->worker)->first()->avatar;
                 }
+                $taskCopy->status = 'in_progress';
+                if ($completedAt->isSameDay($date)) {
+                    if ($taskCopy->expired_at == null || $completedAt->lessThan($expiredAt)) {
+                        $taskCopy->status = 'completed';
+                    } else {
+                        $taskCopy->status = 'completed_late';
+                    }
+                }
                 $taskCopy->workflow_name = $worflows->where('id', $taskCopy->oldStage->workflow_id)->first()->name;
-                unset($taskCopy->old_stage);
-                unset($taskCopy->worker);
-                unset($taskCopy->id);
-                unset($taskCopy->new_stage);
+                $taskCopy->stage_name = $taskCopy->oldStage->name;
+                $taskCopy->name_task = $taskCopy->task->name;
                 $hoursWork = $this->getHoursWork($taskCopy, $date);
                 $taskCopy->hours_work = $hoursWork['hours_work'];
                 $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
                 $taskCopy->end = $hoursWork['end']->format("Y-m-d H:i:s");
+                unset($taskCopy->worker);
+                unset($taskCopy->oldStage);
+                unset($taskCopy->task);
                 $arrSchedule[] = $taskCopy;
             }
         }

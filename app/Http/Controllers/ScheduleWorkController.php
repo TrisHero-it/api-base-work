@@ -67,7 +67,7 @@ class ScheduleWorkController extends Controller
             ->pluck('id');
         $accounts = Account::all();
         $taskInHistory = HistoryMoveTask::whereIn('id', $latestTaskIds)
-            ->with(['oldStage', 'task'])
+            ->with(['oldStage', 'newStage', 'task'])
             ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))
             ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
             ->get();
