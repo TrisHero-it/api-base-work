@@ -48,16 +48,10 @@ class AccountController extends Controller
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
                 $data['avatar'] = Storage::url($data['avatar']);
             } else {
-                if (strpos($request->avatar, env('APP_URL')) !== false) {
-                    $path = parse_url($request->avatar, PHP_URL_PATH);
-                    $data['avatar'] = $path;
-                } else {
-                    $data['avatar'] = $request->avatar;
-                }
+                $data['avatar'] = $request->avatar;
             }
         }
         $account->update($data);
-        $account->avatar = env('APP_URL') . $account->avatar;
         return response()->json($account);
     }
 
@@ -136,7 +130,7 @@ class AccountController extends Controller
             $account['day_off_used'] = $a;
             $account['hours_over_time'] = number_format($hoursOT, 2);
             if ($account->avatar != null) {
-                $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
+                $account['avatar'] = $account->avatar;
             }
             $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
         }
@@ -190,7 +184,7 @@ class AccountController extends Controller
             $a += $date->number_of_days;
         }
         $account['day_off_used'] = $a;
-        $account['avatar'] = env('APP_URL') . $account->avatar;
+        $account['avatar'] = $account->avatar;
 
         return response()->json($account);
     }

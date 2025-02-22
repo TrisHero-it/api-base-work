@@ -18,7 +18,7 @@ class ImageController extends Controller
             }
             $imageUrl = Storage::put('/public/images', $image);
             $imageUrl = Storage::url($imageUrl);
-            return response()->json(['urlImage' => env('APP_URL') . $imageUrl]);
+            return response()->json(['urlImage' => $imageUrl]);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 500);
         }

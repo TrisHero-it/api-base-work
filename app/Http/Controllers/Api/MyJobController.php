@@ -32,8 +32,8 @@ class MyJobController extends Controller
 
         // Sắp xếp theo bộ lọc được chọn
         $sortableColumns = ['updated_at', 'created_at', 'expired', 'completed_at'];
-        if (!empty($request->filter) && in_array($request->filter, $sortableColumns)) {
-            $query->orderBy($request->filter, 'desc');
+        if (!empty($request->order) && in_array($request->order, $sortableColumns)) {
+            $query->orderBy($request->order, 'desc');
         }
 
         // Lọc theo người tạo
@@ -93,7 +93,7 @@ class MyJobController extends Controller
             }
 
             $task['account_name'] = $task->account->full_name;
-            $task['account_avatar'] = env('APP_URL') . $task->account->avatar;  
+            $task['account_avatar'] = env('APP_URL') . $task->account->avatar;
             unset($task->account);
         }
 
