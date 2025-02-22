@@ -35,10 +35,10 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
-    public function store(AccountUpdateRequest $request)
+    public function update(int $id, AccountUpdateRequest $request)
     {
         $account = Account::query()
-            ->findOrFail($request->id);
+            ->findOrFail($id);
         $data = $request->except('password', 'avatar');
         if (isset($request->password)) {
             $data['password'] = Hash::make($request->password);
