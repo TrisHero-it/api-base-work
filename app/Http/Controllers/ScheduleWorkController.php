@@ -63,7 +63,7 @@ class ScheduleWorkController extends Controller
         $latestTaskIds = HistoryMoveTask::selectRaw('MAX(id) as id')
             ->whereNotNull('worker')
             ->whereNotNull('started_at')
-            ->groupBy('old_stage', 'new_stage', 'worker')
+            ->groupBy('old_stage', 'new_stage', 'worker', 'task_id')
             ->pluck('id');
         $accounts = Account::all();
         $taskInHistory = HistoryMoveTask::whereIn('id', $latestTaskIds)
