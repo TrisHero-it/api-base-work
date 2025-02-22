@@ -8,11 +8,19 @@ use App\Models\Stage;
 use App\Models\Task;
 use Auth;
 use Illuminate\Http\Request;
+use Notification;
 
 class MyJobController extends Controller
 {
     public function index(Request $request)
     {
+        if (isset($request->include)) {
+            $countMyTask = Task::where('account_id', Auth::id())
+                ->whereNull('completed_at')
+                ->count();
+
+            return response()->json($countMyTask);
+        }
         $query = Task::with(['stage.workflow', 'account', 'creatorBy']);
 
         // Lọc theo workflows
@@ -62,6 +70,20 @@ class MyJobController extends Controller
             ->whereNull('completed_at')
             ->get();
         foreach ($tasks as $task) {
+            if ($task->creator_by != null) {
+                $task['creator_name'] = $task->creatorBy->full_name;
+                $task['creator_avatar'] = env('APP_URL') . $task->creatorBy->avatar;
+                unset($task->creatorBy);
+            }
+            if ($task->started_at != null) {
+                $task['status'] = 'in_progress';
+            }
+
+            if ($task->expired != null) {
+                if ($task->expired < now()) {
+                    $task['status'] = 'overdue';
+                }
+            }
             if ($task->stage_id != null) {
                 $task['stage_name'] = $task->stage->name;
                 $task['workflow_name'] = $task->stage->workflow->name;
@@ -69,7 +91,9 @@ class MyJobController extends Controller
                 unset($task->stage);
                 unset($task->workflow);
             }
+
             $task['account_name'] = $task->account->full_name;
+            $task['account_avatar'] = env('APP_URL') . $task->account->avatar;  
             unset($task->account);
         }
 

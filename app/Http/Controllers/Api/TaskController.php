@@ -181,7 +181,7 @@ class TaskController extends Controller
                 $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
                 $data['expired'] = $dateTime->format('Y-m-d H:i:s');
             }
-            
+
         }
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
@@ -282,7 +282,8 @@ class TaskController extends Controller
                 if ($kpi !== null) {
                     $kpi->delete();
                 }
-            };
+            }
+            ;
         }
         $task->update($data);
         if (isset($tag)) {

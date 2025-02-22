@@ -60,7 +60,6 @@ class AccountController extends Controller
     {
         // Lấy tên từ username đẩy lên
         $name = str_replace('@', '', $request->username);
-        $a = 0;
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
         if (isset($request->category_id)) {
             $accounts = [];
@@ -75,22 +74,18 @@ class AccountController extends Controller
         }
         $month = now()->month;
         $year = now()->year;
-        $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
-        $proposes = Propose::where('propose_category_id', $category->id)
-            ->where('account_id', Auth::id())
-            ->where('status', 'approved')
-            ->where('name', 'Nghỉ có hưởng lương')
-            ->get()
-            ->pluck('id');
-        // Lấy ra tất cả các ngày xin nghỉ
-        $holidays = DateHoliday::whereIn('propose_id', $proposes)
-            ->whereMonth('start_date', $month)
-            ->whereYear('start_date', $year)
+        $proposes = Propose::where('status', 'approved')
+            ->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
             ->get();
-        foreach ($holidays as $date) {
-            $a += $date->number_of_days;
-        }
-
+        // Lấy ra tất cả các ngày xin nghỉ
+        $arrIdHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
+        $arrIdOverTime = $proposes->where('name', 'Đăng ký OT')->pluck('id');
+        $holidays = DateHoliday::whereIn('propose_id', $arrIdHoliday)
+            ->get();
+        $overTime = DateHoliday::whereIn('propose_id', $arrIdOverTime)
+            ->get();
         if (isset($request->date)) {
             $b = explode('-', $request->date);
             $month2 = $b[1];
@@ -102,7 +97,20 @@ class AccountController extends Controller
         $attendances = Attendance::whereMonth('checkin', $month2)
             ->whereYear('checkin', $year2)
             ->get();
+
         foreach ($accounts as $account) {
+            $a = 0;
+            $hoursOT = 0;
+            $accountHoliday = $proposes->where('account_id', $account->id)->where('name', 'Nghỉ có hưởng lương')->pluck('id');
+            $accountHoliday = array_values($holidays->whereIn('propose_id', $accountHoliday)->toArray());
+            foreach ($accountHoliday as $item) {
+                $a += $item['number_of_days'];
+            }
+            $accountOverTime = $proposes->where('account_id', $account->id)->where('name', 'Đăng ký OT')->pluck('id');
+            $accountOverTime = array_values($overTime->whereIn('propose_id', $accountOverTime)->toArray());
+            foreach ($accountOverTime as $item) {
+                $hoursOT += Carbon::parse($item['end_date'])->floatDiffInHours(Carbon::parse($item['start_date']));
+            }
             $totalWorkDay = 0;
             // Lọc từng tài khoản để tính ngày công
             $newAttendances = null;
@@ -121,6 +129,7 @@ class AccountController extends Controller
                 $totalWorkDay += $workday;
             }
             $account['day_off_used'] = $a;
+            $account['hours_over_time'] = number_format($hoursOT, 2);
             if ($account->avatar != null) {
                 $account['avatar'] = env('APP_URL') . '/' . $account->avatar;
             }

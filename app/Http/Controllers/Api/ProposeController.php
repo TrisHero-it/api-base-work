@@ -17,6 +17,14 @@ class ProposeController extends Controller
 {
     public function index(Request $request)
     {
+        if (isset($request->include)) {
+            $proposes = Propose::where('status', 'pending')
+                ->get()
+                ->count();
+
+            return $proposes;
+        }
+
         $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays', 'approved_by']);
         if (isset($request->status)) {
             $proposes = $proposes->where('status', $request->status);
@@ -108,8 +116,8 @@ class ProposeController extends Controller
             $data['old_check_in'] = $attendance->checkin;
             $data['old_check_out'] = $attendance->checkout;
         }
+        $numberHoliDay = 0;
         if ($request->name == "Nghỉ có hưởng lương") {
-            $numberHoliDay = 0;
             foreach ($request->holiday as $date2) {
                 $startDate = Carbon::parse($date2['start_date']);
                 $endDate = Carbon::parse($date2['end_date']);
@@ -155,6 +163,7 @@ class ProposeController extends Controller
         $arr = [];
         $propose = Propose::query()->create($data);
         if (isset($request->holiday)) {
+
             foreach ($request->holiday as $date) {
                 if ($request->name == "Nghỉ có hưởng lương") {
                     $a = [
@@ -172,9 +181,9 @@ class ProposeController extends Controller
         }
         DateHoliday::query()->insert($arr);
         $accounts = Account::where('role_id', 2)->get();
-        foreach ($accounts as $account) {
-            SendEmail::dispatch($account->email, "Có một yêu cầu $request->name được gửi tới bạn !!");
-        }
+        // foreach ($accounts as $account) {
+        //     SendEmail::dispatch($account->email, "Có một yêu cầu $request->name được gửi tới bạn !!");
+        // }
 
         return response()->json($propose);
     }

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccountDepartment;
+use App\Models\Department;
 use App\Models\Schedule;
+use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -15,7 +18,7 @@ class DayScheduleController extends Controller
             $a = explode("-", $request->date);
             $month = $a[1];
             $year = $a[0];
-        }else {
+        } else {
             $month = Carbon::now()->month;
             $year = Carbon::now()->year;
         }
@@ -24,7 +27,15 @@ class DayScheduleController extends Controller
             ->whereYear('day_of_week', $year)
             ->orderBy('day_of_week')
             ->get();
-
+        $departmentSales = Department::where('name', 'Phòng sales')->first()->id;
+        $member = AccountDepartment::where('department_id', $departmentSales)
+            ->where('account_id', Auth::id())
+            ->first();
+        if ($member) {
+            foreach ($schedules as $schedule) {
+                $schedule->go_to_work = true;
+            }
+        }
         return response()->json($schedules);
     }
 
@@ -36,7 +47,7 @@ class DayScheduleController extends Controller
             $date = Carbon::parse($a->day_of_week);
             $startDate = $date->addMonthNoOverflow()->startOfMonth();
             $endDate = $startDate->copy()->endOfMonth();
-        }else {
+        } else {
             $offSaturday = false;
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
@@ -49,14 +60,14 @@ class DayScheduleController extends Controller
             $goToWork = true;
             $description = null;
             if ($date->isSaturday()) {
-                if ($offSaturday==true) {
+                if ($offSaturday == true) {
                     $numSaturday++;
-                    if ($numSaturday <=2) {
+                    if ($numSaturday <= 2) {
                         $offSaturday = false;
                     }
                     $goToWork = false;
                     $description = 'Nghỉ thứ 7';
-                }else {
+                } else {
                     $offSaturday = true;
                 }
             }
@@ -64,11 +75,11 @@ class DayScheduleController extends Controller
                 $goToWork = false;
                 $description = 'Nghỉ ngày chủ nhật';
             }
-            $data[]  = [
+            $data[] = [
                 'day_of_week' => $date->format('Y-m-d'),
                 'go_to_work' => $goToWork,
-                'start_at' => new \DateTime($date->format('Y-m-d'). ' 8:30'),
-                'end_at' => new \DateTime($date->format('Y-m-d'). ' 17:30'),
+                'start_at' => new \DateTime($date->format('Y-m-d') . ' 8:30'),
+                'end_at' => new \DateTime($date->format('Y-m-d') . ' 17:30'),
                 'description' => $description
             ];
         }
@@ -93,7 +104,7 @@ class DayScheduleController extends Controller
             $end_date = Carbon::parse($request->end_date);
             $dates = [];
             for ($date = $start_date; $date->lte($end_date); $date->addDay()) {
-              $dates[] = $date->format('Y-m-d');
+                $dates[] = $date->format('Y-m-d');
             }
 
             Schedule::where(function ($query) use ($dates) {
@@ -101,9 +112,9 @@ class DayScheduleController extends Controller
                     $query->orWhereDate('day_of_week', $date);
                 }
             })->update([
-                'go_to_work' => false,
-                'description' => $request->description
-            ]);
+                        'go_to_work' => false,
+                        'description' => $request->description
+                    ]);
 
         }
 
@@ -113,7 +124,7 @@ class DayScheduleController extends Controller
             ]);
         }
 
-        return response()->json(['success'=> 'Thành công']);
+        return response()->json(['success' => 'Thành công']);
     }
 
     public function destroy(int $id, Request $request)
@@ -122,9 +133,9 @@ class DayScheduleController extends Controller
         $month = $a[1];
         $year = $a[0];
         $schedule = Schedule::query()
-        ->whereYear('day_of_week', $year)
-        ->whereMonth('day_of_week', $month)
-        ->delete();
+            ->whereYear('day_of_week', $year)
+            ->whereMonth('day_of_week', $month)
+            ->delete();
 
         return response()->json($schedule);
     }

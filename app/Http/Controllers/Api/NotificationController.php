@@ -12,6 +12,14 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
+        if (isset($request->include)) {
+            $countNotifications = Notification::where('account_id', Auth::id())
+                ->where('new', true)
+                ->count();
+
+            return response()->json($countNotifications);
+        }
+
         $notifications = Notification::query()
             ->orderBy('id', 'desc')
             ->where('account_id', Auth::id())

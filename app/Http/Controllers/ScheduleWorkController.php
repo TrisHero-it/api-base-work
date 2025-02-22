@@ -82,10 +82,10 @@ class ScheduleWorkController extends Controller
                 }
                 $taskCopy->status = 'in_progress';
                 if ($completedAt->isSameDay($date)) {
-                    if ($taskCopy->expired_at != null || $completedAt->lessThan($expiredAt)) {
+                    if ($taskCopy->expired_at == null || $completedAt->lessThan($expiredAt)) {
                         $taskCopy->status = 'completed';
                     } else {
-                        $taskCopy->status = 'completed_overdue';
+                        $taskCopy->status = 'completed_late';
                     }
                 }
                 $taskCopy->workflow_name = $worflows->where('id', $taskCopy->oldStage->workflow_id)->first()->name;

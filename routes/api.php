@@ -67,7 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
         'attendances' => AttendanceController::class,
         'ip-wifis' => IpWifiController::class,
     ]);
-    Route::get('number-notification', [NotificationController::class, 'numberNotification']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
