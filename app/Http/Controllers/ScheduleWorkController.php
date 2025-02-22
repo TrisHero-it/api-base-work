@@ -34,7 +34,7 @@ class ScheduleWorkController extends Controller
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
                 $taskCopy = clone $task;
-                if (!now()->lessThan($date) || !$date->lessThan(Carbon::parse($taskCopy->created_at))) {
+                if (!now()->lessThan($date) && !$date->lessThan(Carbon::parse($taskCopy->created_at))) {
                     $hoursWork = $this->getHoursWork($taskCopy, date: $date);
                     $taskCopy->hours_work = $hoursWork['hours_work'];
                     $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
