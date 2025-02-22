@@ -35,10 +35,10 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
-    public function update(int $id, AccountUpdateRequest $request)
+    public function store(AccountUpdateRequest $request)
     {
         $account = Account::query()
-            ->findOrFail($id);
+            ->findOrFail($request->id);
         $data = $request->except('password', 'avatar');
         if (isset($request->password)) {
             $data['password'] = Hash::make($request->password);
@@ -48,7 +48,12 @@ class AccountController extends Controller
                 $data['avatar'] = Storage::put('public/avatars', $request->avatar);
                 $data['avatar'] = Storage::url($data['avatar']);
             } else {
-                $data['avatar'] = $request->avatar;
+                if (strpos($request->avatar, env('APP_URL')) !== false) {
+                    $path = parse_url($request->avatar, PHP_URL_PATH);
+                    $data['avatar'] = $path;
+                } else {
+                    $data['avatar'] = $request->avatar;
+                }
             }
         }
         $account->update($data);
