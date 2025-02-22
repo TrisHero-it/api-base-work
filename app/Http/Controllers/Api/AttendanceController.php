@@ -60,6 +60,7 @@ class AttendanceController extends Controller
 
             foreach ($attendance as $item) {
                 $hours = 0;
+                $workday = 0;
                 $item['check_out_regulation'] = Carbon::parse($item->checkin)
                     ->addHours(9)
                     ->format('Y-m-d H:i:s');
@@ -71,7 +72,6 @@ class AttendanceController extends Controller
                     if (!Auth::user()->isSalesMember()) {
                         if ($checkin->greaterThanOrEqualTo($noonTime)) {
                             $hours = $checkout->floatDiffInHours($checkin);
-
                         } else {
                             $hours = $checkout->floatDiffInHours($checkin) - 1.5;
                         }
@@ -81,8 +81,8 @@ class AttendanceController extends Controller
                 }
 
                 $item['hours'] = number_format($hours, 2);
-                $item['workday'] = 0;
-                return $item;
+                $workday = number_format($hours, 2) / 7.5;
+                $item['workday'] = number_format($workday, 2);
             }
 
             $data = [];
