@@ -34,7 +34,7 @@ class ScheduleWorkController extends Controller
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
                 $taskCopy = clone $task;
-                if ($date->toDateString() < Carbon::parse($taskCopy->started_at)->toDateString()) {
+                if ($date->toDateString() < Carbon::parse($taskCopy->started_at)->toDateString() || $thisDayOff->go_to_work == false) {
                     continue;
                 }
                 if (!now()->lessThan($date)) {
@@ -80,9 +80,7 @@ class ScheduleWorkController extends Controller
                 $completedAt = Carbon::parse($task->created_at);
                 $expiredAt = Carbon::parse($task->expired_at);
                 $startedAt = Carbon::parse($task->started_at);
-                if (now()->toDateString() < $date->toDateString() 
-                || $date->toDateString() < $startedAt->toDateString() 
-                || $completedAt->toDateString() < $date->toDateString()) {
+                if (now()->toDateString() < $date->toDateString() || $date->toDateString() < $startedAt->toDateString() || $completedAt->toDateString() < $date->toDateString()) {
                     continue;
                 }
                 $taskCopy = clone $task;
