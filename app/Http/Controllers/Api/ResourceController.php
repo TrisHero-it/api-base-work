@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccountResource;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,17 @@ class ResourceController extends Controller
 
     public function store(Request $request)
     {
-        $resource = Resource::create($request->all());
+        $data = $request->except('members');
+        $resource = Resource::create($data);
+        $members = $request->members;
+        $newArr = [];
+        foreach ($members as $member) {
+            $newArr[] = [
+                'resource_id' => $resource->id,
+                'account_id' => $member
+            ];
+        }
+        AccountResource::insert($newArr);
 
         return response()->json($resource);
     }

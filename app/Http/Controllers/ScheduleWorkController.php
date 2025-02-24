@@ -76,18 +76,16 @@ class ScheduleWorkController extends Controller
             ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
             ->get();
         foreach ($taskInHistory as $task) {
-            $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
-            if ($thisDayOff->go_to_work == false) {
-                continue;
-            }
+            
             if ($task->newStage->index > $task->oldStage->index) {
                 break;
             }
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
+                $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
                 $completedAt = Carbon::parse($task->created_at);
                 $expiredAt = Carbon::parse($task->expired_at);
                 $startedAt = Carbon::parse($task->started_at);
-                if (now()->toDateString() < $date->toDateString() || $date->toDateString() < $startedAt->toDateString() || $completedAt->toDateString() < $date->toDateString()) {
+                if (now()->toDateString() < $date->toDateString() || $date->toDateString() < $startedAt->toDateString() || $completedAt->toDateString() < $date->toDateString() || $thisDayOff->go_to_work == false) {
                     continue;
                 }
                 $taskCopy = clone $task;
