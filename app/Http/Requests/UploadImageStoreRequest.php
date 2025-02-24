@@ -24,16 +24,16 @@ class UploadImageStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ];
     }
 
     public function messages(): array
     {
         return [
-          'image.required' => 'Ảnh không được để trống',
+            'image.required' => 'Ảnh không được để trống',
             'image.image' => 'Đây phải là file ảnh',
-            'image.mimes' => 'Chỉ chấp nhận file có đuôi là jpeg,png,jpg,gif,svg',
+            'image.mimes' => 'Chỉ chấp nhận file có đuôi là jpeg,png,jpg,gif,svg,webp',
             'image.max' => 'File quá nặng (trên 2MB)'
         ];
     }

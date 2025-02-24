@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryResourceController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\EmailController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
+use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ScheduleAccountController;
 use App\Http\Controllers\Api\ScheduleWorkflowController;
 use App\Http\Controllers\Api\StageController;
@@ -71,6 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
         'propose-categories' => ProposeCategoryController::class,
         'attendances' => AttendanceController::class,
         'ip-wifis' => IpWifiController::class,
+        'category-resources' => CategoryResourceController::class,
+        'resources' => ResourceController::class,
     ]);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);

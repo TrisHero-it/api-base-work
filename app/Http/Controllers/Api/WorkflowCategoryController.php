@@ -30,19 +30,8 @@ class WorkflowCategoryController extends Controller
         } else {
             $workflows = Workflow::whereIn('id', $arrWorkflowId)->get();
         }
-        
-        $members = AccountWorkflowCategory::query()
-            ->whereIn('workflow_category_id', $arrCategoryId)
-            ->with('account')
-            ->get();
 
         foreach ($categories as $category) {
-            $arrMembers = [];
-            $members2 = $members->where('workflow_category_id', $category->id);
-            foreach ($members2 as $member) {
-                $arrMembers[] = $member->account;
-            }
-            $category['members'] = $arrMembers;
             $category['workflows'] = array_values($workflows->where('workflow_category_id', $category->id)->toArray());
         }
 
@@ -80,89 +69,26 @@ class WorkflowCategoryController extends Controller
             }
         }
 
-        //        if (isset($request->rules)) {
-        //            foreach ($request->rules as $rule) {
-        //             $workflowCategory = WorkflowCategoryStage::query()->where('workflow_category_id', $id)->delete();
-        //                Workflow::query()->create([
-        //                    'workflow_category_id' => $id,
-        //                    'name' => $rule->stage_name
-        //                ]);
-        //            foreach($rule->reports as $report) {
-        //                WorkflowCategoryStageReport::query()->create([
-        //                    'report_stage_id' => $workflowCategory->id,
-        //                    'name' => $report->name,
-        //                    'type' => $report->type,
-        //                ]);
-        //            }
-        //            }
-        //        }
-
         return $category;
     }
 
     public function store(WorkflowCategoryStoreRequest $request)
     {
-        $arrs = explode('@', $request->members);
-
         $workflow = WorkflowCategory::create(
             [
                 'name' => $request->name,
             ]
         );
-        //  Thêm thanh vien cho workflow
-        foreach ($arrs as $arr) {
-            if (trim($arr) != '') {
-                $acc = Account::query()->where('username', '@' . trim($arr))->first();
-                if (isset($acc)) {
-                    $work = AccountWorkflowCategory::query()->where('account_id', $acc->id)->where('workflow_category_id', $workflow->id)->first();
-                    if (!$work) {
-                        AccountWorkflowCategory::query()->create([
-                            'account_id' => $acc->id,
-                            'workflow_category_id' => $workflow->id,
-                        ]);
-                    }
-                } else {
-                    AccountWorkflowCategory::query()->create([
-                        'department_id' => $arr,
-                        'workflow_category_id' => $workflow->id,
-                    ]);
-                }
-            }
-        }
-
-        //  Thêm stage mặc định cho các workflow con ở trong
-        if (isset($request->rules)) {
-            $arrStage = $request->rules;
-            foreach ($arrStage as $stage) {
-                $a = WorkflowCategoryStage::query()->create([
-                    'workflow_category_id' => $workflow->id,
-                    'name' => $stage['stage_name'],
-                ]);
-                if (isset($stage['reports'])) {
-                    $reports = $stage['reports'];
-                    foreach ($reports as $report) {
-                        WorkflowCategoryStageReport::query()->create([
-                            'report_stage_id' => $a->id,
-                            'name' => $report['name'],
-                            'type' => $report['type'],
-                        ]);
-                    }
-                }
-            }
-        }
 
         return response()->json($workflow);
     }
 
     public function destroy($id)
     {
-        try {
-            $category = WorkflowCategory::query()->findOrFail($id);
-            $category->delete();
-            return response()->json(['success' => 'Xoá thành công']);
-        } catch (\Exception $exception) {
-            return response()->json(['error' => 'Đã xảy ra lỗi'], 500);
-        }
+        $category = WorkflowCategory::query()->findOrFail($id);
+        $category->delete();
+
+        return response()->json(['success' => 'Xoá thành công']);
     }
 
     public function show($id)

@@ -122,19 +122,6 @@ class WorkflowController extends Controller
         if (isset($name)) {
             $error['name'] = 'Workflow đã tồn tại';
         }
-        if (!Auth::user()->isSeniorAdmin()) {
-            $members = AccountWorkflowCategory::where('workflow_category_id', $request->input('workflow_category_id'))
-                ->where('account_id', Auth::id())
-                ->first();
-            if (!$members) {
-                return response()->json([
-                    'message' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow',
-                    'errors' => [
-                        'workflow_category_id' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow'
-                    ]
-                ], 403);
-            }
-        }
 
         $accounts = explode(' ', $request->manager);
         foreach ($accounts as $account) {
@@ -147,6 +134,7 @@ class WorkflowController extends Controller
             return response()->json(['errors' => $error], 403);
         }
         $workflow = Workflow::query()->create($request->all());
+        // Thêm thành viên cho workflow
         foreach ($accounts as $account) {
             $acc = Account::query()->where('username', $account)->first();
             if (isset($acc)) {
@@ -159,29 +147,7 @@ class WorkflowController extends Controller
                 }
             }
         }
-        //  Truy cập vào bảng workflow_category_stages để lấy ra cac stage được quy định sẵn từ workflow_category
-        $stageRules = WorkflowCategoryStage::query()->where('workflow_category_id', $workflow->workflow_category_id)->get();
-        $numberIndex = $stageRules->count() + 2;
-        foreach ($stageRules as $stageRule) {
-            $stage = Stage::query()->create([
-                'name' => $stageRule->name,
-                'workflow_id' => $workflow->id,
-                'index' => $numberIndex
-            ]);
-            $numberIndex--;
-            foreach ($stageRule->reports as $field) {
-                Field::query()->create([
-                    'name' => $field->name,
-                    'workflow_id' => $workflow->id,
-                    'stage_id' => $stage->id,
-                    'type' => $field->type ?? 'paragraph',
-                    'require' => 1,
-                    'options' => $field->options ?? null,
-                    'model' => 'report-field',
-                    'report_rule_id' => $field->id ?? null,
-                ]);
-            }
-        }
+
         Stage::query()->create([
             'name' => 'Thất bại',
             'workflow_id' => $workflow->id,
@@ -211,14 +177,14 @@ class WorkflowController extends Controller
         $workflow = Workflow::query()->findOrFail($id);
         $data = $request->all();
         if (!Auth::user()->isSeniorAdmin()) {
-            $members = AccountWorkflowCategory::where('workflow_category_id', $request->input('workflow_category_id'))
+            $members = AccountWorkflow::where('workflow_id', $id)
                 ->where('account_id', Auth::id())
                 ->first();
             if (!$members) {
                 return response()->json([
                     'message' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow',
                     'errors' => [
-                        'workflow_category_id' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow'
+                        'workflow_id' => 'Bạn phải là thành viên của danh mục trước khi tạo workflow'
                     ]
                 ], 403);
             }

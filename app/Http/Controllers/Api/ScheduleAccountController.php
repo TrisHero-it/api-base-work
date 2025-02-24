@@ -189,7 +189,7 @@ class ScheduleAccountController extends Controller
         $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
         $innerStart2 = Carbon::parse($start->format("Y-m-d") . " 13:30:00");
         $innerEnd2 = Carbon::parse($start->format("Y-m-d") . " 17:30:00");
-        if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
+        if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {    
             $hoursWork = $hoursWork + number_format(3.5, 3);
         } else {
             $validStart = max($innerStart1, $start);

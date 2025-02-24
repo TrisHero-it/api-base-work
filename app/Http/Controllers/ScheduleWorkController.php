@@ -30,11 +30,15 @@ class ScheduleWorkController extends Controller
             ->where('started_at', '!=', null)
             ->get();
         $arrSchedule = [];
+        $dayOff = Schedule::whereDate('day_of_week', ">=", $startDate->format('Y-m-d'))
+            ->where('day_of_week', "<=", $endDate->format('Y-m-d'))
+            ->get();
         // Lấy các công việc đang tiến hành
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
+                $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
                 $taskCopy = clone $task;
-                if ($date->toDateString() < Carbon::parse($taskCopy->started_at)->toDateString()) {
+                if ($date->toDateString() < Carbon::parse($taskCopy->started_at)->toDateString() || $thisDayOff->go_to_work == false) {
                     continue;
                 }
                 if (!now()->lessThan($date)) {
@@ -72,6 +76,13 @@ class ScheduleWorkController extends Controller
             ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
             ->get();
         foreach ($taskInHistory as $task) {
+            $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
+            if ($thisDayOff->go_to_work == false) {
+                continue;
+            }
+            if ($task->newStage->index > $task->oldStage->index) {
+                break;
+            }
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
                 $completedAt = Carbon::parse($task->created_at);
                 $expiredAt = Carbon::parse($task->expired_at);

@@ -52,6 +52,7 @@ class AccountController extends Controller
             }
         }
         $account->update($data);
+
         return response()->json($account);
     }
 
@@ -60,17 +61,7 @@ class AccountController extends Controller
         // Lấy tên từ username đẩy lên
         $name = str_replace('@', '', $request->username);
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
-        if (isset($request->category_id)) {
-            $accounts = [];
-            $accountWorkflowCategories = AccountWorkflowCategory::query()
-                ->where('workflow_category_id', $request->category_id)
-                ->get();
-            foreach ($accountWorkflowCategories as $item) {
-                $accounts[] = $item->account;
-            }
-        } else {
-            $accounts = Account::query()->where('username', 'like', "%$name%")->get();
-        }
+        $accounts = Account::query()->where('username', 'like', "%$name%")->get();
         $month = now()->month;
         $year = now()->year;
         $proposes = Propose::where('status', 'approved')
