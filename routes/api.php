@@ -73,7 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'propose-categories' => ProposeCategoryController::class,
         'attendances' => AttendanceController::class,
         'ip-wifis' => IpWifiController::class,
-        'category-resources' => CategoryResourceController::class,
+        'resource-categories' => CategoryResourceController::class,
         'resources' => ResourceController::class,
     ]);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
