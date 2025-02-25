@@ -16,7 +16,8 @@ class HistoryMoveTask extends Model
         'new_stage',
         'started_at',
         'expired_at',
-        'worker'
+        'worker',
+        'status'
     ];
 
     public function account()

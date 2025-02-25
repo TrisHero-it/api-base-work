@@ -12,7 +12,8 @@ class ResourceController extends Controller
 {
     public function index(Request $request)
     {
-        $resources = Resource::when($request->search, function ($query, $search) {
+        $resources = Resource::with('accounts')
+        ->when($request->search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })->get();
 
@@ -26,12 +27,12 @@ class ResourceController extends Controller
         $members = $request->members;
         $receivers = $request->receivers;
         $newArr = [];
-        foreach ($members as $member) {
-            $newArr[] = [
+        $newArr = array_map(function ($member) use ($resource) {
+            return [
                 'resource_id' => $resource->id,
                 'account_id' => $member
             ];
-        }
+        }, $members ?? []);
         $newArrReceivers = array_map(function ($receiver) use ($resource) {
             return [
                 'resource_id' => $resource->id,
@@ -41,7 +42,8 @@ class ResourceController extends Controller
         
         AccountResource::insert($newArr);
         NotificationResource::insert($newArrReceivers);
-
+        $resource['members'] = $resource->accounts;
+        $resource['receivers'] = $resource->receivers;
         return response()->json($resource);
     }
 

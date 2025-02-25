@@ -67,6 +67,7 @@ class ScheduleWorkController extends Controller
         $latestTaskIds = HistoryMoveTask::selectRaw('MAX(id) as id')
             ->whereNotNull('worker')
             ->whereNotNull('started_at')
+            ->where('status', null)
             ->groupBy('old_stage', 'new_stage', 'worker', 'task_id')
             ->pluck('id');
         $accounts = Account::all();
@@ -77,6 +78,9 @@ class ScheduleWorkController extends Controller
             ->get();
         foreach ($taskInHistory as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
+                if ($task->oldStage) {
+                    # code...
+                }
                 $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
                 if ($thisDayOff->go_to_work == false) {
                     continue;

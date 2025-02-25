@@ -278,6 +278,13 @@ class TaskController extends Controller
                     'total_time' => $totalHours . 'h',
                 ]));
             } else {
+                $latestHistory = HistoryMoveTask::query()->where('task_id', $task->id)->where('old_stage', $request->stage_id)->latest('id')->first();
+                if ($latestHistory) {
+                    $latestHistory->update([
+                        'status' => 'skipped'
+                    ]);
+                }
+
                 $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
                 if ($kpi !== null) {
                     $kpi->delete();

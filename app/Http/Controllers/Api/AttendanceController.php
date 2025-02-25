@@ -132,6 +132,7 @@ class AttendanceController extends Controller
                     }
                 }
             }
+            
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
             $proposes = Propose::whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
