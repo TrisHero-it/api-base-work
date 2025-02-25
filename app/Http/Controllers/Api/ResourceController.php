@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccountResource;
+use App\Models\NotificationResource;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 
@@ -20,9 +21,10 @@ class ResourceController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->except('members');
+        $data = $request->except('members', 'receivers');
         $resource = Resource::create($data);
         $members = $request->members;
+        $receivers = $request->receivers;
         $newArr = [];
         foreach ($members as $member) {
             $newArr[] = [
@@ -30,7 +32,15 @@ class ResourceController extends Controller
                 'account_id' => $member
             ];
         }
+        $newArrReceivers = array_map(function ($receiver) use ($resource) {
+            return [
+                'resource_id' => $resource->id,
+                'account_id' => $receiver
+            ];
+        }, $receivers ?? []);
+        
         AccountResource::insert($newArr);
+        NotificationResource::insert($newArrReceivers);
 
         return response()->json($resource);
     }

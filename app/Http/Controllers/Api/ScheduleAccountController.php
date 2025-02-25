@@ -9,6 +9,7 @@ use App\Models\Workflow;
 use Auth;
 use Illuminate\Http\Request;
 use App\Models\Account;
+use App\Models\Schedule;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 class ScheduleAccountController extends Controller
@@ -21,53 +22,54 @@ class ScheduleAccountController extends Controller
         } else {
             $date = now()->format('Y-m-d');
         }
+        $dayOff = Schedule::whereDate('day_of_week', $date)->first();
+        
         $data = $this->getScheduleAccount($date, $date);
 
         foreach ($accounts as $account) {
-            if ($account->avatar != null) {
-                $account->avatar = env('APP_URL') . $account->avatar;
-            }
-            $newData = array_filter($data, function ($item) use ($account) {
-                return $item['account_id'] == $account->id;
-            });
-            $newData = array_values($newData);
-            usort($newData, function ($a, $b) {
-                return strtotime($a['start']) - strtotime($b['start']);
-            });
-            $merged = [];
-            foreach ($newData as $range) {
-                if (empty($merged) || strtotime(end($merged)['end']) < strtotime($range['start'])) {
-                    $merged[] = $range;
-                } else {
-                    // Hợp nhất khoảng thời gian bị trùng
-                    $merged[count($merged) - 1]['end'] = max(end($merged)['end'], $range['end']);
-                }
-            }
             $hoursWork = 0;
-            $innerStart1 = Carbon::parse($date . " 08:30:00");
-            $innerEnd1 = Carbon::parse($date . " 12:00:00");
-            $innerStart2 = Carbon::parse($date . " 13:30:00");
-            $innerEnd2 = Carbon::parse($date . " 17:30:00");
-            foreach ($merged as $range) {
-                if ($innerStart1->greaterThanOrEqualTo(Carbon::parse($range['start'])) && $innerEnd1->lessThanOrEqualTo(Carbon::parse($range['end']))) {
-                    $hoursWork = $hoursWork + number_format(3.5, 3);
-                } else {
-                    $validStart = max($innerStart1, Carbon::parse($range['start']));
-                    $validEnd = min($innerEnd1, $range['end']);
-                    if ($validStart->lessThan($validEnd)) {
-                        $validHours = $validStart->floatDiffInHours($validEnd, true);
-                        $hoursWork += number_format($validHours, 3);
+            if ($dayOff->go_to_work != false) {
+                $newData = array_filter($data, function ($item) use ($account) {
+                    return $item['account_id'] == $account->id;
+                });
+                $newData = array_values($newData);
+                usort($newData, function ($a, $b) {
+                    return strtotime($a['start']) - strtotime($b['start']);
+                });
+                $merged = [];
+                foreach ($newData as $range) {
+                    if (empty($merged) || strtotime(end($merged)['end']) < strtotime($range['start'])) {
+                        $merged[] = $range;
+                    } else {
+                        // Hợp nhất khoảng thời gian bị trùng
+                        $merged[count($merged) - 1]['end'] = max(end($merged)['end'], $range['end']);
                     }
                 }
-
-                if ($innerStart2->greaterThanOrEqualTo(Carbon::parse($range['start'])) && $innerEnd2->lessThanOrEqualTo(Carbon::parse($range['end']))) {
-                    $hoursWork = $hoursWork + number_format(4, 3);
-                } else {
-                    $validStart = max($innerStart2, Carbon::parse($range['start']));
-                    $validEnd = min($innerEnd2, $range['end']);
-                    if ($validStart->lessThan($validEnd)) {
-                        $validHours = $validStart->floatDiffInHours($validEnd, true);
-                        $hoursWork += number_format($validHours, 3);
+                $innerStart1 = Carbon::parse($date . " 08:30:00");
+                $innerEnd1 = Carbon::parse($date . " 12:00:00");
+                $innerStart2 = Carbon::parse($date . " 13:30:00");
+                $innerEnd2 = Carbon::parse($date . " 17:30:00");
+                foreach ($merged as $range) {
+                    if ($innerStart1->greaterThanOrEqualTo(Carbon::parse($range['start'])) && $innerEnd1->lessThanOrEqualTo(Carbon::parse($range['end']))) {
+                        $hoursWork = $hoursWork + number_format(3.5, 3);
+                    } else {
+                        $validStart = max($innerStart1, Carbon::parse($range['start']));
+                        $validEnd = min($innerEnd1, $range['end']);
+                        if ($validStart->lessThan($validEnd)) {
+                            $validHours = $validStart->floatDiffInHours($validEnd, true);
+                            $hoursWork += number_format($validHours, 3);
+                        }
+                    }
+    
+                    if ($innerStart2->greaterThanOrEqualTo(Carbon::parse($range['start'])) && $innerEnd2->lessThanOrEqualTo(Carbon::parse($range['end']))) {
+                        $hoursWork = $hoursWork + number_format(4, 3);
+                    } else {
+                        $validStart = max($innerStart2, Carbon::parse($range['start']));
+                        $validEnd = min($innerEnd2, $range['end']);
+                        if ($validStart->lessThan($validEnd)) {
+                            $validHours = $validStart->floatDiffInHours($validEnd, true);
+                            $hoursWork += number_format($validHours, 3);
+                        }
                     }
                 }
             }
@@ -116,7 +118,7 @@ class ScheduleAccountController extends Controller
                             $taskCopy->status = 'overdue';
                         }
                     }
-                    $taskCopy->avatar = env('APP_URL') . $taskCopy->account->avatar;
+                    $taskCopy->avatar = $taskCopy->account->avatar;
                     unset($taskCopy->account);
                     $arrSchedule[] = $taskCopy;
                 }
@@ -145,7 +147,7 @@ class ScheduleAccountController extends Controller
                 $taskCopy = clone $task;
                 $taskCopy->account_id = $taskCopy->worker;
                 if ($accounts->where('id', $taskCopy->worker)->first()->avatar !== null) {
-                    $taskCopy->avatar = env('APP_URL') . $accounts->where('id', $taskCopy->worker)->first()->avatar;
+                    $taskCopy->avatar = $accounts->where('id', $taskCopy->worker)->first()->avatar;
                 }
                 $taskCopy->status = 'in_progress';
                 if ($completedAt->isSameDay($date)) {

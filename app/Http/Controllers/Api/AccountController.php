@@ -23,12 +23,12 @@ class AccountController extends Controller
     public function register(AccountStoreRequest $request)
     {
         $email = $request->safe()->email;
-        $result = explode('@', $email)[0];
+        $username = $this->generateUsernameFromEmail($email);
         $account = Account::create([
             'email' => $request->safe()->email,
             'password' => Hash::make($request->safe()->password),
-            'username' => '@' . $result,
-            'full_name' => $result,
+            'username' => '@' . $username,
+            'full_name' => $username,
             'day_off' => 0
         ]);
 
@@ -39,17 +39,9 @@ class AccountController extends Controller
     {
         $account = Account::query()
             ->findOrFail($id);
-        $data = $request->except('password', 'avatar');
-        if (isset($request->password)) {
+        $data = $request->except('password');
+        if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
-        }
-        if (isset($request->avatar)) {
-            if ($request->hasFile('avatar')) {
-                $data['avatar'] = Storage::put('public/avatars', $request->avatar);
-                $data['avatar'] = Storage::url($data['avatar']);
-            } else {
-                $data['avatar'] = $request->avatar;
-            }
         }
         $account->update($data);
 
@@ -197,5 +189,10 @@ class AccountController extends Controller
                 'success' => 'Mật khẩu đã được reset về 123456'
             ]);
         }
+    }
+
+    private function generateUsernameFromEmail(string $email): string
+    {
+        return explode('@', $email)[0];
     }
 }

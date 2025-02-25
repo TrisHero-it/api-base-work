@@ -56,7 +56,7 @@ class AttendanceController extends Controller
                 $attendance->whereMonth('created_at', date('m'));
             }
             $attendance = $attendance->get();
-
+            $isSalesMember = Auth::user()->isSalesMember();
 
             foreach ($attendance as $item) {
                 $hours = 0;
@@ -69,7 +69,7 @@ class AttendanceController extends Controller
                 $checkout = Carbon::parse($item->checkout);
                 $noonTime = $checkin->copy()->setHour(12)->setMinute(0)->setSecond(0);
                 if ($item->checkout != null) {
-                    if (!Auth::user()->isSalesMember()) {
+                    if (!$isSalesMember) {
                         if ($checkin->greaterThanOrEqualTo($noonTime)) {
                             $hours = $checkout->floatDiffInHours($checkin);
                         } else {
@@ -108,19 +108,24 @@ class AttendanceController extends Controller
                 $data['number_of_working_days'] = number_format($numberWorkingDays, 2);
             }
             $dayoff = 0;
+            $schedules = Schedule::whereDate('day_of_week', '>=', $startMonth)
+                ->whereDate('day_of_week', '<=', $now)
+                ->where('go_to_work', true)
+                ->get();
+            $attendanceDays = Attendance::whereDate('checkin', '>=', $startMonth)
+                ->whereDate('checkin', '<=', $now)
+                ->where('account_id', Auth::id())
+                ->get();
+
             for ($date = $startMonth; $date->lte($now); $date->addDay()) {
                 $date2 = $date->format('Y-m-d');
                 $schedule = null;
                 // Đây là ngày đi làm
-                $schedule = Schedule::whereDate('day_of_week', $date2)
-                    ->where('go_to_work', true)
-                    ->first();
+                $schedule = $schedules->where('day_of_week', $date2)->first();
                 if (isset($schedule) && $schedule != null) {
                     $atten = null;
                     // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
-                    $atten = Attendance::whereDate('checkin', $date2)
-                        ->where('account_id', Auth::id())
-                        ->first();
+                    $atten = $attendanceDays->where('checkin', $date2)->first();
                     // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
                     if (!(isset($atten) && $atten != null)) {
                         $dayoff++;
