@@ -28,7 +28,7 @@ class UploadImageStoreRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+public function messages(): array
     {
         return [
             'image.required' => 'Ảnh không được để trống',

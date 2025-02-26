@@ -14,10 +14,15 @@ class StageController extends Controller
 {
     public function index(Request $request)
     {
-        // Tuần này
-        $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
-        // Tuần trước
-        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
+       if ($request->filled('start')) {
+         $startOfLastWeek = $request->start;
+         $endOfThisWeek = $request->end;
+       }else {
+         // Tuần này
+         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
+         // Tuần trước
+         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
+       }
 
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         $arrStageId = $stages->pluck('id');

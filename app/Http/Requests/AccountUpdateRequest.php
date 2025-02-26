@@ -23,18 +23,18 @@ class AccountUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $id = $this->route('account');
+        // $id = $this->route('account');
         return [
-            'email' => 'nullable|email|unique:accounts,email,'.$id,
-            'password' => 'nullable|min:8',
-            'username' => 'nullable|unique:accounts,username,'.$id,
-            'full_name' => 'nullable|max:100',
-            'position' => 'nullable|max:20',
-            'phone'=> 'nullable|unique:accounts,phone,'.$id .'| regex:/^(\+84|0)(\d{9})$/',
-            'birthday' => 'nullable|date',
-            'address' => 'nullable|max:100',
-            'manager_id'=> 'nullable|exists:account,id',
-            'avatar' => 'nullable'
+            // 'email' => 'nullable|email|unique:accounts,email,'.$id,
+            // 'password' => 'nullable|min:8',
+            // 'username' => 'nullable|unique:accounts,username,'.$id,
+            // 'full_name' => 'nullable|max:100',
+            // 'position' => 'nullable|max:20',
+            // 'phone'=> 'nullable|unique:accounts,phone,'.$id .'| regex:/^(\+84|0)(\d{9})$/',
+            // 'birthday' => 'nullable|date',
+            // 'address' => 'nullable|max:100',
+            // 'manager_id'=> 'nullable|exists:account,id',
+            // 'avatar' => 'nullable'
         ];
     }
 

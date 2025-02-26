@@ -7,6 +7,7 @@ use App\Models\AccountResource;
 use App\Models\NotificationResource;
 use App\Models\Resource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ResourceController extends Controller
 {
@@ -22,6 +23,7 @@ class ResourceController extends Controller
 
     public function store(Request $request)
     {
+       if (Auth::user()->isSeniorAdmin()) {
         $data = $request->except('members', 'receivers');
         $resource = Resource::create($data);
         $members = $request->members;
@@ -44,23 +46,44 @@ class ResourceController extends Controller
         NotificationResource::insert($newArrReceivers);
         $resource['members'] = $resource->accounts;
         $resource['receivers'] = $resource->receivers;
-        return response()->json($resource);
-    }
 
+        return response()->json($resource);
+       }else {
+            return response()->json([
+                'message' => 'Bạn không có quyền thực hiện hành động này',
+                'errors' => 'Bạn không có quyền thực hiện hành động này'
+            ], 403);
+        }
+    }
+    
 
     public function update(Request $request, $id)
     {
+       if (Auth::user()->isSeniorAdmin()) {
         $resource = Resource::findOrFail($id);
         $resource->update($request->all());
 
         return response()->json($resource);
+       }else {
+        return response()->json([
+            'message' => 'Bạn không có quyền thực hiện hành động này',
+            'errors' => 'Bạn không có quyền thực hiện hành động này'
+        ], 403);
+       }
     }
 
     public function destroy($id)
     {
-        $resource = Resource::findOrFail($id);
+        if (Auth::user()->isSeniorAdmin()) {
+            $resource = Resource::findOrFail($id);
         $resource->delete();
 
         return response()->json(['success' => 'Xoá thành công tài nguyên']);
+        }else {
+            return response()->json([
+                'message' => 'Bạn không có quyền thực hiện hành động này',
+                'errors' => 'Bạn không có quyền thực hiện hành động này'
+            ], 403);
+        }
     }
 }

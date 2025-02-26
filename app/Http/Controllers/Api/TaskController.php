@@ -163,7 +163,7 @@ class TaskController extends Controller
                 }
             }
         }
-        if ($task->account_id != $request->account_id && $request->account_id != null) {
+        if ($request->account_id != null) {
             //  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
             if ($task->account_id != null) {
                 if (!$account->isAdmin()) {
@@ -175,13 +175,16 @@ class TaskController extends Controller
                     ], 401);
                 }
             }
+            if ($request->account_id == Auth::id()) {
+                # code...
             $data['started_at'] = now();
             if ($task->stage->expired_after_hours != null && $task->expired == null) {
                 $dateTime = new \DateTime($data['started_at']);
                 $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
                 $data['expired'] = $dateTime->format('Y-m-d H:i:s');
             }
-
+            }
+           
         }
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
@@ -197,7 +200,7 @@ class TaskController extends Controller
             }
             //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
-                if ($task->account_id == null) {
+                if ($task->started_at == null) {
                     return response()->json([
                         'message' => 'Nhiệm vụ chưa được giao',
                         'errors' => [
@@ -286,7 +289,7 @@ class TaskController extends Controller
                 }
 
                 $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
-                if ($kpi !== null) {
+                if ($kpi !== null) {    
                     $kpi->delete();
                 }
             }

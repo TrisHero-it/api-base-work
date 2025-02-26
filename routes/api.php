@@ -39,8 +39,12 @@ Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
 Route::get('/test', function () {
-    $ip = request()->header('X-Forwarded-For') ?? request()->ip();
-    return response()->json($ip);
+        return response()->json([
+            'ip' => request()->ip(),
+            'X-Forwarded-For' => request()->header('X-Forwarded-For'),
+            'X-Real-IP' => request()->header('X-Real-IP'),
+            'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? 'Not Set'
+        ]);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -85,6 +89,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
-
+    
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
 });

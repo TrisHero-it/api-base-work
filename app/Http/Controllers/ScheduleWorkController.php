@@ -79,9 +79,6 @@ class ScheduleWorkController extends Controller
             ->get();
         foreach ($taskInHistory as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
-                if ($task->oldStage) {
-                    # code...
-                }
                 $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
                 if ($thisDayOff->go_to_work == false) {
                     continue;
@@ -98,6 +95,9 @@ class ScheduleWorkController extends Controller
                     $taskCopy->avatar = env('APP_URL') . $accounts->where('id', $taskCopy->worker)->first()->avatar;
                 }
                 $taskCopy->status = 'in_progress';
+                if ($expiredAt->lt($date)) {
+                    $taskCopy->status = 'overdue';
+                }
                 if ($completedAt->isSameDay($date)) {
                     if ($taskCopy->expired_at == null || $completedAt->lessThan($expiredAt)) {
                         $taskCopy->status = 'completed';
