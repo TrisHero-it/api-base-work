@@ -49,6 +49,7 @@ class ScheduleWorkController extends Controller
                     if ($taskCopy->stage_id != null) {
                         $taskCopy->stage_name = $taskCopy->stage->name;
                         $taskCopy->workflow_name = $worflows->where('id', $taskCopy->stage->workflow_id)->first()->name;
+                        $taskCopy->workflow_id = $taskCopy->stage->workflow_id;
                         unset($taskCopy->stage);
                     }
                     $taskCopy->status = 'in_progress';
@@ -105,6 +106,8 @@ class ScheduleWorkController extends Controller
                     }
                 }
                 $taskCopy->workflow_name = $worflows->where('id', $taskCopy->oldStage->workflow_id)->first()->name;
+                $taskCopy->workflow_id = $taskCopy->oldStage->workflow_id;
+                $taskCopy->stage_id = $taskCopy->oldStage->id;
                 $taskCopy->stage_name = $taskCopy->oldStage->name;
                 $taskCopy->name_task = $taskCopy->task->name;
                 $hoursWork = $this->getHoursWork($taskCopy, $date);

@@ -21,8 +21,8 @@ class ScheduleWorkflowController extends Controller
             $start = Carbon::parse($request->start);
             $end = Carbon::parse($request->end);
         } else {
-            $start = Carbon::now()->startOfWeek();
-            $end = Carbon::now()->endOfWeek();
+            $start = Carbon::now();
+            $end = Carbon::now();
         }
         $arrSchedule = $this->getScheduleWorkflow($start, $end);
         $stages = Stage::all();
@@ -33,14 +33,18 @@ class ScheduleWorkflowController extends Controller
             $countTaskCompleted = count(array_filter($arrTask, function ($task) {
                 return $task['status'] == 'completed';
             }));
+            $countTaskCompletedLate = count(array_filter($arrTask, function ($task) {
+                return $task['status'] == 'completed_late';
+            }));
             $idStage = $stages->where('workflow_id', $workflow->id)->whereNotIn('index', [0, 1])->pluck('id');
-            $countTaskFailed = count(array_filter($arrTask, function ($task) {
+            $countTaskOverdue = count(array_filter($arrTask, function ($task) {
                 return $task['status'] == 'overdue';
             }));
             $countTaskNotExpired = $tasks->whereIn('stage_id', $idStage)->count();
             $workflow->count_task_completed = $countTaskCompleted;
+            $workflow->count_task_completed_late = $countTaskCompletedLate;
             $workflow->count_task_not_expired = $countTaskNotExpired;
-            $workflow->count_task_failed = $countTaskFailed;
+            $workflow->count_task_overdue = $countTaskOverdue;
         }
 
         return response()->json($workflows);
@@ -54,6 +58,7 @@ class ScheduleWorkflowController extends Controller
             $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
                 ->with(['stage', 'account'])
                 ->where('account_id', '!=', null)
+                ->where('stage_id', '!=', null)
                 ->where('started_at', '!=', null)
                 ->get();
             $arrSchedule = [];
