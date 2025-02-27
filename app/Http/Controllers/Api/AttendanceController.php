@@ -20,7 +20,7 @@ use Jenssegers\Agent\Agent;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
+        public function index(Request $request)
     {
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
@@ -59,7 +59,15 @@ class AttendanceController extends Controller
             $isSalesMember = Auth::user()->isSalesMember();
 
             foreach ($attendance as $item) {
+                if(isset($checkin)) {
+                    if ($checkin->isSameDay(Carbon::parse($item->checkin))) {
+                       if (isset($hours)) {
+                        $hours2 = $hours;
+                       }
+                    }
+                }
                 $hours = 0;
+
                 $workday = 0;
                 $item['check_out_regulation'] = Carbon::parse($item->checkin)
                     ->addHours(9)
@@ -79,7 +87,9 @@ class AttendanceController extends Controller
                         $hours = $checkout->floatDiffInHours($checkin);
                     }
                 }
-
+                if (isset($hours2)) {
+                    $hours += $hours2;
+                }
                 $item['hours'] = number_format($hours, 2);
                 $workday = number_format($hours, 2) / 7.5;
                 $item['workday'] = number_format($workday, 2);
@@ -132,7 +142,6 @@ class AttendanceController extends Controller
                     }
                 }
             }
-            
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
             $proposes = Propose::whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
