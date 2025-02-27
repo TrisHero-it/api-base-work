@@ -24,7 +24,13 @@ class ResourceController extends Controller
     public function show($id)
     {
         $resource = Resource::with('members', 'receivers')->findOrFail($id);
-
+        $me = AccountResource::where('resource_id', $id)->where('account_id', Auth::id())->first();
+        if ($me == null) {
+            return response()->json([
+                'message' => 'Bạn không có quyền xem tài nguyên này',
+                'errors' => 'Bạn không có quyền xem tài nguyên này'
+            ], 403);
+        }
         return response()->json($resource);
     }
 
@@ -68,7 +74,11 @@ class ResourceController extends Controller
     {
        if (Auth::user()->isSeniorAdmin()) {
         $resource = Resource::findOrFail($id);
-        $resource->update($request->all());
+        $data = $request->except('avatar');
+        if ($request->filled('avatar')) {
+            $data['avatar'] = $request->avatar
+        }
+        $resource->update($data);
 
         return response()->json($resource);
        }else {
