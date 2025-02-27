@@ -15,7 +15,7 @@ class CategoryResourceController extends Controller
             'resources' => function ($query) {
                 $query->whereHas('members', function ($q) {
                    if(!Auth::user()->isSeniorAdmin()){
-                    $q->where('user_id', Auth::id());
+                    $q->where('account_id', Auth::id());
                    }
                 })->with('members', 'receivers');
             }
