@@ -69,7 +69,7 @@ class AttendanceController extends Controller
                 $checkout = Carbon::parse($item->checkout);
                 $noonTime = $checkin->copy()->setHour(12)->setMinute(0)->setSecond(0);
                 if ($item->checkout != null) {
-                    if (!$isSalesMember && Auth::id() != 25) {
+                    if (!$isSalesMember) {
                         if ($checkin->greaterThanOrEqualTo($noonTime)) {
                             $hours = $checkout->floatDiffInHours($checkin);
                         } else {

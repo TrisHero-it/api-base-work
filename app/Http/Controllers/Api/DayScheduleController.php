@@ -31,7 +31,7 @@ class DayScheduleController extends Controller
         $member = AccountDepartment::where('department_id', $departmentSales)
             ->where('account_id', Auth::id())
             ->first();
-        if ($member) {
+        if ($member && Auth::id() != 25) {
             foreach ($schedules as $schedule) {
                 $schedule->go_to_work = true;
             }
