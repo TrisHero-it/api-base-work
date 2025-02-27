@@ -125,7 +125,9 @@ class AttendanceController extends Controller
                 if (isset($schedule) && $schedule != null) {
                     $atten = null;
                     // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
-                    $atten = $attendanceDays->where('checkin', $date2)->first();
+                    $atten = $attendanceDays->filter(function($item) use ($date2) {
+                        return Carbon::parse($item->checkin)->isSameDay(Carbon::parse($date2));
+                    })->first();
                     // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
                     if (!(isset($atten) && $atten != null)) {
                         $dayoff++;
