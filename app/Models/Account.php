@@ -24,7 +24,15 @@ class Account extends Authenticatable
         'avatar',
         'role_id',
         'day_off',
-        'attendance_at_home'
+        'attendance_at_home',
+        'files',
+        'identity_card',
+        'temporary_address',
+        'passport',
+        'name_bank',
+        'bank_number',
+        'marital_status',
+        'sex',
     ];
 
     public function isAdmin()
@@ -46,5 +54,20 @@ class Account extends Authenticatable
             ->exists();
 
         return $accountDepartment;
+    }
+
+    public function familyMembers()
+    {
+        return $this->hasMany(FamilyMember::class);
+    }
+
+    public function workHistories()
+    {
+        return $this->hasMany(WorkHistory::class);
+    }
+
+    public function educations()
+    {
+        return $this->hasMany(Education::class);
     }
 }

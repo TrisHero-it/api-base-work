@@ -28,7 +28,7 @@ class Resource extends Model
         return $this->belongsTo(CategoryResource::class);
     }
 
-    public function accounts()
+    public function members()
     {
         return $this->belongsToMany(Account::class, 'account_resources', 'resource_id', 'account_id');
     }

@@ -53,7 +53,9 @@ class AccountController extends Controller
         // Lấy tên từ username đẩy lên
         $name = str_replace('@', '', $request->username);
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
-        $accounts = Account::query()->where('username', 'like', "%$name%")->get();
+        $accounts = Account::with(['familyMembers', 'workHistories', 'educations'])
+            ->where('username', 'like', "%$name%")
+            ->get();
         $month = now()->month;
         $year = now()->year;
         $proposes = Propose::where('status', 'approved')
@@ -194,5 +196,19 @@ class AccountController extends Controller
     private function generateUsernameFromEmail(string $email): string
     {
         return explode('@', $email)[0];
+    }
+
+    public function updateFiles(Request $request)
+    {
+        $account = Account::query()->findOrFail($request->id);
+        if ($request->filled('files')) {
+            $imageUrl = Storage::put('/public/files', $request->files);
+            $imageUrl = Storage::url($imageUrl);
+            $account->update([
+                'files' => $imageUrl
+            ]);
+        }
+
+        return response()->json($account);
     }
 }

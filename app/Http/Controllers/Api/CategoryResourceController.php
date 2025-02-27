@@ -10,7 +10,9 @@ class CategoryResourceController extends Controller
 {
     public function index()
     {
-        $categoryResources = CategoryResource::with('resources')->get();
+        $categoryResources = CategoryResource::with(['resources' => function ($query) {
+            $query->with('members', 'receivers');
+        }])->get();
 
         return response()->json($categoryResources);
     }

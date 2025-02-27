@@ -13,12 +13,19 @@ class ResourceController extends Controller
 {
     public function index(Request $request)
     {
-        $resources = Resource::with('accounts')
+        $resources = Resource::with('members', 'receivers')
         ->when($request->search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })->get();
 
         return response()->json($resources);
+    }
+
+    public function show($id)
+    {
+        $resource = Resource::with('members', 'receivers')->findOrFail($id);
+
+        return response()->json($resource);
     }
 
     public function store(Request $request)
