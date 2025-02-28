@@ -72,14 +72,28 @@ class ResourceController extends Controller
 
     public function update(Request $request, $id)
     {
+       
         $resource = Resource::findOrFail($id);
-        $data = $request->except('thumbnail');
-        if ($request->filled('thumbnail')) {
-            $data['thumbnail'] = $request->thumbnail;
+        $data = $request->except('avatar');
+        if ($request->filled('avatar')) {
+            $data['avatar'] = $request->avatar;
+        }
+        AccountResource::where('resource_id', $id)->delete();
+        if ($request->filled('members')) {
+            $members = $request->members;
+            $newArr = [];
+            $newArr = array_map(function ($member) use ($resource) {
+                return [
+                    'resource_id' => $resource->id,
+                    'account_id' => $member
+                ];
+            }, $members ?? []);
+            AccountResource::insert($newArr);
         }
         $resource->update($data);
 
         return response()->json($resource);
+       
     }
 
     public function destroy($id)
