@@ -39,9 +39,12 @@ class AccountController extends Controller
     {
         $account = Account::query()
             ->findOrFail($id);
-        $data = $request->except('password');
+        $data = $request->except('password', 'avatar');
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+        }
+        if ($request->filled('avatar')) {
+            $data['avatar'] = $request->avatar;
         }
         $account->update($data);
 

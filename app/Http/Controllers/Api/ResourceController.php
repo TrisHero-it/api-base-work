@@ -73,9 +73,9 @@ class ResourceController extends Controller
     public function update(Request $request, $id)
     {
         $resource = Resource::findOrFail($id);
-        $data = $request->except('avatar');
-        if ($request->filled('avatar')) {
-            $data['avatar'] = $request->avatar;
+        $data = $request->except('thumbnail');
+        if ($request->filled('thumbnail')) {
+            $data['thumbnail'] = $request->thumbnail;
         }
         $resource->update($data);
 
