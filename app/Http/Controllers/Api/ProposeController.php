@@ -213,10 +213,19 @@ class ProposeController extends Controller
             $date = explode(' ', $propose->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)->where('account_id', $propose->account_id)
                 ->first();
-            $attendance->update([
-                'checkin' => $propose->start_time,
-                'checkout' => $propose->end_time,
-            ]);
+            if ($attendance != null) {
+                $attendance->update([
+                    'checkin' => $propose->start_time,
+                    'checkout' => $propose->end_time,
+                ]);
+            } else {
+                Attendance::create([
+                    'checkin' => $propose->start_time,
+                    'checkout' => $propose->end_time,
+                    'account_id' => $propose->account_id,
+                ]);
+            }
+            
         }
         if ($request->status == 'approved' && $propose->propose_category->name == 'Nghỉ có hưởng lương') {
             $numberHoliDay = 0;
