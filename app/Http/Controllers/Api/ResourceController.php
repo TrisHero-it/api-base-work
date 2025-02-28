@@ -72,7 +72,6 @@ class ResourceController extends Controller
 
     public function update(Request $request, $id)
     {
-       if (Auth::user()->isSeniorAdmin()) {
         $resource = Resource::findOrFail($id);
         $data = $request->except('avatar');
         if ($request->filled('avatar')) {
@@ -81,12 +80,6 @@ class ResourceController extends Controller
         $resource->update($data);
 
         return response()->json($resource);
-       }else {
-        return response()->json([
-            'message' => 'Bạn không có quyền thực hiện hành động này',
-            'errors' => 'Bạn không có quyền thực hiện hành động này'
-        ], 403);
-       }
     }
 
     public function destroy($id)

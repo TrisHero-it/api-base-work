@@ -19,6 +19,11 @@ return new class extends Migration
             $table->string('place_of_registration')->nullable();
             $table->string('salary_scale')->nullable();
             $table->string('insurance_policy')->nullable();
+            $table->string('status')->nullable();
+            $table->string('working_time')->nullable();
+            $table->string('start_trial_date')->nullable();
+            $table->string('start_work_date')->nullable();
+            $table->text('contract_file')->nullable();
         });
     }
 
@@ -35,6 +40,11 @@ return new class extends Migration
             $table->dropColumn('place_of_registration');
             $table->dropColumn('salary_scale');
             $table->dropColumn('insurance_policy');
+            $table->dropColumn('status');
+            $table->dropColumn('working_time');
+            $table->dropColumn('start_trial_date');
+            $table->dropColumn('start_work_date');
+            $table->dropColumn('contract_file');
         });
     }
 };
