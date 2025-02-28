@@ -74,9 +74,9 @@ class ResourceController extends Controller
     {
        
         $resource = Resource::findOrFail($id);
-        $data = $request->except('avatar');
-        if ($request->filled('avatar')) {
-            $data['avatar'] = $request->avatar;
+        $data = $request->except('thumbnail');
+        if ($request->filled('thumbnail')) {
+            $data['thumbnail'] = $request->thumbnail;
         }
         AccountResource::where('resource_id', $id)->delete();
         if ($request->filled('members')) {
