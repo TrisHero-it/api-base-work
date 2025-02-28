@@ -76,7 +76,7 @@ class ResourceController extends Controller
         $resource = Resource::findOrFail($id);
         $data = $request->except('avatar');
         if ($request->filled('avatar')) {
-            $data['avatar'] = $request->avatar
+            $data['avatar'] = $request->avatar;
         }
         $resource->update($data);
 

@@ -8,15 +8,11 @@ use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Department;
-use App\Models\ipWifi;
 use App\Models\Propose;
-use App\Models\ProposeCategory;
-
 use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Jenssegers\Agent\Agent;
 
 class AttendanceController extends Controller
 {

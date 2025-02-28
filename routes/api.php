@@ -17,7 +17,6 @@ use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
-use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ScheduleAccountController;
 use App\Http\Controllers\Api\ScheduleWorkflowController;
 use App\Http\Controllers\Api\StageController;
@@ -31,6 +30,7 @@ use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
+use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,7 +43,7 @@ Route::get('/test', function () {
             'ip' => request()->ip(),
             'X-Forwarded-For' => request()->header('X-Forwarded-For'),
             'X-Real-IP' => request()->header('X-Real-IP'),
-            'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? 'Not Set'
+            'REMOTE_ADDR' => request()->server('REMOTE_ADDR') ?? 'Not Set'
         ]);
 });
 
