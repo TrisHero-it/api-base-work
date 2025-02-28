@@ -39,8 +39,10 @@ Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
 Route::get('/test', function () {
+    $forwardedFor = request()->header('X-Forwarded-For');
+$ip = explode(',', $forwardedFor)[0]; // Lấy IP đầu tiên trong danh sách
         return response()->json([
-            'ip' => request()->ip(),
+            'ip' => $ip,
             'X-Forwarded-For' => request()->header('X-Forwarded-For'),
             'X-Real-IP' => request()->header('X-Real-IP'),
             'REMOTE_ADDR' => request()->server('REMOTE_ADDR') ?? 'Not Set'
