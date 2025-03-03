@@ -29,6 +29,13 @@ class LoginController extends Controller
                 'message' => 'Đăng nhập thành công',
                 'token' => $token,
             ], 200);
+        }else {
+            return response()->json([
+                'message' => 'Đăng nhập thất bại',
+                'errors' => [
+                    'email' => 'Email hoặc mật khẩu không chính xác',
+                ],
+            ], 400);
         }
     }
 

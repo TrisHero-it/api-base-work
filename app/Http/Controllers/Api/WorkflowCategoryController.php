@@ -23,7 +23,6 @@ class WorkflowCategoryController extends Controller
         $categories = WorkflowCategory::query()->get();
         $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
         $arrWorkflowId = $workflows->pluck('workflow_id');
-        $arrCategoryId = $categories->pluck('id');
 
         if (Auth::user()->isSeniorAdmin()) {
             $workflows = Workflow::get();

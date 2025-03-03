@@ -120,8 +120,8 @@ class AttendanceController extends Controller
                 $schedule = $schedules->where('day_of_week', $date2)->first();
                 if (isset($schedule) && $schedule != null) {
                     $atten = null;
-                    // nếu như là ngày đi làm thì check xem hôm í ông này có điểm danh hay không
-                    $atten = $attendanceDays->filter(function($item) use ($date2) {
+                    // nếu như là ngày đi làm thì check xem hôm đó ông này có điểm danh hay không
+                    $atten = $attendanceDays->filter(function ($item) use ($date2) {
                         return Carbon::parse($item->checkin)->isSameDay(Carbon::parse($date2));
                     })->first();
                     // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
@@ -130,7 +130,7 @@ class AttendanceController extends Controller
                     }
                 }
             }
-            
+
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
             $proposes = Propose::whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
@@ -157,17 +157,6 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        // $ipWifi = ipWifi::where('ip', $request->ip_wifi)->first();
-        // if ($ipWifi == null) {
-        //     if (Auth::user()->attendance_at_home == false) {
-        //         return response()->json([
-        //             'message' => 'ip không được cho phép',
-        //             'errors' => [
-        //                 'ip_wifi' => 'ip không được cho phép'
-        //             ]
-        //         ], 401);
-        //     }
-        // }
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30

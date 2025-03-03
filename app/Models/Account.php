@@ -70,4 +70,9 @@ class Account extends Authenticatable
     {
         return $this->hasMany(Education::class);
     }
+
+    public function jobPosition()
+    {
+        return $this->hasMany(JobPosition::class);
+    }
 }

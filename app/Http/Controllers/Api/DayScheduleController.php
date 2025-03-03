@@ -27,11 +27,7 @@ class DayScheduleController extends Controller
             ->whereYear('day_of_week', $year)
             ->orderBy('day_of_week')
             ->get();
-        $departmentSales = Department::where('name', 'Phòng sales')->first()->id;
-        $member = AccountDepartment::where('department_id', $departmentSales)
-            ->where('account_id', Auth::id())
-            ->first();
-        if ($member && Auth::id() != 25) {
+        if (Auth::user()->isSalesMember() && Auth::id() != 25) {
             foreach ($schedules as $schedule) {
                 $schedule->go_to_work = true;
             }

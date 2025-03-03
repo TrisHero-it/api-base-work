@@ -10,8 +10,11 @@ use App\Models\AccountWorkflowCategory;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Department;
+use App\Models\Education;
+use App\Models\FamilyMember;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use App\Models\WorkHistory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,17 +40,36 @@ class AccountController extends Controller
 
     public function update(int $id, AccountUpdateRequest $request)
     {
-        $account = Account::query()
-            ->findOrFail($id);
-        $data = $request->except('password', 'avatar');
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
-        }
-        if ($request->filled('avatar')) {
-            $data['avatar'] = $request->avatar;
-        }
-        $account->update($data);
+        $account = Account::query()->findOrFail($id);
 
+        if (Auth::user()->isSeniorAdmin()) {
+            $data = $request->except('password', 'avatar');
+            if ($request->filled('password')) {
+                $data['password'] = Hash::make($request->password);
+            }
+            if ($request->filled('avatar')) {
+                $data['avatar'] = $request->avatar;
+            }
+            $account->update($data);
+            return response()->json($account);
+        }
+        //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
+        $oldData = Account::select($request->keys())->where('id', $id)->get()->toArray();
+        if ($request->filled('education')) {
+            $education = Education::where('account_id', $id)->get();
+            $oldData['education'] = $education;
+        }
+
+        if ($request->filled('work_history')) {
+            $workHistory = WorkHistory::where('account_id', $id)->get();
+            $oldData['work_history'] = $workHistory;
+        }
+
+        if ($request->filled('family_member')) {
+            $familyMember = FamilyMember::where('account_id', $id)->get();
+            $oldData['family_member'] = $familyMember;
+        }
+        $this->requestUpdateProfile($oldData, $request->all());
         return response()->json($account);
     }
 
@@ -56,9 +78,11 @@ class AccountController extends Controller
         // Lấy tên từ username đẩy lên
         $name = str_replace('@', '', $request->username);
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
-        $accounts = Account::with(['familyMembers', 'workHistories', 'educations'])
+
+        $accounts = Account::select('id', 'username', 'full_name', 'avatar')
             ->where('username', 'like', "%$name%")
             ->get();
+
         $month = now()->month;
         $year = now()->year;
         $proposes = Propose::where('status', 'approved')
@@ -145,7 +169,13 @@ class AccountController extends Controller
 
     public function myAccount(Request $request)
     {
-        $account = Auth::user();
+        if ($request->include == 'profile') {
+            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition'])->where('id', Auth::id())->first();
+        } else if ($request->include == 'my-job') {
+            $account = Account::with(['jobPosition.salary'])->where('id', Auth::id())->first();
+        } else {
+            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id')->where('id', Auth::id())->first();
+        }
         if ($account->role_id == 1) {
             $account['role'] = 'Admin';
         } else if ($account->role_id == 2) {
@@ -177,25 +207,6 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
-    public function forgotPassword(Request $request)
-    {
-        $email = $request->email;
-        $account = Account::query()->where('email', $email)->first();
-        if ($account == null) {
-            return response()->json([
-                'error' => 'Email không tồn tại'
-            ]);
-        } else {
-            $account->update([
-                'password' => Hash::make('123456')
-            ]);
-
-            return response()->json([
-                'success' => 'Mật khẩu đã được reset về 123456'
-            ]);
-        }
-    }
-
     private function generateUsernameFromEmail(string $email): string
     {
         return explode('@', $email)[0];
@@ -214,4 +225,20 @@ class AccountController extends Controller
 
         return response()->json($account);
     }
+
+    private function requestUpdateProfile(array $oldData, array $newData)
+    {
+        $category = ProposeCategory::where('name', 'Cập nhật thông tin cá nhân')->first();
+        $data = [
+            'name' => 'Cập nhật thông tin cá nhân',
+            'propose_category_id' => $category->id,
+            'old_value' => json_encode($oldData),
+            'new_value' => json_encode($newData),
+            'account_id' => Auth::user()->id,
+        ];
+        $propose = Propose::create($data);
+
+        return response()->json($propose);
+    }
+
 }
