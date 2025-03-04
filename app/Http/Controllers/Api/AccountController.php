@@ -86,7 +86,7 @@ class   AccountController extends Controller
                     ->get();
             }
         } else {
-            $accounts = Account::select('id', 'username', 'full_name', 'avatar', 'role_id')
+            $accounts = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
                 ->where('username', 'like', "%$name%")
                 ->get();
         }
