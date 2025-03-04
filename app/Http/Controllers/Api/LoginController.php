@@ -24,7 +24,7 @@ class LoginController extends Controller
             ], 400);
         }
 
-        if ($account->quit_work == false) {
+        if ($account->quit_work == true) {
             return response()->json([
                 'message' => 'Tài khoản đã nghỉ việc',
                 'errors' => [
