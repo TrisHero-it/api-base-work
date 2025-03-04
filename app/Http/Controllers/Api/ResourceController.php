@@ -14,9 +14,9 @@ class ResourceController extends Controller
     public function index(Request $request)
     {
         $resources = Resource::with('members', 'receivers')
-        ->when($request->search, function ($query, $search) {
-            return $query->where('name', 'like', "%{$search}%");
-        })->get();
+            ->when($request->search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%");
+            })->get();
 
         return response()->json($resources);
     }
@@ -36,43 +36,42 @@ class ResourceController extends Controller
 
     public function store(Request $request)
     {
-       if (Auth::user()->isSeniorAdmin()) {
-        $data = $request->except('members', 'receivers');
-        $resource = Resource::create($data);
-        $members = $request->members;
-        $receivers = $request->receivers;
-        $newArr = [];
-        $newArr = array_map(function ($member) use ($resource) {
-            return [
-                'resource_id' => $resource->id,
-                'account_id' => $member
-            ];
-        }, $members ?? []);
-        $newArrReceivers = array_map(function ($receiver) use ($resource) {
-            return [
-                'resource_id' => $resource->id,
-                'account_id' => $receiver
-            ];
-        }, $receivers ?? []);
-        
-        AccountResource::insert($newArr);
-        NotificationResource::insert($newArrReceivers);
-        $resource['members'] = $resource->accounts;
-        $resource['receivers'] = $resource->receivers;
+        if (Auth::user()->isSeniorAdmin()) {
+            $data = $request->except('members', 'receivers');
+            $resource = Resource::create($data);
+            $members = $request->members;
+            $receivers = $request->receivers;
+            $newArr = [];
+            $newArr = array_map(function ($member) use ($resource) {
+                return [
+                    'resource_id' => $resource->id,
+                    'account_id' => $member
+                ];
+            }, $members ?? []);
+            $newArrReceivers = array_map(function ($receiver) use ($resource) {
+                return [
+                    'resource_id' => $resource->id,
+                    'account_id' => $receiver
+                ];
+            }, $receivers ?? []);
 
-        return response()->json($resource);
-       }else {
+            AccountResource::insert($newArr);
+            NotificationResource::insert($newArrReceivers);
+            $resource['members'] = $resource->accounts;
+            $resource['receivers'] = $resource->receivers;
+
+            return response()->json($resource);
+        } else {
             return response()->json([
                 'message' => 'Bạn không có quyền thực hiện hành động này',
                 'errors' => 'Bạn không có quyền thực hiện hành động này'
             ], 403);
         }
     }
-    
+
 
     public function update(Request $request, $id)
     {
-       
         $resource = Resource::findOrFail($id);
         $data = $request->except('thumbnail');
         if ($request->filled('thumbnail')) {
@@ -93,17 +92,16 @@ class ResourceController extends Controller
         $resource->update($data);
 
         return response()->json($resource);
-       
     }
 
     public function destroy($id)
     {
         if (Auth::user()->isSeniorAdmin()) {
             $resource = Resource::findOrFail($id);
-        $resource->delete();
+            $resource->delete();
 
-        return response()->json(['success' => 'Xoá thành công tài nguyên']);
-        }else {
+            return response()->json(['success' => 'Xoá thành công tài nguyên']);
+        } else {
             return response()->json([
                 'message' => 'Bạn không có quyền thực hiện hành động này',
                 'errors' => 'Bạn không có quyền thực hiện hành động này'

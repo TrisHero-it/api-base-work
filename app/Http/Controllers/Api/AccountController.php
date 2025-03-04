@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
-use App\Models\AccountWorkflowCategory;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
-use App\Models\Department;
 use App\Models\Education;
 use App\Models\FamilyMember;
 use App\Models\Propose;
@@ -21,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-class AccountController extends Controller
+class   AccountController extends Controller
 {
     public function register(AccountStoreRequest $request)
     {
@@ -69,6 +67,7 @@ class AccountController extends Controller
             $familyMember = FamilyMember::where('account_id', $id)->get();
             $oldData['family_member'] = $familyMember;
         }
+
         $this->requestUpdateProfile($oldData, $request->all());
         return response()->json($account);
     }
@@ -79,10 +78,18 @@ class AccountController extends Controller
         $name = str_replace('@', '', $request->username);
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
 
-        $accounts = Account::select('id', 'username', 'full_name', 'avatar')
-            ->where('username', 'like', "%$name%")
-            ->get();
 
+        if (isset($request->include)) {
+            if ($request->include == 'profile') {
+                $accounts = Account::with(['jobPosition', 'department', 'educations', 'familyMembers'])
+                    ->where('username', 'like', "%$name%")
+                    ->get();
+            }
+        } else {
+            $accounts = Account::select('id', 'username', 'full_name', 'avatar')
+                ->where('username', 'like', "%$name%")
+                ->get();
+        }
         $month = now()->month;
         $year = now()->year;
         $proposes = Propose::where('status', 'approved')
@@ -112,12 +119,16 @@ class AccountController extends Controller
         foreach ($accounts as $account) {
             $a = 0;
             $hoursOT = 0;
-            $accountHoliday = $proposes->where('account_id', $account->id)->where('name', 'Nghỉ có hưởng lương')->pluck('id');
+            $accountHoliday = $proposes->where('account_id', $account->id)
+                ->where('name', 'Nghỉ có hưởng lương')
+                ->pluck('id');
             $accountHoliday = array_values($holidays->whereIn('propose_id', $accountHoliday)->toArray());
             foreach ($accountHoliday as $item) {
                 $a += $item['number_of_days'];
             }
-            $accountOverTime = $proposes->where('account_id', $account->id)->where('name', 'Đăng ký OT')->pluck('id');
+            $accountOverTime = $proposes->where('account_id', $account->id)
+                ->where('name', 'Đăng ký OT')
+                ->pluck('id');
             $accountOverTime = array_values($overTime->whereIn('propose_id', $accountOverTime)->toArray());
             foreach ($accountOverTime as $item) {
                 $hoursOT += Carbon::parse($item['end_date'])->floatDiffInHours(Carbon::parse($item['start_date']));
@@ -240,5 +251,4 @@ class AccountController extends Controller
 
         return response()->json($propose);
     }
-
 }

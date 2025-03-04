@@ -14,23 +14,30 @@ class StageController extends Controller
 {
     public function index(Request $request)
     {
-       if ($request->filled('start')) {
-         $startOfLastWeek = $request->start;
-         $endOfThisWeek = $request->end;
-       }else {
-         // Tuần này
-         $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
-         // Tuần trước
-         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
-       }
+        if ($request->filled('start')) {
+            $startOfLastWeek = Carbon::parse($request->start)->toDateString();
+            $endOfThisWeek = Carbon::parse($request->end)->toDateString();
+        } else {
+            // Tuần này
+            $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
+            // Tuần trước
+            $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
+        }
 
         $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
         $arrStageId = $stages->pluck('id');
 
-        $tasks2 = Task::query()->whereIn('stage_id', $arrStageId)->with('tags')->orderBy('expired', 'desc')->orderBy('account_id', 'desc')->get();
+        $tasks2 = Task::query()
+            ->whereIn('stage_id', $arrStageId)
+            ->with('tags')
+            ->orderBy('expired', 'desc')
+            ->orderBy('account_id', 'desc')
+            ->get();
         foreach ($stages as $stage) {
             if ($stage->isSuccessStage()) {
-                $tasks = $tasks2->where('stage_id', $stage->id)->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])->sortByDesc('completed_at');
+                $tasks = $tasks2->where('stage_id', $stage->id)
+                    ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
+                    ->sortByDesc('completed_at');
             } else {
                 $tasks = $tasks2->where('stage_id', $stage->id);
             }

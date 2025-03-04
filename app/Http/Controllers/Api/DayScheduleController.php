@@ -60,9 +60,9 @@ class DayScheduleController extends Controller
                     $numSaturday++;
                     if ($numSaturday <= 2) {
                         $offSaturday = false;
+                        $goToWork = false;
+                        $description = 'Nghỉ thứ 7';
                     }
-                    $goToWork = false;
-                    $description = 'Nghỉ thứ 7';
                 } else {
                     $offSaturday = true;
                 }
@@ -108,10 +108,9 @@ class DayScheduleController extends Controller
                     $query->orWhereDate('day_of_week', $date);
                 }
             })->update([
-                        'go_to_work' => false,
-                        'description' => $request->description
-                    ]);
-
+                'go_to_work' => false,
+                'description' => $request->description
+            ]);
         }
 
         if (isset($request->is_not_holiday)) {

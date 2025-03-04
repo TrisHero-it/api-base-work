@@ -12,7 +12,8 @@ class LoginController extends Controller
 {
     public function store(LoginStoreRequest $request)
     {
-        $account = Account::where('email', $request->email)->first();
+        $account = Account::where('email', $request->email)
+            ->first();
 
         if (!$account) {
             return response()->json([
@@ -23,13 +24,22 @@ class LoginController extends Controller
             ], 400);
         }
 
+        if ($account->quit_work == false) {
+            return response()->json([
+                'message' => 'Tài khoản đã nghỉ việc',
+                'errors' => [
+                    'email' => 'Tài khoản đã nghỉ việc',
+                ],
+            ], 400);
+        }
+
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $account->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'message' => 'Đăng nhập thành công',
                 'token' => $token,
             ], 200);
-        }else {
+        } else {
             return response()->json([
                 'message' => 'Đăng nhập thất bại',
                 'errors' => [
@@ -38,6 +48,4 @@ class LoginController extends Controller
             ], 400);
         }
     }
-
 }
-

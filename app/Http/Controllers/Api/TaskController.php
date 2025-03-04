@@ -252,7 +252,7 @@ class TaskController extends Controller
                     if ($date->format('Y-m') == $now->format('Y-m')) {
                         $item->delete();
                     } else {
-                        Kpi::query()->create([
+                        Kpi::query()->create([  
                             'status' => 1,
                             'task_id' => $item->task_id,
                             'stage_id' => $item->stage_id,

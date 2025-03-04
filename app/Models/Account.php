@@ -75,4 +75,9 @@ class Account extends Authenticatable
     {
         return $this->hasMany(JobPosition::class);
     }
+
+    public function department()
+    {
+        return $this->belongsToMany(Department::class, 'account_departments', 'account_id', 'department_id');
+    }
 }

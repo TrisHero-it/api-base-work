@@ -27,7 +27,7 @@ class AttendanceController extends Controller
             $attendance = Attendance::query()
                 ->where('account_id', $account->id)
                 ->whereDate('checkin', Carbon::today())
-                ->orderBy('id')
+                ->orderBy('checkin')
                 ->get();
             $data = $attendance;
         } else {
@@ -228,7 +228,7 @@ class AttendanceController extends Controller
     public function checkOut(Request $request)
     {
         $isToday = false;
-        $account = Attendance::where('account_id', Auth::id())->orderBy('id', 'desc')->first();
+        $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();
         if ($isToday == false) {
             return response()->json([
