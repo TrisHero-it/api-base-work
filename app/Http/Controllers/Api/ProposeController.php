@@ -38,14 +38,11 @@ class ProposeController extends Controller
             $proposes = $proposes->where('account_id', $request->account_id);
         }
 
-        $year = Carbon::now()->year;
-        $month = Carbon::now()->month;
+
         if (isset($request->date)) {
             $date = explode("-", $request->date);
             $year = $date[0];
             $month = $date[1];
-        }
-        if (!$request->filled('status') || isset($request->date)) {
             $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
 
