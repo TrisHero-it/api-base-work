@@ -18,7 +18,7 @@ class ScheduleAccountController extends Controller
     public function index(Request $request)
     {
         $accounts = Account::select('email', 'full_name', 'avatar', 'id', 'position')
-            ->whereNotIn('id', [10, 12, 13, 14, 15, 17, 25])
+            ->whereNotIn('id', [11, 12, 13, 14, 15, 17, 25])
             ->get();
         if (isset($request->date)) {
             $date = $request->date;
