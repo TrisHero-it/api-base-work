@@ -35,13 +35,13 @@ class Propose extends Model
     public function account()
     {
 
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class)->select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off');
     }
 
     public function approved_by()
     {
 
-        return $this->belongsTo(Account::class, 'approved_by', 'id');
+        return $this->belongsTo(Account::class, 'approved_by', 'id')->select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off');
     }
 
     public function propose_category()

@@ -185,7 +185,7 @@ class   AccountController extends Controller
         } else if ($request->include == 'my-job') {
             $account = Account::with(['jobPosition.salary'])->where('id', Auth::id())->first();
         } else {
-            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id')->where('id', Auth::id())->first();
+            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')->where('id', Auth::id())->first();
         }
         if ($account->role_id == 1) {
             $account['role'] = 'Admin';
