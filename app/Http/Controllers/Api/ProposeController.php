@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProposeStoreRequest;
 use App\Jobs\SendEmail;
 use App\Models\Account;
 use App\Models\Attendance;
@@ -104,7 +105,7 @@ class ProposeController extends Controller
         return response()->json($propose);
     }
 
-    public function store(Request $request)
+    public function store(ProposeStoreRequest $request)
     {
         $data = $request->except('holiday');
         $data['account_id'] = Auth::id();
@@ -123,6 +124,14 @@ class ProposeController extends Controller
             }
         }
         $numberHoliDay = 0;
+        if ($request->filled('holiday')) {
+            $request->validate([
+                'holiday.start_date' => ['required', 'date_format:Y-m-d'],
+            ], [
+                'holiday.start_date.required' => 'Vui lòng nhập ngày bắt đầu.',
+                'holiday.start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
+            ]);
+        }
         if ($request->name == "Nghỉ có hưởng lương") {
             foreach ($request->holiday as $date2) {
                 $startDate = Carbon::parse($date2['start_date']);
@@ -169,7 +178,6 @@ class ProposeController extends Controller
         $arr = [];
         $propose = Propose::query()->create($data);
         if (isset($request->holiday)) {
-
             foreach ($request->holiday as $date) {
                 if ($request->name == "Nghỉ có hưởng lương") {
                     $a = [

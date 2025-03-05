@@ -12,18 +12,21 @@ use App\Models\Account;
 use App\Models\Schedule;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+
 class ScheduleAccountController extends Controller
 {
     public function index(Request $request)
     {
-        $accounts = Account::select('email', 'full_name', 'avatar', 'id', 'position')->get();
+        $accounts = Account::select('email', 'full_name', 'avatar', 'id', 'position')
+            ->whereNotIn('id', [10, 12, 13, 14, 15, 17, 25])
+            ->get();
         if (isset($request->date)) {
             $date = $request->date;
         } else {
             $date = now()->format('Y-m-d');
         }
         $dayOff = Schedule::whereDate('day_of_week', $date)->first();
-        
+
         $data = $this->getScheduleAccount($date, $date);
 
         foreach ($accounts as $account) {
@@ -60,7 +63,7 @@ class ScheduleAccountController extends Controller
                             $hoursWork += number_format($validHours, 3);
                         }
                     }
-    
+
                     if ($innerStart2->greaterThanOrEqualTo(Carbon::parse($range['start'])) && $innerEnd2->lessThanOrEqualTo(Carbon::parse($range['end']))) {
                         $hoursWork = $hoursWork + number_format(4, 3);
                     } else {
@@ -191,7 +194,7 @@ class ScheduleAccountController extends Controller
         $innerEnd1 = Carbon::parse($start->format("Y-m-d") . " 12:00:00");
         $innerStart2 = Carbon::parse($start->format("Y-m-d") . " 13:30:00");
         $innerEnd2 = Carbon::parse($start->format("Y-m-d") . " 17:30:00");
-        if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {    
+        if ($innerStart1->greaterThanOrEqualTo($start) && $innerEnd1->lessThanOrEqualTo($end)) {
             $hoursWork = $hoursWork + number_format(3.5, 3);
         } else {
             $validStart = max($innerStart1, $start);
