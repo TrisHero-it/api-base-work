@@ -25,6 +25,7 @@ class ScheduleWorkController extends Controller
         }
         $worflows = Workflow::all();
         $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
+            ->whereNotIn('account_id', [11, 12, 13, 14, 15, 17, 25])
             ->with(['stage', 'account'])
             ->where('account_id', '!=', null)
             ->where('started_at', '!=', null)
@@ -36,7 +37,7 @@ class ScheduleWorkController extends Controller
         // Lấy các công việc đang tiến hành
         foreach ($taskInProgress as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
-                $taskCopy = clone $task;    
+                $taskCopy = clone $task;
                 $thisDayOff = $dayOff->where('day_of_week', $date->format('Y-m-d'))->first();
                 if ($date->toDateString() < Carbon::parse($taskCopy->started_at)->toDateString() || $thisDayOff->go_to_work == false) {
                     continue;
@@ -76,6 +77,7 @@ class ScheduleWorkController extends Controller
             ->with(['oldStage', 'newStage', 'task'])
             ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))
             ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
+            ->whereNotIn('worker', [ 11, 12, 13, 14, 15, 17, 25])
             ->get();
         foreach ($taskInHistory as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {
@@ -205,5 +207,4 @@ class ScheduleWorkController extends Controller
 
         return ['hours_work' => number_format($hoursWork, 2), 'start' => $start, 'end' => $end];
     }
-
 }
