@@ -16,6 +16,7 @@ class ScheduleWorkController extends Controller
 {
     public function index(Request $request)
     {
+        $globalBan = [11, 12, 13, 14, 15, 17, 25];
         if (isset($request->end)) {
             $startDate = Carbon::parse($request->start);
             $endDate = Carbon::parse($request->end);
@@ -25,7 +26,7 @@ class ScheduleWorkController extends Controller
         }
         $worflows = Workflow::all();
         $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
-            ->whereNotIn('account_id', [11, 12, 13, 14, 15, 17, 25])
+            ->whereNotIn('account_id', $globalBan)
             ->with(['stage', 'account'])
             ->where('account_id', '!=', null)
             ->where('started_at', '!=', null)
@@ -77,7 +78,7 @@ class ScheduleWorkController extends Controller
             ->with(['oldStage', 'newStage', 'task'])
             ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))
             ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
-            ->whereNotIn('worker', [ 11, 12, 13, 14, 15, 17, 25])
+            ->whereNotIn('worker', $globalBan)
             ->get();
         foreach ($taskInHistory as $task) {
             for ($date = clone $startDate; $date->lte(clone $endDate); $date->addDay()) {

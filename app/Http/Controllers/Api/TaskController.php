@@ -98,8 +98,12 @@ class TaskController extends Controller
         $task = Task::query()->find($id);
         if (isset($request->tag_id)) {
             $arrTag = $request->tag_id;
-            StickerTask::query()->where('task_id', $task->id)->delete();
+            StickerTask::query()
+                ->where('task_id', $task->id)
+                ->delete();
+
             $tag = [];
+
             foreach ($arrTag as $tagId) {
                 $tag[] = StickerTask::query()->create([
                     'task_id' => $task->id,
@@ -109,10 +113,19 @@ class TaskController extends Controller
         }
 
         if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
+
             return response()->json([
                 'message' => 'Nhiệm vụ này không phải của bạn',
                 'errors' => [
                     'task' => 'Nhiệm vụ này không phải của bạn'
+                ]
+            ], 401);
+        }
+        if ($request->filled('stage_id') && $task->started_at == null && $task->account_id != null) {
+            return response()->json([
+                'message' => 'Phải bấm bắt đầu trước khi chuyển giai đoạn',
+                'errors' => [
+                    'task' => 'Phải bấm bắt đầu trước khi chuyển giai đoạn'
                 ]
             ], 401);
         }
@@ -127,8 +140,7 @@ class TaskController extends Controller
                         'task' => 'Bạn không có quyền đánh thất bại nhiệm vụ'
                     ]
                 ], 401);
-            }
-            ;
+            };
         }
         // Cập nhập thông tin nhiệm vụ
         $data = $request->all();
@@ -177,14 +189,13 @@ class TaskController extends Controller
             }
             if ($request->account_id == Auth::id()) {
                 # code...
-            $data['started_at'] = now();
-            if ($task->stage->expired_after_hours != null && $task->expired == null) {
-                $dateTime = new \DateTime($data['started_at']);
-                $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
-                $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                $data['started_at'] = now();
+                if ($task->stage->expired_after_hours != null && $task->expired == null) {
+                    $dateTime = new \DateTime($data['started_at']);
+                    $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                }
             }
-            }
-           
         }
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
@@ -252,7 +263,7 @@ class TaskController extends Controller
                     if ($date->format('Y-m') == $now->format('Y-m')) {
                         $item->delete();
                     } else {
-                        Kpi::query()->create([  
+                        Kpi::query()->create([
                             'status' => 1,
                             'task_id' => $item->task_id,
                             'stage_id' => $item->stage_id,
@@ -289,11 +300,10 @@ class TaskController extends Controller
                 }
 
                 $kpi = Kpi::query()->where('task_id', $task->id)->where('stage_id', $request->stage_id)->first() ?? null;
-                if ($kpi !== null) {    
+                if ($kpi !== null) {
                     $kpi->delete();
                 }
-            }
-            ;
+            };
         }
         $task->update($data);
         if (isset($tag)) {

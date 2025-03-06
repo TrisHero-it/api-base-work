@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\Api\ResourceController;
+use App\Http\Controllers\Api\ViewController;
 use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,16 +39,6 @@ Route::post('login', [LoginController::class, 'store']);
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
-Route::get('/test', function () {
-    $forwardedFor = request()->header('X-Forwarded-For');
-    $ip = explode(',', $forwardedFor)[0];
-    return response()->json([
-        'ip' => $ip,
-        'X-Forwarded-For' => request()->header('X-Forwarded-For'),
-        'X-Real-IP' => request()->header('X-Real-IP'),
-        'REMOTE_ADDR' => request()->server('REMOTE_ADDR') ?? 'Not Set'
-    ]);
-});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
@@ -81,7 +72,9 @@ Route::middleware('auth:sanctum')->group(function () {
         'ip-wifis' => IpWifiController::class,
         'resource-categories' => CategoryResourceController::class,
         'resources' => ResourceController::class,
+        'views' => ViewController::class,
     ]);
+    Route::get('/accounts-field', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);

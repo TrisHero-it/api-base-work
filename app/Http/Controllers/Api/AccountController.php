@@ -12,11 +12,13 @@ use App\Models\Education;
 use App\Models\FamilyMember;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use App\Models\View;
 use App\Models\WorkHistory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class   AccountController extends Controller
@@ -78,32 +80,31 @@ class   AccountController extends Controller
         $name = str_replace('@', '', $request->username);
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
 
-
         if (isset($request->include)) {
             if ($request->include == 'profile') {
                 $accounts = Account::with(['jobPosition', 'department', 'educations', 'familyMembers'])
                     ->where('username', 'like', "%$name%")
                     ->get();
+            } else if ($request->include == 'list') {
+                if ($request->filled('view_id')) {
+                    $view = View::findOrFail($request->view_id);
+                    $fields = $view->field_name;
+                    $accounts = Account::select($fields)
+                        ->with('department')
+                        ->where('username', 'like', "%$name%")
+                        ->get();
+                } else {
+                    $accounts = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off', 'position', 'status', 'sex', 'birthday', 'contract_file', 'start_work_date', 'personal_documents')
+                        ->with('department')
+                        ->where('username', 'like', "%$name%")
+                        ->get();
+                }
             }
         } else {
             $accounts = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
                 ->where('username', 'like', "%$name%")
                 ->get();
         }
-        $month = now()->month;
-        $year = now()->year;
-        $proposes = Propose::where('status', 'approved')
-            ->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
-            ->get();
-        // Lấy ra tất cả các ngày xin nghỉ
-        $arrIdHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
-        $arrIdOverTime = $proposes->where('name', 'Đăng ký OT')->pluck('id');
-        $holidays = DateHoliday::whereIn('propose_id', $arrIdHoliday)
-            ->get();
-        $overTime = DateHoliday::whereIn('propose_id', $arrIdOverTime)
-            ->get();
         if (isset($request->date)) {
             $b = explode('-', $request->date);
             $month2 = $b[1];
@@ -112,11 +113,31 @@ class   AccountController extends Controller
             $month2 = now()->month;
             $year2 = now()->year;
         }
+        $proposes = Propose::where('status', 'approved')
+            ->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
+            ->whereMonth('created_at', $month2 ?? now()->month)
+            ->whereYear('created_at', $year2 ?? now()->year)
+            ->get();
+        // Lấy ra tất cả các ngày xin nghỉ
+        $arrIdHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
+        $arrIdOverTime = $proposes->where('name', 'Đăng ký OT')->pluck('id');
+        $holidays = DateHoliday::whereIn('propose_id', $arrIdHoliday)
+            ->get();
+        $overTime = DateHoliday::whereIn('propose_id', $arrIdOverTime)
+            ->get();
+
         $attendances = Attendance::whereMonth('checkin', $month2)
             ->whereYear('checkin', $year2)
             ->get();
 
         foreach ($accounts as $account) {
+            if ($account->role_id == 2) {
+                $account['role'] = 'Quản trị';
+            } else if ($account->role_id == 3) {
+                $account['role'] = 'Quản trị cấp cao';
+            } else {
+                $account['role'] = 'Thành viên thông thường';
+            }
             $a = 0;
             $hoursOT = 0;
             $accountHoliday = $proposes->where('account_id', $account->id)
@@ -187,12 +208,12 @@ class   AccountController extends Controller
         } else {
             $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')->where('id', Auth::id())->first();
         }
-        if ($account->role_id == 1) {
-            $account['role'] = 'Admin';
-        } else if ($account->role_id == 2) {
-            $account['role'] = 'Admin lv2';
+        if ($account->role_id == 2) {
+            $account['role'] = 'Quản trị';
+        } else if ($account->role_id == 3) {
+            $account['role'] = 'Quản trị cấp cao';
         } else {
-            $account['role'] = 'User';
+            $account['role'] = 'Thành viên thông thường';
         }
         unset($account->role_id);
         $month = now()->month;
@@ -226,9 +247,12 @@ class   AccountController extends Controller
     public function updateFiles(Request $request)
     {
         $account = Account::query()->findOrFail($request->id);
-        if ($request->filled('files')) {
-            $imageUrl = Storage::put('/public/files', $request->files);
-            $imageUrl = Storage::url($imageUrl);
+        if ($request->hasFile('files')) {
+            $file = $request->file('files');
+            $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
+            $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
+            $imageUrl = Storage::url($path);
+
             $account->update([
                 'files' => $imageUrl
             ]);
@@ -250,5 +274,12 @@ class   AccountController extends Controller
         $propose = Propose::create($data);
 
         return response()->json($propose);
+    }
+
+    public function accountsField()
+    {
+        $fields =  Schema::getColumnListing('accounts');
+
+        return response()->json($fields);
     }
 }

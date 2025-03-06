@@ -11,16 +11,18 @@ class ImageController extends Controller
 {
     public function store(UploadImageStoreRequest $request)
     {
-        try {
+        if ($request->hasFile('image')) {
             $image = $request->file('image');
-            if (!isset($image)) {
-                return response()->json(['error' => 'file ảnh không tồn tại'], 500);
-            }
-            $imageUrl = Storage::put('/public/images', $image);
-            $imageUrl = Storage::url($imageUrl);
+            // Tạo tên file theo định dạng YYYYMMDD_uniqid_tengoc
+            $filename = now()->format('Y-m-d') . '_' . uniqid() . '_' . $image->getClientOriginalName();
+            // Lưu file vào thư mục /public/images với tên mới
+            $path = $image->storeAs('/public/images', $filename);
+            // Lấy URL của file
+            $imageUrl = Storage::url($path);
+
             return response()->json(['urlImage' => $imageUrl]);
-        } catch (\Exception $exception) {
-            return response()->json(['error' => $exception->getMessage()], 500);
         }
+
+        return response()->json(['error' => 'No image uploaded'], 400);
     }
 }

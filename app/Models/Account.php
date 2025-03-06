@@ -32,18 +32,18 @@ class Account extends Authenticatable
         'name_bank',
         'bank_number',
         'marital_status',
-        'sex',
+        'gender',
     ];
 
     public function isAdmin()
     {
 
-        return $this->role_id == 1 || $this->role_id == 2;
+        return $this->role_id == 2 || $this->role_id == 3;
     }
 
     public function isSeniorAdmin()
     {
-        return $this->role_id == 2;
+        return $this->role_id == 3;
     }
 
     public function isSalesMember()
