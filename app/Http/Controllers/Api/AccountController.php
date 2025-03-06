@@ -76,22 +76,18 @@ class   AccountController extends Controller
     public function index(Request $request)
     {
         // Lấy tên từ username đẩy lên
-        $name = str_replace('@', '', $request->username);
+        $name = $request->username;
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
 
         if (isset($request->include)) {
             if ($request->include == 'profile') {
-                $accounts = Account::with(['jobPosition', 'department', 'educations', 'familyMembers'])
-                    ->where('username', 'like', "%$name%")
-                    ->get();
+                $accounts = Account::with(['jobPosition', 'department', 'educations', 'familyMembers']);
             } else if ($request->include == 'list') {
                 if ($request->filled('view_id')) {
                     $view = View::findOrFail($request->view_id);
                     $fields = $view->field_name;
                     $accounts = Account::select($fields)
-                        ->with('department')
-                        ->where('username', 'like', "%$name%")
-                        ->get();
+                        ->with('department');
                 } else {
                     $accounts = Account::select(
                         'id',
@@ -111,9 +107,7 @@ class   AccountController extends Controller
                         'personal_documents',
                         'quit_work'
                     )
-                        ->with('department')
-                        ->where('username', 'like', "%$name%")
-                        ->get();
+                        ->with('department');
                 }
             }
         } else {
@@ -128,16 +122,17 @@ class   AccountController extends Controller
                 'day_off',
                 'position',
                 'quit_work'
-            )
-                ->when($request->filled('role_id'), function ($query) use ($request) {
-                    return $query->where('role_id', $request->role_id);
-                })
-                ->when($request->filled('quit_work'), function ($query) use ($request) {
-                    return $query->where('quit_work', $request->quit_work);
-                })
-                ->where('username', 'like', "%$name%")
-                ->get();
+            );
         }
+        $accounts = $accounts->where('username', 'like', "%$name%");
+        $accounts = $accounts->when($request->filled('role_id'), function ($query) use ($request) {
+            return $query->where('role_id', $request->role_id)
+                ->where('quit_work', false);
+        })
+            ->when($request->filled('quit_work'), function ($query) use ($request) {
+                return $query->where('quit_work', $request->quit_work);
+            })
+            ->get();
         if (isset($request->date)) {
             $b = explode('-', $request->date);
             $month2 = $b[1];
@@ -310,8 +305,15 @@ class   AccountController extends Controller
 
     public function accountsField()
     {
+        $data = [];
         $fields =  Schema::getColumnListing('accounts');
+        $salary = Schema::getColumnListing('salaries');
+        $contract = Schema::getColumnListing('contracts');
 
-        return response()->json($fields);
+        $data['person_info'] = $fields;
+        $data['salary'] = $salary;
+        $data['contract'] = $contract;
+
+        return response()->json($data);
     }
 }

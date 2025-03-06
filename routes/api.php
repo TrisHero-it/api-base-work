@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'resources' => ResourceController::class,
         'views' => ViewController::class,
     ]);
-    Route::get('/accounts-field', [AccountController::class, 'accountsField']);
+    Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);

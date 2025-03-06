@@ -178,7 +178,7 @@ class TaskController extends Controller
         if ($request->account_id != null) {
             //  Nếu không phải admin thì không cho phép sửa nhiệm vụ đã có người nhận rồi
             if ($task->account_id != null) {
-                if (!$account->isAdmin()) {
+                if (!$account->isAdmin() && $task->account_id != Auth::id()) {
                     return response()->json([
                         'message' => 'Nhiệm vụ này đã có người nhận, load lại đi men',
                         'errors' => [
