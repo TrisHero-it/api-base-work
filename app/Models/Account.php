@@ -33,6 +33,10 @@ class Account extends Authenticatable
         'bank_number',
         'marital_status',
         'gender',
+        'start_work_date',
+        'personal_documents',
+        'contract_file',
+        'quit_work',
     ];
 
     public function isAdmin()

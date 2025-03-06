@@ -12,14 +12,19 @@ class LoginController extends Controller
 {
     public function store(LoginStoreRequest $request)
     {
-        $account = Account::where('email', $request->email)
+        $account = Account::when($request->filled('email'), function ($query) use ($request) {
+            return $query->where('email', $request->email);
+        })
+            ->when(!$request->filled('email') && $request->filled('username'), function ($query) use ($request) {
+                return $query->where('username', $request->username);
+            })
             ->first();
 
         if (!$account) {
             return response()->json([
-                'message' => 'Email không tồn tại',
+                'message' => 'Email hoặc tên tài khoản không tồn tại',
                 'errors' => [
-                    'email' => 'Email không tồn tại',
+                    'email' => 'Email hoặc tên tài khoản không tồn tại',
                 ],
             ], 400);
         }
@@ -32,8 +37,17 @@ class LoginController extends Controller
                 ],
             ], 400);
         }
+        $credentials = [
+            'password' => $request->password,
+        ];
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        if ($request->filled('email')) {
+            $credentials['email'] = $request->email;
+        } else {
+            $credentials['username'] = $request->username;
+        }
+
+        if (Auth::attempt($credentials)) {
             $token = $account->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'message' => 'Đăng nhập thành công',

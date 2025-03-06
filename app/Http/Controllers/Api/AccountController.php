@@ -26,12 +26,11 @@ class   AccountController extends Controller
     public function register(AccountStoreRequest $request)
     {
         $email = $request->safe()->email;
-        $username = $this->generateUsernameFromEmail($email);
         $account = Account::create([
-            'email' => $request->safe()->email,
+            'email' => $email,
             'password' => Hash::make($request->safe()->password),
-            'username' => '@' . $username,
-            'full_name' => $username,
+            'username' => $request->username,
+            'full_name' => $request->full_name,
             'day_off' => 0
         ]);
 
@@ -94,14 +93,48 @@ class   AccountController extends Controller
                         ->where('username', 'like', "%$name%")
                         ->get();
                 } else {
-                    $accounts = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off', 'position', 'status', 'sex', 'birthday', 'contract_file', 'start_work_date', 'personal_documents')
+                    $accounts = Account::select(
+                        'id',
+                        'username',
+                        'full_name',
+                        'avatar',
+                        'role_id',
+                        'email',
+                        'phone',
+                        'day_off',
+                        'position',
+                        'status',
+                        'gender',
+                        'birthday',
+                        'contract_file',
+                        'start_work_date',
+                        'personal_documents',
+                        'quit_work'
+                    )
                         ->with('department')
                         ->where('username', 'like', "%$name%")
                         ->get();
                 }
             }
         } else {
-            $accounts = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
+            $accounts = Account::select(
+                'id',
+                'username',
+                'full_name',
+                'avatar',
+                'role_id',
+                'email',
+                'phone',
+                'day_off',
+                'position',
+                'quit_work'
+            )
+                ->when($request->filled('role_id'), function ($query) use ($request) {
+                    return $query->where('role_id', $request->role_id);
+                })
+                ->when($request->filled('quit_work'), function ($query) use ($request) {
+                    return $query->where('quit_work', $request->quit_work);
+                })
                 ->where('username', 'like', "%$name%")
                 ->get();
         }
@@ -131,12 +164,16 @@ class   AccountController extends Controller
             ->get();
 
         foreach ($accounts as $account) {
-            if ($account->role_id == 2) {
-                $account['role'] = 'Quản trị';
-            } else if ($account->role_id == 3) {
-                $account['role'] = 'Quản trị cấp cao';
+            if ($account->quit_work == true) {
+                $account['role'] = 'Vô hiệu hoá';
             } else {
-                $account['role'] = 'Thành viên thông thường';
+                if ($account->role_id == 2) {
+                    $account['role'] = 'Quản trị';
+                } else if ($account->role_id == 3) {
+                    $account['role'] = 'Quản trị cấp cao';
+                } else {
+                    $account['role'] = 'Thành viên thông thường';
+                }
             }
             $a = 0;
             $hoursOT = 0;
@@ -237,11 +274,6 @@ class   AccountController extends Controller
         $account['avatar'] = $account->avatar;
 
         return response()->json($account);
-    }
-
-    private function generateUsernameFromEmail(string $email): string
-    {
-        return explode('@', $email)[0];
     }
 
     public function updateFiles(Request $request)
