@@ -310,8 +310,10 @@ class TaskController extends Controller
             $task['tag'] = $tag;
         }
 
-        if ($stage->isSuccessStage()) {
-            $this->chuyenNhiemVuKhiThanhCongAnhThinh($stage->id, $task->toArray());
+        if (isset($stage)) {
+            if ($stage->isSuccessStage()) {
+                $this->chuyenNhiemVuKhiThanhCongAnhThinh($stage->id, $task->toArray());
+            }
         }
 
         return $task;
