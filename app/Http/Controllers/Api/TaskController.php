@@ -306,14 +306,13 @@ class TaskController extends Controller
             };
         }
         $task->update($data);
-        if (isset($tag)) {
-            $task['tag'] = $tag;
-        }
-
         if (isset($stage)) {
             if ($stage->isSuccessStage()) {
                 $this->chuyenNhiemVuKhiThanhCongAnhThinh($stage->id, $task->toArray());
             }
+        }
+        if (isset($tag)) {
+            $task['tag'] = $tag;
         }
 
         return $task;
@@ -418,7 +417,7 @@ class TaskController extends Controller
 
     public function chuyenNhiemVuKhiThanhCongAnhThinh($stageId, array $task)
     {
-        if ($stageId == 11 || $stageId == 27) {
+        if ($stageId == 235 || $stageId == 126) {
             $data = $task;
             $data['stage_id'] = 353;
             Task::create($data);
