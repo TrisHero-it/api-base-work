@@ -124,14 +124,14 @@ class ProposeController extends Controller
             }
         }
         $numberHoliDay = 0;
-        if ($request->filled('holiday')) {
-            $request->validate([
-                'holiday.start_date' => ['required', 'date_format:Y-m-d'],
-            ], [
-                'holiday.start_date.required' => 'Vui lòng nhập ngày bắt đầu.',
-                'holiday.start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
-            ]);
-        }
+        // if ($request->filled('holiday')) {
+        //     $request->validate([
+        //         'holiday.start_date' => ['required', 'date_format:Y-m-d'],
+        //     ], [
+        //         'holiday.start_date.required' => 'Vui lòng nhập ngày bắt đầu.',
+        //         'holiday.start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
+        //     ]);
+        // }
         if ($request->name == "Nghỉ có hưởng lương") {
             foreach ($request->holiday as $date2) {
                 $startDate = Carbon::parse($date2['start_date']);
