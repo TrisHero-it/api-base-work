@@ -310,6 +310,10 @@ class TaskController extends Controller
             $task['tag'] = $tag;
         }
 
+        if ($stage->isSuccessStage()) {
+            $this->chuyenNhiemVuKhiThanhCongAnhThinh($stage->id, $task->toArray());
+        }
+
         return $task;
     }
 
@@ -408,5 +412,14 @@ class TaskController extends Controller
         return response()->json([
             'success' => 'Cập nhập thành công'
         ]);
+    }
+
+    public function chuyenNhiemVuKhiThanhCongAnhThinh($stageId, array $task)
+    {
+        if ($stageId == 11 || $stageId == 27) {
+            $data = $task;
+            $data['stage_id'] = 353;
+            Task::create($data);
+        }
     }
 }
