@@ -113,7 +113,7 @@ class ScheduleWorkController extends Controller
                 $taskCopy->stage_id = $taskCopy->oldStage->id;
                 $taskCopy->stage_name = $taskCopy->oldStage->name;
                 $taskCopy->name_task = $taskCopy->task->name;
-                $hoursWork = $this->getHoursWork($taskCopy, $date);
+                $hoursWork = $this->getHoursWorkHistory($taskCopy, $date);
                 $taskCopy->hours_work = $hoursWork['hours_work'];
                 $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
                 $taskCopy->end = $hoursWork['end']->format("Y-m-d H:i:s");
