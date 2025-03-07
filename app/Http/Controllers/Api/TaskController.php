@@ -345,7 +345,6 @@ class TaskController extends Controller
 
             return response()->json($task);
         } else {
-
             return response()->json([
                 'message' => 'Bạn không có quyền giao nhiệm vụ'
             ], 401);

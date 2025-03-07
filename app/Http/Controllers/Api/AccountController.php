@@ -316,4 +316,14 @@ class   AccountController extends Controller
 
         return response()->json($data);
     }
+
+    public function deleteToken(Request $request)
+    {
+        $account = Account::query()->findOrFail($request->id);
+        $account->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Đăng xuất thành công'
+        ]);
+    }
 }
