@@ -84,6 +84,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);
     Route::post('/check-out', [AttendanceController::class, 'checkOut']);
-    Route::delete('/delete-token', [AccountController::class, 'deleteToken']);
+    Route::put('/disable-account/{id}', [AccountController::class, 'disableAccount']);
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
 });

@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
+use App\Models\AccountWorkflow;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Education;
 use App\Models\FamilyMember;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use App\Models\Task;
 use App\Models\View;
 use App\Models\WorkHistory;
 use Carbon\Carbon;
@@ -306,24 +308,84 @@ class   AccountController extends Controller
     public function accountsField()
     {
         $data = [];
-        $fields =  Schema::getColumnListing('accounts');
-        $salary = Schema::getColumnListing('salaries');
-        $contract = Schema::getColumnListing('contracts');
+        $arrayPersonalInfo = [
+            'email' => 'Email',
+            'phone' => 'Số điện thoại',
+            'full_name' => 'Họ và tên',
+            'birthday' => 'Ngày sinh',
+            'gender' => 'Giới tính',
+            'address' => 'Địa chỉ',
+            'contract_file' => 'Hợp đồng lao động',
+            'personal_documents' => 'Giấy tờ tùy thân',
+            'quit_work' => 'Trạng thái nghỉ việc',
+            'avatar' => 'Ảnh đại diện',
+            'files' => 'Tài liệu',
+            'day_off' => 'Ngày nghỉ phép',
+            'username' => 'Tên tài khoản',
+            'password' => 'Mật khẩu',
+            'status' => 'Trạng thái',
+            'position' => 'Chức vụ',
+            'start_work_date' => 'Ngày bắt đầu làm việc',
+            'end_work_date' => 'Ngày kết thúc làm việc',
+            'attendance_at_home' => 'Làm việc tại nhà',
+            'personal_email' => 'Email cá nhân',
+            'name_bank' => 'Tên ngân hàng',
+            'bank_number' => 'Số tài khoản',
+            'manager_id' => 'Người quản lí',
+            'identity_card' => 'Số CMND',
+            'temporary_address' => 'Địa chỉ tạm trú',
+            'passport' => 'Hộ chiếu',
+            'tax_code' => 'Mã số thuế',
+            'marital_status' => 'Tình trạng hôn nhân',
+            'tax_reduced' => 'Mức giảm trừ gia cảnh',
+            'tax_policy' => 'Chính sách thuế',
+            'BHXH' => 'BHXH',
+            'place_of_registration' => 'Nơi đăng ký thường trú',
+            'salary_scale' => 'Vùng lương',
+            'insurance_policy' => 'Chính sách bảo hiểm',
+            'start_trial_date' => 'Ngày bắt đầu thử việc',
+            'role_id' => 'Phân quyền',
+        ];
+        $arraySalary = [
+            'gross_salary' => 'Lương gross',
+            'net_salary' => 'Lương thực nhận',
+            'basic_salary' => 'Lương cơ bản',
+            'travel_allowance' => 'Phụ cấp đi lại',
+            'eat_allowance' => 'Phụ cấp ăn uống',
+            'kpi' => 'KPI',
+            'job_position_id' => 'Chức vụ',
+        ];
+        $arrayContract = [
+            'contract_type' => 'Loại hợp đồng',
+            'note' => 'Ghi chú',
+            'category__contract_id' => 'Loại hợp đồng',
+            'contract_start_date' => 'Ngày bắt đầu hợp đồng',
+            'contract_end_date' => 'Ngày kết thúc hợp đồng',
+        ];
 
-        $data['person_info'] = $fields;
-        $data['salary'] = $salary;
-        $data['contract'] = $contract;
+        $data['thông tin cá nhân'] = $arrayPersonalInfo;
+        $data['lương'] = $arraySalary;
+        $data['hợp đồng'] = $arrayContract;
 
-        return response()->json($data);
+        return $data;
     }
 
-    public function deleteToken(Request $request)
+    public function disableAccount(int $id, Request $request)
     {
-        $account = Account::query()->findOrFail($request->id);
+        $account = Account::query()->findOrFail($id);
+        $account->update([
+            'quit_work' => true
+        ]);
         $account->tokens()->delete();
+        AccountWorkflow::where('account_id', $id)->delete();
+        Task::where('account_id', $id)->update([
+            'account_id' => null,
+            'started_at' => null,
+            'expired' => null,
+        ]);
 
         return response()->json([
-            'message' => 'Đăng xuất thành công'
+            'message' => 'Vô hiệu hoá tài khoản thành công'
         ]);
     }
 }

@@ -136,8 +136,8 @@ class AttendanceController extends Controller
             $proposes = Propose::whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
                 ->where('account_id', Auth::id())
                 ->where('status', 'approved')
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
+                ->whereMonth('created_at', $month ?? now()->month)
+                ->whereYear('created_at', $year ?? now()->year)
                 ->get();
             $dayOffWithPay = 0;
             $idProposeHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
