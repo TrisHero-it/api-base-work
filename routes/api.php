@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\AttendanceAccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryResourceController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\FieldController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\Api\ReportFieldController;
 use App\Http\Controllers\Api\ReportFieldValueController;
 use App\Http\Controllers\Api\ScheduleAccountController;
 use App\Http\Controllers\Api\ScheduleWorkflowController;
+use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\WorkflowCategoryController;
@@ -39,6 +42,11 @@ Route::post('login', [LoginController::class, 'store']);
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
+Route::get('/test', function () {
+    return response()->json(
+        request()->getClientIp()
+    );
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
@@ -73,6 +81,9 @@ Route::middleware('auth:sanctum')->group(function () {
         'resource-categories' => CategoryResourceController::class,
         'resources' => ResourceController::class,
         'views' => ViewController::class,
+        'contracts' => ContractController::class,
+        'staffs' => StaffController::class,
+        'attendance-accounts' => AttendanceAccountController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);

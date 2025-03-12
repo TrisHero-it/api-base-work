@@ -13,7 +13,7 @@ class WorkHistory extends Model
         'company_name',
         'start_date',
         'end_date',
-        'potition',
+        'position',
         'account_id',
     ];
 }

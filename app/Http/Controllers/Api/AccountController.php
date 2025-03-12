@@ -11,8 +11,10 @@ use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Education;
 use App\Models\FamilyMember;
+use App\Models\JobPosition;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use App\Models\Salary;
 use App\Models\Task;
 use App\Models\View;
 use App\Models\WorkHistory;
@@ -20,8 +22,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+
+use function PHPSTORM_META\map;
 
 class   AccountController extends Controller
 {
@@ -87,9 +90,19 @@ class   AccountController extends Controller
             } else if ($request->include == 'list') {
                 if ($request->filled('view_id')) {
                     $view = View::findOrFail($request->view_id);
-                    $fields = $view->field_name;
-                    $accounts = Account::select($fields)
-                        ->with('department');
+                    $dataSelect = ['full_name'];
+                    $dataWith = [];
+                    if (isset($view->field_name['personal_info'])) {
+                        $dataSelect = array_merge($dataSelect, $view->field_name['personal_info']);
+                    }
+                    if (isset($view->field_name['salary'])) {
+                        $dataWith = array_merge($dataWith, ['jobPosition.salary']);
+                    }
+                    if (isset($view->field_name['contract'])) {
+                        $dataWith = array_merge($dataWith, ['contract']);
+                    }
+                    $accounts = Account::select($dataSelect)
+                        ->with('jobPosition');
                 } else {
                     $accounts = Account::select(
                         'id',
@@ -207,9 +220,6 @@ class   AccountController extends Controller
             }
             $account['day_off_used'] = $a;
             $account['hours_over_time'] = number_format($hoursOT, 2);
-            if ($account->avatar != null) {
-                $account['avatar'] = $account->avatar;
-            }
             $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
         }
 
@@ -236,11 +246,25 @@ class   AccountController extends Controller
     public function myAccount(Request $request)
     {
         if ($request->include == 'profile') {
-            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition'])->where('id', Auth::id())->first();
+            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition.salary'])
+                ->where('id', Auth::id())
+                ->first();
+            $jobPosition = JobPosition::where('account_id', Auth::id())
+                ->where('status', 'active')
+                ->first();
+            if (isset($jobPosition)) {
+                $salary = Salary::where('job_position_id', $jobPosition->id)
+                    ->get();
+                $account->salary = $salary;
+            }
+            $account->now_salary = $jobPosition->salary ?? 0;
+            $account->job_position = $jobPosition;
         } else if ($request->include == 'my-job') {
             $account = Account::with(['jobPosition.salary'])->where('id', Auth::id())->first();
         } else {
-            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')->where('id', Auth::id())->first();
+            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
+                ->where('id', Auth::id())
+                ->first();
         }
         if ($account->role_id == 2) {
             $account['role'] = 'Quản trị';
@@ -281,7 +305,6 @@ class   AccountController extends Controller
             $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
             $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
             $imageUrl = Storage::url($path);
-
             $account->update([
                 'files' => $imageUrl
             ]);
@@ -296,8 +319,8 @@ class   AccountController extends Controller
         $data = [
             'name' => 'Cập nhật thông tin cá nhân',
             'propose_category_id' => $category->id,
-            'old_value' => json_encode($oldData),
-            'new_value' => json_encode($newData),
+            'old_value' => $oldData,
+            'new_value' => $newData,
             'account_id' => Auth::user()->id,
         ];
         $propose = Propose::create($data);
@@ -309,63 +332,95 @@ class   AccountController extends Controller
     {
         $data = [];
         $arrayPersonalInfo = [
-            'email' => 'Email',
-            'phone' => 'Số điện thoại',
-            'full_name' => 'Họ và tên',
-            'birthday' => 'Ngày sinh',
-            'gender' => 'Giới tính',
-            'address' => 'Địa chỉ',
-            'contract_file' => 'Hợp đồng lao động',
-            'personal_documents' => 'Giấy tờ tùy thân',
-            'quit_work' => 'Trạng thái nghỉ việc',
-            'avatar' => 'Ảnh đại diện',
-            'files' => 'Tài liệu',
-            'day_off' => 'Ngày nghỉ phép',
-            'username' => 'Tên tài khoản',
-            'password' => 'Mật khẩu',
-            'status' => 'Trạng thái',
-            'position' => 'Chức vụ',
-            'start_work_date' => 'Ngày bắt đầu làm việc',
-            'end_work_date' => 'Ngày kết thúc làm việc',
-            'attendance_at_home' => 'Làm việc tại nhà',
-            'personal_email' => 'Email cá nhân',
-            'name_bank' => 'Tên ngân hàng',
-            'bank_number' => 'Số tài khoản',
-            'manager_id' => 'Người quản lí',
-            'identity_card' => 'Số CMND',
-            'temporary_address' => 'Địa chỉ tạm trú',
-            'passport' => 'Hộ chiếu',
-            'tax_code' => 'Mã số thuế',
-            'marital_status' => 'Tình trạng hôn nhân',
-            'tax_reduced' => 'Mức giảm trừ gia cảnh',
-            'tax_policy' => 'Chính sách thuế',
-            'BHXH' => 'BHXH',
-            'place_of_registration' => 'Nơi đăng ký thường trú',
-            'salary_scale' => 'Vùng lương',
-            'insurance_policy' => 'Chính sách bảo hiểm',
-            'start_trial_date' => 'Ngày bắt đầu thử việc',
-            'role_id' => 'Phân quyền',
+            'children' => [
+                ['label' => 'Email', 'value' => 'email'],
+                ['label' => 'Số điện thoại', 'value' => 'phone'],
+                ['label' => 'Họ và tên', 'value' => 'full_name'],
+                ['label' => 'Ngày sinh', 'value' => 'birthday'],
+                ['label' => 'Giới tính', 'value' => 'gender'],
+                ['label' => 'Địa chỉ', 'value' => 'address'],
+                ['label' => 'Hợp đồng lao động', 'value' => 'contract_file'],
+                ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
+                ['label' => 'Trạng thái nghỉ việc', 'value' => 'quit_work'],
+                ['label' => 'Ảnh đại diện', 'value' => 'avatar'],
+                ['label' => 'Tài liệu', 'value' => 'files'],
+                ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
+                ['label' => 'Tên tài khoản', 'value' => 'username'],
+                ['label' => 'Mật khẩu', 'value' => 'password'],
+                ['label' => 'Trạng thái', 'value' => 'status'],
+                ['label' => 'Chức vụ', 'value' => 'position'],
+                ['label' => 'Ngày bắt đầu làm việc', 'value' => 'start_work_date'],
+                ['label' => 'Ngày kết thúc làm việc', 'value' => 'end_work_date'],
+                ['label' => 'Làm việc tại nhà', 'value' => 'attendance_at_home'],
+                ['label' => 'Email cá nhân', 'value' => 'personal_email'],
+                ['label' => 'Tên ngân hàng', 'value' => 'name_bank'],
+                ['label' => 'Số tài khoản', 'value' => 'bank_number'],
+                ['label' => 'Người quản lí', 'value' => 'manager_id'],
+                ['label' => 'Số CMND', 'value' => 'identity_card'],
+                ['label' => 'Địa chỉ tạm trú', 'value' => 'temporary_address'],
+                ['label' => 'Hộ chiếu', 'value' => 'passport'],
+                ['label' => 'Mã số thuế', 'value' => 'tax_code'],
+                ['label' => 'Tình trạng hôn nhân', 'value' => 'marital_status'],
+                ['label' => 'Mức giảm trừ gia cảnh', 'value' => 'tax_reduced'],
+                ['label' => 'Chính sách thuế', 'value' => 'tax_policy'],
+                ['label' => 'BHXH', 'value' => 'BHXH'],
+                ['label' => 'Nơi đăng ký thường trú', 'value' => 'place_of_registration'],
+                ['label' => 'Vùng lương', 'value' => 'salary_scale'],
+                ['label' => 'Chính sách bảo hiểm', 'value' => 'insurance_policy'],
+                ['label' => 'Ngày bắt đầu thử việc', 'value' => 'start_trial_date'],
+                ['label' => 'Phân quyền', 'value' => 'role_id'],
+            ],
+            'name' => 'Thông tin cá nhân',
+            'value' => 'personal_info',
         ];
         $arraySalary = [
-            'gross_salary' => 'Lương gross',
-            'net_salary' => 'Lương thực nhận',
-            'basic_salary' => 'Lương cơ bản',
-            'travel_allowance' => 'Phụ cấp đi lại',
-            'eat_allowance' => 'Phụ cấp ăn uống',
-            'kpi' => 'KPI',
-            'job_position_id' => 'Chức vụ',
+            'children' => [
+                ['label' => 'Lương gross', 'value' => 'gross_salary'],
+                ['label' => 'Lương thực nhận', 'value' => 'net_salary'],
+                ['label' => 'Lương cơ bản', 'value' => 'basic_salary'],
+                ['label' => 'Phụ cấp đi lại', 'value' => 'travel_allowance'],
+                ['label' => 'Phụ cấp ăn uống', 'value' => 'eat_allowance'],
+                ['label' => 'KPI', 'value' => 'kpi'],
+                ['label' => 'Chức vụ', 'value' => 'job_position_id'],
+            ],
+            'name' => 'Lương',
+            'value' => 'salary',
         ];
         $arrayContract = [
-            'contract_type' => 'Loại hợp đồng',
-            'note' => 'Ghi chú',
-            'category__contract_id' => 'Loại hợp đồng',
-            'contract_start_date' => 'Ngày bắt đầu hợp đồng',
-            'contract_end_date' => 'Ngày kết thúc hợp đồng',
+            'children' => [
+                ['label' => 'Loại hợp đồng', 'value' => 'contract_type'],
+                ['label' => 'Ghi chú', 'value' => 'note'],
+                ['label' => 'Loại hợp đồng', 'value' => 'category__contract_id'],
+                ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'contract_start_date'],
+                ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'contract_end_date'],
+                ['label' => 'Trạng thái của hợp đồng', 'value' => 'status'],
+            ],
+            'name' => 'Hợp đồng',
+            'value' => 'contract',
+        ];
+        $arrayDepartment = [
+            'children' => [
+                ['label' => 'Tên phòng ban', 'value' => 'name'],
+            ],
+            'name' => 'Phòng ban',
+            'value' => 'department',
+        ];
+        $arrayEducation = [
+            'children' => [
+                ['label' => 'Tên trường', 'value' => 'school_name'],
+                ['label' => 'Thời gian bắt đầu học', 'value' => 'start_date'],
+                ['label' => 'Thời gian kết thúc học', 'value' => 'end_date'],
+                ['label' => 'Loại học vấn', 'value' => 'type'],
+            ],
+            'name' => 'Học vấn',
+            'value' => 'education',
         ];
 
-        $data['thông tin cá nhân'] = $arrayPersonalInfo;
-        $data['lương'] = $arraySalary;
-        $data['hợp đồng'] = $arrayContract;
+        $data[] = $arrayPersonalInfo;
+        $data[] = $arraySalary;
+        $data[] = $arrayContract;
+        $data[] = $arrayDepartment;
+        $data[] = $arrayEducation;
 
         return $data;
     }

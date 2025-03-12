@@ -77,7 +77,17 @@ class Account extends Authenticatable
 
     public function jobPosition()
     {
-        return $this->hasMany(JobPosition::class);
+        return $this->hasMany(JobPosition::class, 'account_id', 'id');
+    }
+
+    public function salary()
+    {
+        return $this->hasOne(Salary::class, 'account_id', 'id');
+    }
+
+    public function contract()
+    {
+        return $this->hasOne(Contract::class);
     }
 
     public function department()

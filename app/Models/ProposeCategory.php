@@ -13,4 +13,9 @@ class ProposeCategory extends Model
         'name',
         'description',
     ];
+
+    protected $casts = [
+        'old_value' => 'array',
+        'new_value' => 'array',
+    ];
 }

@@ -6,18 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\HistoryMoveTask;
 use App\Models\Task;
 use App\Models\Workflow;
-use Auth;
 use Illuminate\Http\Request;
 use App\Models\Account;
 use App\Models\Schedule;
-use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class ScheduleAccountController extends Controller
 {
     public function index(Request $request)
     {
-        $globalBan = [11, 12, 13, 14, 15, 17, 25];
+        $globalBan = [11, 12, 14, 15, 17, 25];
         $accounts = Account::select('email', 'full_name', 'avatar', 'id', 'position')
             ->whereNotIn('id', $globalBan)
             ->get();

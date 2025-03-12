@@ -5,18 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\HistoryMoveTask;
 use App\Models\Schedule;
-use App\Models\Stage;
 use App\Models\Task;
 use App\Models\Workflow;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ScheduleWorkController extends Controller
 {
     public function index(Request $request)
     {
-        $globalBan = [11, 12, 13, 14, 15, 17, 25];
+        $globalBan = [11, 12, 14, 15, 17, 25];
         if (isset($request->end)) {
             $startDate = Carbon::parse($request->start);
             $endDate = Carbon::parse($request->end);

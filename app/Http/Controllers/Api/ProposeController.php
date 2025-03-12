@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProposeStoreRequest;
-use App\Jobs\SendEmail;
 use App\Models\Account;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
@@ -58,7 +57,7 @@ class ProposeController extends Controller
         return response()->json($proposes);
     }
 
-    public function show(int $id, Request $request)
+    public function show(int $id)
     {
         $propose = Propose::with(['account', 'date_holidays', 'propose_category', 'approved_by'])
             ->findOrFail($id);
