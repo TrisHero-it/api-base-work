@@ -33,10 +33,27 @@ class Account extends Authenticatable
         'bank_number',
         'marital_status',
         'gender',
+        'status',
+        'BHXH',
+        'tax_policy',
+        'tax_reduced',
+        'tax_code',
+        'insurance_policy',
+        'start_trial_date',
         'start_work_date',
         'personal_documents',
         'contract_file',
         'quit_work',
+        'salary_scale',
+        'personal_email',
+        'place_of_registration',
+        'is_active',
+        'end_work_date',
+        'personnel_class'
+    ];
+
+    protected $casts = [
+        'personal_documents' => 'array',
     ];
 
     public function isAdmin()
@@ -85,9 +102,9 @@ class Account extends Authenticatable
         return $this->hasOne(Salary::class, 'account_id', 'id');
     }
 
-    public function contract()
+    public function contracts()
     {
-        return $this->hasOne(Contract::class);
+        return $this->hasMany(Contract::class);
     }
 
     public function department()

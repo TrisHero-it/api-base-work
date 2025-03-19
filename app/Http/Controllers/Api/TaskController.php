@@ -188,7 +188,6 @@ class TaskController extends Controller
                 }
             }
             if ($request->account_id == Auth::id()) {
-                # code...
                 $data['started_at'] = now();
                 if ($task->stage->expired_after_hours != null && $task->expired == null) {
                     $dateTime = new \DateTime($data['started_at']);

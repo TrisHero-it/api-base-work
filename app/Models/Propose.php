@@ -26,6 +26,11 @@ class Propose extends Model
         'new_value',
     ];
 
+    protected $casts = [
+        'old_value' => 'array',
+        'new_value' => 'array',
+    ];
+
     public function date_holidays()
     {
 

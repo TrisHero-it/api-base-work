@@ -13,11 +13,8 @@ class LoginController extends Controller
     public function store(LoginStoreRequest $request)
     {
         $account = Account::when($request->filled('email'), function ($query) use ($request) {
-            return $query->where('email', $request->email);
+            return $query->where('email', $request->email)->orWhere('username', $request->email);
         })
-            ->when(!$request->filled('email') && $request->filled('username'), function ($query) use ($request) {
-                return $query->where('username', $request->username);
-            })
             ->first();
 
         if (!$account) {
@@ -41,10 +38,10 @@ class LoginController extends Controller
             'password' => $request->password,
         ];
 
-        if ($request->filled('email')) {
+        if ($request->filled('email') && $request->email == $account->email) {
             $credentials['email'] = $request->email;
         } else {
-            $credentials['username'] = $request->username;
+            $credentials['username'] = $request->email;
         }
 
         if (Auth::attempt($credentials)) {

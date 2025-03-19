@@ -26,7 +26,7 @@ class TaskStoreRequest extends FormRequest
             'description' => 'string|nullable',
             'account_id' => 'nullable|integer|exists:accounts,id',
             'name' => 'string|nullable',
-            'link_youtube' => 'string|nullable|url',
+            'link_youtube' => 'nullable|string|url',
         ];
     }
 }

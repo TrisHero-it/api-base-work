@@ -25,7 +25,10 @@ class ProposeController extends Controller
             return response()->json($proposes);
         }
 
-        $proposes = Propose::query()->orderBy('created_at', 'desc')->with(['account', 'propose_category', 'date_holidays', 'approved_by']);
+        $proposes = Propose::query()->with(['account', 'propose_category', 'date_holidays', 'approved_by'])
+            ->orderByRaw("CASE WHEN status = 'Đang chờ duyệt' THEN 1 ELSE 2 END")
+            ->orderBy('created_at', 'desc');
+
         if (isset($request->status)) {
             $proposes = $proposes->where('status', $request->status);
         }
@@ -263,4 +266,6 @@ class ProposeController extends Controller
 
         return response()->json(data: ['success' => 'Xoá thành công']);
     }
+
+    private function ProposeUpdateInformation(Propose $propose) {}
 }

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
+use App\Models\Department;
 use App\Models\Education;
 use App\Models\FamilyMember;
 use App\Models\JobPosition;
@@ -18,23 +20,22 @@ use App\Models\Salary;
 use App\Models\Task;
 use App\Models\View;
 use App\Models\WorkHistory;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-
-use function PHPSTORM_META\map;
 
 class   AccountController extends Controller
 {
     public function register(AccountStoreRequest $request)
     {
         $email = $request->safe()->email;
+        $username = $request->safe()->username ?? explode('@', $email)[0];
         $account = Account::create([
             'email' => $email,
             'password' => Hash::make($request->safe()->password),
-            'username' => $request->username,
+            'username' => $username,
             'full_name' => $request->full_name,
             'day_off' => 0
         ]);
@@ -45,36 +46,83 @@ class   AccountController extends Controller
     public function update(int $id, AccountUpdateRequest $request)
     {
         $account = Account::query()->findOrFail($id);
+        $models = [
+            'education' => Education::class,
+            'work_history' => WorkHistory::class,
+            'family_member' => FamilyMember::class,
+            'job_position' => JobPosition::class,
+            'salary' => Salary::class,
+        ];
 
         if (Auth::user()->isSeniorAdmin()) {
-            $data = $request->except('password', 'avatar');
-            if ($request->filled('password')) {
-                $data['password'] = Hash::make($request->password);
+            $data = $request->except('password', 'avatar', 'position', 'department_id');
+
+            foreach ($models as $key => $model) {
+                $arr = [];
+                if ($request->filled($key)) {
+                    if (isset($request->$key['id']) && $key != 'job_position') {
+                        $model::where('id', $request->$key['id'])->update($request->$key);
+                    } else {
+                        if ($key == 'job_position') {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                            $model::where('status', 'active')
+                                ->where('account_id', $id)
+                                ->update(['status' => 'inactive']);
+                        }
+                        $arr = array_merge(['account_id' => $id], $request->$key);
+                        $model::create($arr);
+                    }
+                }
             }
-            if ($request->filled('avatar')) {
-                $data['avatar'] = $request->avatar;
+            if (isset($request->department_name)) {
+                $department = Department::where('name', $request->department_name)->first();
+                AccountDepartment::where('account_id', $id)->update(['department_id' => $department->id]);
             }
             $account->update($data);
+            if ($request->filled('position')) {
+                $jobPosition = JobPosition::where('status', 'active')
+                    ->where('account_id', $id)
+                    ->where('name', '!=', $request->position)
+                    ->first();
+                if (isset($jobPosition)) {
+                    $jobPosition->update([
+                        'status' => 'inactive'
+                    ]);
+                    $salary = Salary::where('job_position_id', $jobPosition->id)->first();
+                    $jobPosition2 = JobPosition::create([
+                        'account_id' => $id,
+                        'name' => $request->position,
+                        'status' => 'active',
+                    ]);
+
+                    Salary::create([
+                        'job_position_id' => $jobPosition2->id,
+                        'gross_salary' => $salary->gross_salary,
+                        'travel_allowance' => $salary->travel_allowance,
+                        'eat_allowance' => $salary->eat_allowance,
+                        'net_salary' => $salary->net_salary,
+                        'kpi' => $salary->kpi,
+                        'basic_salary' => $salary->basic_salary,
+                    ]);
+                }
+            }
+
             return response()->json($account);
         }
+
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $oldData = Account::select($request->keys())->where('id', $id)->get()->toArray();
-        if ($request->filled('education')) {
-            $education = Education::where('account_id', $id)->get();
-            $oldData['education'] = $education;
+        $oldData = Account::select($request->keys())
+            ->where('id', $id)
+            ->first();
+
+        foreach ($models as $key => $model) {
+            if ($request->filled($key)) {
+                $oldData[$key] = $model::where('account_id', $id)
+                    ->get();
+            }
         }
 
-        if ($request->filled('work_history')) {
-            $workHistory = WorkHistory::where('account_id', $id)->get();
-            $oldData['work_history'] = $workHistory;
-        }
+        $this->requestUpdateProfile($oldData->toArray(), $request->all());
 
-        if ($request->filled('family_member')) {
-            $familyMember = FamilyMember::where('account_id', $id)->get();
-            $oldData['family_member'] = $familyMember;
-        }
-
-        $this->requestUpdateProfile($oldData, $request->all());
         return response()->json($account);
     }
 
@@ -113,7 +161,6 @@ class   AccountController extends Controller
                         'email',
                         'phone',
                         'day_off',
-                        'position',
                         'status',
                         'gender',
                         'birthday',
@@ -148,32 +195,12 @@ class   AccountController extends Controller
                 return $query->where('quit_work', $request->quit_work);
             })
             ->get();
-        if (isset($request->date)) {
-            $b = explode('-', $request->date);
-            $month2 = $b[1];
-            $year2 = $b[0];
-        } else {
-            $month2 = now()->month;
-            $year2 = now()->year;
-        }
-        $proposes = Propose::where('status', 'approved')
-            ->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
-            ->whereMonth('created_at', $month2 ?? now()->month)
-            ->whereYear('created_at', $year2 ?? now()->year)
-            ->get();
-        // Lấy ra tất cả các ngày xin nghỉ
-        $arrIdHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
-        $arrIdOverTime = $proposes->where('name', 'Đăng ký OT')->pluck('id');
-        $holidays = DateHoliday::whereIn('propose_id', $arrIdHoliday)
-            ->get();
-        $overTime = DateHoliday::whereIn('propose_id', $arrIdOverTime)
-            ->get();
-
-        $attendances = Attendance::whereMonth('checkin', $month2)
-            ->whereYear('checkin', $year2)
-            ->get();
 
         foreach ($accounts as $account) {
+            if (!empty($account->department->toArray())) {
+                $account->department_name = $account->department[0]->name;
+            }
+            unset($account->department);
             if ($account->quit_work == true) {
                 $account['role'] = 'Vô hiệu hoá';
             } else {
@@ -185,42 +212,6 @@ class   AccountController extends Controller
                     $account['role'] = 'Thành viên thông thường';
                 }
             }
-            $a = 0;
-            $hoursOT = 0;
-            $accountHoliday = $proposes->where('account_id', $account->id)
-                ->where('name', 'Nghỉ có hưởng lương')
-                ->pluck('id');
-            $accountHoliday = array_values($holidays->whereIn('propose_id', $accountHoliday)->toArray());
-            foreach ($accountHoliday as $item) {
-                $a += $item['number_of_days'];
-            }
-            $accountOverTime = $proposes->where('account_id', $account->id)
-                ->where('name', 'Đăng ký OT')
-                ->pluck('id');
-            $accountOverTime = array_values($overTime->whereIn('propose_id', $accountOverTime)->toArray());
-            foreach ($accountOverTime as $item) {
-                $hoursOT += Carbon::parse($item['end_date'])->floatDiffInHours(Carbon::parse($item['start_date']));
-            }
-            $totalWorkDay = 0;
-            // Lọc từng tài khoản để tính ngày công
-            $newAttendances = null;
-            $newAttendances = $attendances->where('account_id', $account->id);
-            foreach ($newAttendances as $newAttendance) {
-                $diff = 0;
-                $hours = 0;
-                $workday = 0;
-                $checkout = null;
-                if ($newAttendance->checkout != null) {
-                    $checkout = Carbon::parse($newAttendance->checkout);
-                    $diff = $checkout->diffInMinutes($newAttendance->checkin);
-                    $hours = $diff / 60;
-                    $workday = $hours / 9;
-                }
-                $totalWorkDay += $workday;
-            }
-            $account['day_off_used'] = $a;
-            $account['hours_over_time'] = number_format($hoursOT, 2);
-            $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
         }
 
         return response()->json($accounts);
@@ -246,21 +237,28 @@ class   AccountController extends Controller
     public function myAccount(Request $request)
     {
         if ($request->include == 'profile') {
-            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition.salary'])
+            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition' => function ($query) {
+                $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
+                    ->addSelect('job_positions.*')
+                    ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
+                    ->addSelect(DB::raw('(salaries.gross_salary + salaries.travel_allowance + salaries.eat_allowance) as total_salary'));
+            }, 'contracts.category', 'department'])
                 ->where('id', Auth::id())
                 ->first();
-            $jobPosition = JobPosition::where('account_id', Auth::id())
-                ->where('status', 'active')
-                ->first();
-            if (isset($jobPosition)) {
-                $salary = Salary::where('job_position_id', $jobPosition->id)
-                    ->get();
-                $account->salary = $salary;
-            }
-            $account->now_salary = $jobPosition->salary ?? 0;
-            $account->job_position = $jobPosition;
+            $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
+            $account->salary = $salary;
+            $account->department_name = $account->department[0]->name;
+            unset($account->department);
+            $account->position = $account->jobPosition->where('status', 'active')->first()->name;
         } else if ($request->include == 'my-job') {
-            $account = Account::with(['jobPosition.salary'])->where('id', Auth::id())->first();
+            $account = Account::with(['jobPosition' => function ($query) {
+                $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
+                    ->addSelect('job_positions.*')
+                    ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
+                    ->addSelect(DB::raw('(salaries.gross_salary + salaries.travel_allowance + salaries.eat_allowance) as total_salary'));
+            }])->where('id', Auth::id())->first();
+            $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
+            $account->salary = $salary;
         } else {
             $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
                 ->where('id', Auth::id())
@@ -299,18 +297,21 @@ class   AccountController extends Controller
 
     public function updateFiles(Request $request)
     {
-        $account = Account::query()->findOrFail($request->id);
         if ($request->hasFile('files')) {
             $file = $request->file('files');
             $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
+            $path = 'public/files/' . $filename;
+            if (Storage::exists($path)) {
+                return response()->json([
+                    'error' => 'File đã tồn tại!'
+                ], 409);
+            }
             $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
-            $imageUrl = Storage::url($path);
-            $account->update([
-                'files' => $imageUrl
-            ]);
+            $fileUrl = Storage::url($path);
+            $fileSizeMB = round($file->getSize() / (1024 * 1024), 2);
         }
 
-        return response()->json($account);
+        return ['url' => $fileUrl, 'size' => $fileSizeMB . "MB", 'time' => now()->format('Y-m-d H:i:s')];
     }
 
     private function requestUpdateProfile(array $oldData, array $newData)

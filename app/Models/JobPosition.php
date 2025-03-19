@@ -11,11 +11,9 @@ class JobPosition extends Model
 
     protected $fillable = [
         'account_id',
-        'job_position',
-        'start_date',
-        'end_date',
-        'salary',
+        'name',
         'status',
+        'description',
     ];
 
     public function account()

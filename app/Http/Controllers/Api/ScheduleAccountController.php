@@ -132,7 +132,7 @@ class ScheduleAccountController extends Controller
             ->whereNotNull('started_at')
             ->groupBy('old_stage', 'new_stage', 'worker', 'task_id')
             ->pluck('id');
-        $accounts = Account::all();
+        $accounts = Account::where('quit_work', false)->get();
         $taskInHistory = HistoryMoveTask::whereIn('id', $latestTaskIds)
             ->with(['oldStage', 'newStage', 'task'])
             ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))

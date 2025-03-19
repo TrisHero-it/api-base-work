@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\FieldValueController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\IpWifiController;
+use App\Http\Controllers\Api\JobPositionController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
@@ -42,11 +43,6 @@ Route::post('login', [LoginController::class, 'store']);
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
-Route::get('/test', function () {
-    return response()->json(
-        request()->getClientIp()
-    );
-});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
@@ -77,19 +73,20 @@ Route::middleware('auth:sanctum')->group(function () {
         'proposes' => ProposeController::class,
         'propose-categories' => ProposeCategoryController::class,
         'attendances' => AttendanceController::class,
+        'attendance-accounts' => AttendanceAccountController::class,
         'ip-wifis' => IpWifiController::class,
         'resource-categories' => CategoryResourceController::class,
         'resources' => ResourceController::class,
         'views' => ViewController::class,
         'contracts' => ContractController::class,
         'staffs' => StaffController::class,
-        'attendance-accounts' => AttendanceAccountController::class,
+        'job-positions' => JobPositionController::class,
     ]);
+
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
-    Route::post('/forgot-password', action: [AccountController::class, 'forgotPassword']);
     Route::post('update-files', [AccountController::class, 'updateFiles']);
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::post('/tag-comment', [CommentController::class, 'notification']);

@@ -24,16 +24,15 @@ class LoginStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required',
             'password' => 'required',
         ];
     }
 
-    public function messages() {
+    public function messages()
+    {
         return [
             'email.required' => 'Email không được bỏ trống',
             'password.required' => 'Mật khẩu không được bỏ trống'
         ];
     }
-
 }
