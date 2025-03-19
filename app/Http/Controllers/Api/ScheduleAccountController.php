@@ -16,7 +16,7 @@ class ScheduleAccountController extends Controller
     public function index(Request $request)
     {
         $globalBan = [11, 12, 14, 15, 17, 25];
-        $accounts = Account::select('email', 'full_name', 'avatar', 'id', 'position')
+        $accounts = Account::select('email', 'full_name', 'avatar', 'id')
             ->whereNotIn('id', $globalBan)
             ->get();
         if (isset($request->date)) {
