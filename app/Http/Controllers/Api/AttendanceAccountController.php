@@ -28,7 +28,6 @@ class AttendanceAccountController extends Controller
             'phone',
             'day_off',
             'quit_work',
-            'department_id'
         )
             ->where('quit_work', false)
             ->get();
