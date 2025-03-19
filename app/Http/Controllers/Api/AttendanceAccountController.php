@@ -27,7 +27,6 @@ class AttendanceAccountController extends Controller
             'email',
             'phone',
             'day_off',
-            'position',
             'quit_work',
             'department_id'
         )
