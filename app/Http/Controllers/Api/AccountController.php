@@ -427,20 +427,27 @@ class   AccountController extends Controller
 
     public function disableAccount(int $id, Request $request)
     {
-        $account = Account::query()->findOrFail($id);
-        $account->update([
-            'quit_work' => true
-        ]);
-        $account->tokens()->delete();
-        AccountWorkflow::where('account_id', $id)->delete();
-        Task::where('account_id', $id)->update([
-            'account_id' => null,
-            'started_at' => null,
-            'expired' => null,
-        ]);
+        if (Auth::user()->isSeniorAdmin()) {
+            $account = Account::query()->findOrFail($id);
+            $account->update([
+                'quit_work' => true
+            ]);
+            $account->tokens()->delete();
+            AccountWorkflow::where('account_id', $id)->delete();
+            Task::where('account_id', $id)->update([
+                'account_id' => null,
+                'started_at' => null,
+                'expired' => null,
+            ]);
 
-        return response()->json([
-            'message' => 'Vô hiệu hoá tài khoản thành công'
-        ]);
+            return response()->json([
+                'message' => 'Vô hiệu hoá tài khoản thành công'
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Bạn không có quyền vô hiệu hoá tài khoản',
+                'error' => 'Bạn không có quyền vô hiệu hoá tài khoản'
+            ], 403);
+        }
     }
 }
