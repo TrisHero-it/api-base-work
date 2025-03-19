@@ -63,7 +63,7 @@ class   AccountController extends Controller
                     if (isset($request->$key['id']) && $key != 'job_position') {
                         $model::where('id', $request->$key['id'])->update($request->$key);
                     } else {
-                        if ($key == 'job_position') {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                        if ($key == 'job_position') {
                             $model::where('status', 'active')
                                 ->where('account_id', $id)
                                 ->update(['status' => 'inactive']);
@@ -182,7 +182,6 @@ class   AccountController extends Controller
                 'email',
                 'phone',
                 'day_off',
-                'position',
                 'quit_work'
             );
         }
