@@ -297,9 +297,8 @@ class   AccountController extends Controller
             }, 'contracts.category', 'department'])
                 ->where('id', Auth::id())
                 ->first();
-            $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active'))->first();
-            if ($salary != null) {
-                $salary = $salary->id->first();
+            if ($account->jobPosition->where('status', 'active')->first() != null) {
+                $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
                 $account->salary = $salary;
             }
             $account->department_name = $account->department[0]->name;
