@@ -49,7 +49,8 @@ class Account extends Authenticatable
         'place_of_registration',
         'is_active',
         'end_work_date',
-        'personnel_class'
+        'personnel_class',
+        'is_active',
     ];
 
     protected $casts = [
@@ -95,6 +96,11 @@ class Account extends Authenticatable
     public function jobPosition()
     {
         return $this->hasMany(JobPosition::class, 'account_id', 'id');
+    }
+
+    public function leaveHistory()
+    {
+        return $this->hasMany(LeaveHistory::class);
     }
 
     public function salary()

@@ -19,6 +19,7 @@ class Contract extends Model
         'active',
         'start_date',
         'end_date',
+        'account_id'
     ];
 
     protected $casts = [

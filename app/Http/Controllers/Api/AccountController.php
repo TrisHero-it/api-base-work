@@ -8,7 +8,6 @@ use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
-use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Department;
 use App\Models\Education;
@@ -91,15 +90,14 @@ class   AccountController extends Controller
                     $jobPosition2 = JobPosition::create([
                         'account_id' => $id,
                         'name' => $request->position,
+                        'old_postion' => $jobPosition->name,
                         'status' => 'active',
                     ]);
 
                     Salary::create([
                         'job_position_id' => $jobPosition2->id,
-                        'gross_salary' => $salary->gross_salary,
                         'travel_allowance' => $salary->travel_allowance,
                         'eat_allowance' => $salary->eat_allowance,
-                        'net_salary' => $salary->net_salary,
                         'kpi' => $salary->kpi,
                         'basic_salary' => $salary->basic_salary,
                     ]);
@@ -110,7 +108,8 @@ class   AccountController extends Controller
         }
 
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $oldData = Account::select($request->keys())
+        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_id', 'email', 'username', 'educations', 'history_works', 'family_members'));
+        $oldData = Account::select($arrKeys)
             ->where('id', $id)
             ->first();
 
@@ -216,9 +215,63 @@ class   AccountController extends Controller
         return response()->json($accounts);
     }
 
-    public function show(int $id)
+    public function show(int $id, Request $request)
     {
-        $account = Account::query()->where('id', $id)->first();
+        if ($request->include == 'profile') {
+            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition' => function ($query) {
+                $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
+                    ->addSelect('job_positions.*')
+                    ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
+                    ->addSelect(DB::raw('(salaries.basic_salary + salaries.travel_allowance + salaries.eat_allowance + salaries.kpi) as total_salary'));
+            }, 'contracts.category', 'department'])
+                ->where('id', $id)
+                ->first();
+            $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
+            $account->salary = $salary;
+            $account->department_name = $account->department[0]->name;
+            unset($account->department);
+            $account->position = $account->jobPosition->where('status', 'active')->first()->name;
+        } else if ($request->include == 'my-job') {
+            $account = Account::with(['jobPosition' => function ($query) {
+                $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
+                    ->addSelect('job_positions.*')
+                    ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
+                    ->addSelect(DB::raw('(salaries.basic_salary + salaries.travel_allowance + salaries.eat_allowance + salaries.kpi as total_salary'));
+            }])->where('id', $id)->first();
+            $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
+            $account->salary = $salary;
+        } else {
+            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
+                ->where('id', $id)
+                ->first();
+        }
+        if ($account->role_id == 2) {
+            $account['role'] = 'Quản trị';
+        } else if ($account->role_id == 3) {
+            $account['role'] = 'Quản trị cấp cao';
+        } else {
+            $account['role'] = 'Thành viên thông thường';
+        }
+        unset($account->role_id);
+        $month = now()->month;
+        $year = now()->year;
+        $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
+        $proposes = Propose::where('propose_category_id', $category->id)
+            ->where('status', 'approved')
+            ->where('account_id', $account->id)
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->get()
+            ->pluck('id');
+        // Lấy ra tất cả các ngày xin nghỉ
+        $holidays = DateHoliday::whereIn('propose_id', $proposes)
+            ->get();
+        $a = 0;
+        foreach ($holidays as $date) {
+            $a += $date->number_of_days;
+        }
+        $account['day_off_used'] = $a;
+        $account['avatar'] = $account->avatar;
 
         return response()->json($account);
     }
@@ -240,7 +293,7 @@ class   AccountController extends Controller
                 $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
                     ->addSelect('job_positions.*')
                     ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
-                    ->addSelect(DB::raw('(salaries.gross_salary + salaries.travel_allowance + salaries.eat_allowance) as total_salary'));
+                    ->addSelect(DB::raw('(salaries.basic_salary + salaries.travel_allowance + salaries.eat_allowance + salaries.kpi) as total_salary'));
             }, 'contracts.category', 'department'])
                 ->where('id', Auth::id())
                 ->first();
@@ -254,7 +307,7 @@ class   AccountController extends Controller
                 $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
                     ->addSelect('job_positions.*')
                     ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
-                    ->addSelect(DB::raw('(salaries.gross_salary + salaries.travel_allowance + salaries.eat_allowance) as total_salary'));
+                    ->addSelect(DB::raw('(salaries.basic_salary + salaries.travel_allowance + salaries.eat_allowance + salaries.kpi as total_salary'));
             }])->where('id', Auth::id())->first();
             $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
             $account->salary = $salary;
@@ -294,23 +347,34 @@ class   AccountController extends Controller
         return response()->json($account);
     }
 
-    public function updateFiles(Request $request)
+    public function storeFiles(Request $request)
     {
         if ($request->hasFile('files')) {
             $file = $request->file('files');
-            $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
-            $path = 'public/files/' . $filename;
-            if (Storage::exists($path)) {
-                return response()->json([
-                    'error' => 'File đã tồn tại!'
-                ], 409);
-            }
-            $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
-            $fileUrl = Storage::url($path);
-            $fileSizeMB = round($file->getSize() / (1024 * 1024), 2);
-        }
 
-        return ['url' => $fileUrl, 'size' => $fileSizeMB . "MB", 'time' => now()->format('Y-m-d H:i:s')];
+            if (!is_array($file)) {
+                $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
+                $path = 'public/files/' . $filename;
+                if (Storage::exists($path)) {
+                    return response()->json([
+                        'error' => 'File đã tồn tại!'
+                    ], 409);
+                }
+                $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
+                $fileUrl = Storage::url($path);
+                $fileSizeMB = round($file->getSize() / (1024 * 1024), 2);
+
+                return ['url' => $fileUrl, 'size' => $fileSizeMB . "MB", 'time' => now()->format('Y-m-d H:i:s')];
+            } else {
+                $dataFiles = $this->uploadFile($file);
+                return response()->json($dataFiles);
+            }
+        } else {
+            return response()->json([
+                'errors' => 'Không có file được tải lên',
+                'message' => 'Không có file được tải lên'
+            ], 400);
+        }
     }
 
     private function requestUpdateProfile(array $oldData, array $newData)
@@ -449,5 +513,28 @@ class   AccountController extends Controller
                 'error' => 'Bạn không có quyền vô hiệu hoá tài khoản'
             ], 403);
         }
+    }
+
+    private function uploadFile($files)
+    {
+        $dataFiles = [];
+        if ($files) {
+            foreach ($files as $file) {
+                $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc    
+                $path = 'public/files/' . $filename;
+                // if (Storage::exists($path)) {
+                //     return 0;
+                // }
+                $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
+                $fileUrl = Storage::url($path);
+                $fileSizeMB = round($file->getSize() / (1024 * 1024), 2);
+                $dataFiles[] = [
+                    'file_name' => $filename,
+                    'file_url' => $fileUrl,
+                    'file_size' => $fileSizeMB
+                ];
+            }
+        }
+        return $dataFiles;
     }
 }

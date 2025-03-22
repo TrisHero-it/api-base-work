@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\AssetAccountController;
+use App\Http\Controllers\Api\AssetCategoryController;
+use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AttendanceAccountController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryResourceController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\ContractCategoryController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\EmailController;
@@ -32,6 +36,9 @@ use App\Http\Controllers\Api\StickerController;
 use App\Http\Controllers\Api\TagValueController;
 use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\LeaveHistoryController;
+use App\Http\Controllers\Api\PersonDocumentCategoryController;
+use App\Http\Controllers\Api\PersonDocumentController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\Api\ResourceController;
@@ -78,16 +85,21 @@ Route::middleware('auth:sanctum')->group(function () {
         'resource-categories' => CategoryResourceController::class,
         'resources' => ResourceController::class,
         'views' => ViewController::class,
+        'contract-categories' => ContractCategoryController::class,
         'contracts' => ContractController::class,
         'staffs' => StaffController::class,
         'job-positions' => JobPositionController::class,
+        'assets' => AssetController::class,
+        'asset-accounts' => AssetAccountController::class,
+        'asset-categories' => AssetCategoryController::class,
+        'leave-histories' => LeaveHistoryController::class,
     ]);
 
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);
     Route::get('my-account', [AccountController::class, 'myAccount']);
-    Route::post('update-files', [AccountController::class, 'updateFiles']);
+    Route::post('upload-files', [AccountController::class, 'storeFiles']);
     Route::put('seen-notification', [NotificationController::class, 'seenNotification']);
     Route::post('/tag-comment', [CommentController::class, 'notification']);
     Route::post('/check-in', [AttendanceController::class, 'checkIn']);

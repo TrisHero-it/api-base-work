@@ -24,7 +24,10 @@ class StageController extends Controller
             $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
         }
 
-        $stages = Stage::query()->where('workflow_id', $request->workflow_id)->orderBy('index', 'desc')->get();
+        $stages = Stage::query()
+            ->where('workflow_id', $request->workflow_id)
+            ->orderBy('index', 'desc')
+            ->get();
         $arrStageId = $stages->pluck('id');
 
         $tasks2 = Task::query()
@@ -117,6 +120,13 @@ class StageController extends Controller
         }
 
         return response()->json($stages);
+    }
+
+    public function show(int $id)
+    {
+        $stage = Stage::query()->with('workflow')->findOrFail($id);
+
+        return response()->json($stage);
     }
 
     public function update(int $id, StageUpdateRequest $request)

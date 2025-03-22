@@ -18,6 +18,7 @@ class ScheduleAccountController extends Controller
         $globalBan = [11, 12, 14, 15, 17, 25];
         $accounts = Account::select('email', 'full_name', 'avatar', 'id')
             ->whereNotIn('id', $globalBan)
+            ->where('quit_work', false)
             ->get();
         if (isset($request->date)) {
             $date = $request->date;
