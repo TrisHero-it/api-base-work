@@ -300,10 +300,10 @@ class   AccountController extends Controller
             if ($account->jobPosition->where('status', 'active')->first() != null) {
                 $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
                 $account->salary = $salary;
+                $account->position = $account->jobPosition->where('status', 'active')->first()->name;
             }
             $account->department_name = $account->department[0]->name;
             unset($account->department);
-            $account->position = $account->jobPosition->where('status', 'active')->first()->name;
         } else if ($request->include == 'my-job') {
             $account = Account::with(['jobPosition' => function ($query) {
                 $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
