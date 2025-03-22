@@ -82,26 +82,31 @@ class   AccountController extends Controller
                     ->where('account_id', $id)
                     ->where('name', '!=', $request->position)
                     ->first();
+                $name = null;
                 if (isset($jobPosition)) {
+                    $name = $jobPosition->name;
                     $jobPosition->update([
                         'status' => 'inactive'
                     ]);
                     $salary = Salary::where('job_position_id', $jobPosition->id)->first();
-                    $jobPosition2 = JobPosition::create([
-                        'account_id' => $id,
-                        'name' => $request->position,
-                        'old_postion' => $jobPosition->name,
-                        'status' => 'active',
-                    ]);
-
-                    Salary::create([
-                        'job_position_id' => $jobPosition2->id,
-                        'travel_allowance' => $salary->travel_allowance,
-                        'eat_allowance' => $salary->eat_allowance,
-                        'kpi' => $salary->kpi,
-                        'basic_salary' => $salary->basic_salary,
-                    ]);
                 }
+                $jobPosition2 = JobPosition::create([
+                    'account_id' => $id,
+                    'name' => $request->position,
+                    'old_postion' => $name,
+                    'status' => 'active',
+                ]);
+                $travelAllowance = $salary->travel_allowance ?? 0;
+                $eatAllowance = $salary->eat_allowance ?? 0;
+                $kpi = $salary->kpi ?? 0;
+                $basicSalary = $salary->basic_salary ?? 0;
+                Salary::create([
+                    'job_position_id' => $jobPosition2->id,
+                    'travel_allowance' => $travelAllowance,
+                    'eat_allowance' => $eatAllowance,
+                    'kpi' => $kpi,
+                    'basic_salary' => $basicSalary,
+                ]);
             }
 
             return response()->json($account);
@@ -297,6 +302,7 @@ class   AccountController extends Controller
             }, 'contracts.category', 'department'])
                 ->where('id', Auth::id())
                 ->first();
+            $account->salary = null;
             if ($account->jobPosition->where('status', 'active')->first() != null) {
                 $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
                 $account->salary = $salary;
