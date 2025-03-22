@@ -60,7 +60,8 @@ class   AccountController extends Controller
                 $arr = [];
                 if ($request->filled($key)) {
                     if (isset($request->$key['id']) && $key != 'job_position') {
-                        $model::where('id', $request->$key['id'])->update($request->$key);
+                        $newValue = collect($request->input($key))->except('gross_salary')->toArray();
+                        $model::where('id', $request->$key['id'])->update($newValue);
                     } else {
                         if ($key == 'job_position') {
                             $model::where('status', 'active')
