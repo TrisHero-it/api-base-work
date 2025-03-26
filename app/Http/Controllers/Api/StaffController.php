@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Education;
 use App\Models\FamilyMember;
+use App\Models\JobPosition;
 use App\Models\Salary;
 use App\Models\WorkHistory;
 use Illuminate\Http\Request;
@@ -14,37 +15,56 @@ class StaffController extends Controller
 {
     public function index(Request $request)
     {
-        $staffs = Account::where('active', true)->get();
+        $staffs = Account::where('active', true)
+            ->where('quit_work', false)
+            ->get();
 
         return response()->json($staffs);
     }
 
     public function store(Request $request)
     {
-        $staff = Account::where('id', $request->account_id)->first();
+        $account = Account::where('id', $request->account_id)
+            ->first();
+        $data = $request->except('account_id', 'educations', 'work_histories', 'family_members', 'job_positions', 'salary', 'position');
+        $data['is_active'] = true;
 
-        $staff->update($request->personal_info);
-        if ($request->filled('salary')) {
-            $arrSalary = ['account_id' => $request->account_id];
-            $arrSalary = array_merge($arrSalary, $request->salary);
-            Salary::create($arrSalary);
-        }
-        if ($request->filled('education')) {
-            $arrEducation = ['account_id' => $request->account_id];
-            $arrEducation = array_merge($arrEducation, $request->education);
-            Education::create($arrEducation);
-        }
-        if ($request->filled('work_history')) {
-            $arrWorkHistory = ['account_id' => $request->account_id];
-            $arrWorkHistory = array_merge($arrWorkHistory, $request->work_history);
-            WorkHistory::create($arrWorkHistory);
-        }
-        if ($request->filled('family_info')) {
-            $arrFamilyInfo = ['account_id' => $request->account_id];
-            $arrFamilyInfo = array_merge($arrFamilyInfo, $request->family_info);
-            FamilyMember::create($arrFamilyInfo);
-        }
+        if ($request->filled('position')) {
+            $jobPosition = JobPosition::create([
+                'name' => $request->position ?? 'Thực tập sinh',
+                'account_id' => $request->account_id,
+                'status' => 'active',
+            ]);
 
-        return response()->json($staff);
+            if ($request->filled('salary')) {
+                $salary = Salary::create([
+                    'basic_salary' => $request->salary->basic_salary,
+                    'job_position_id' => $jobPosition->id,
+                    'travel_allowance' => $request->salary->travel_allowance,
+                    'eat_allowance' => $request->salary->eat_allowance,
+                    'kpi' => $request->salary->kpi,
+                ]);
+            }
+
+            $models = [
+                'educations' => Education::class,
+                'work_histories' => WorkHistory::class,
+                'family_members' => FamilyMember::class,
+            ];
+
+            foreach ($models as $key => $model) {
+                if ($request->filled($key)) {
+                    $arr = [];
+                    foreach ($request->$key as $a) {
+                        $arr[] = array_merge(['account_id' => $request->account_id], $a);
+                    }
+                    $model::insert($arr);
+                }
+            }
+        }
+        $account->update($data);
+
+
+        return response()->json($account);
     }
 }

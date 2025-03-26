@@ -16,7 +16,7 @@ class checkDevMuaKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedIps = ['nghia@gmail.com', 'dovuong020802@gmail.com', 'minhtri204dz@gmail.com'];
+        $allowedIps = ['nghia@gmail.com', 'dovuong020802@gmail.com', 'minhtri204dz@gmail.com', 'tranminh209204@gmail.com', 'ankhangit06@gmail.com'];
         if (in_array(Auth::user()->email, $allowedIps)) {
             return $next($request);
         } else {

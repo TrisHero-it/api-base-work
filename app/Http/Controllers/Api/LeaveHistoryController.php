@@ -19,10 +19,17 @@ class LeaveHistoryController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
+        LeaveHistory::where('status', 'active')
+            ->where('account_id', $request->account_id)
+            ->update([
+                'status' => 'inactive'
+            ]);
+        $data['status'] = 'active';
         $leaveHistory = LeaveHistory::create($data);
         $account = Account::find($data['account_id'])->update([
             'quit_work' => true
         ]);
+
 
         return response()->json($leaveHistory);
     }

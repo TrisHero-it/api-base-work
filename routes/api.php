@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AssetAccountController;
+use App\Http\Controllers\Api\AssetBrandController;
 use App\Http\Controllers\Api\AssetCategoryController;
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AttendanceAccountController;
@@ -37,8 +38,7 @@ use App\Http\Controllers\Api\TagValueController;
 use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\LeaveHistoryController;
-use App\Http\Controllers\Api\PersonDocumentCategoryController;
-use App\Http\Controllers\Api\PersonDocumentController;
+use App\Http\Controllers\Api\LoginHistoryController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\Api\ResourceController;
@@ -90,11 +90,12 @@ Route::middleware('auth:sanctum')->group(function () {
         'staffs' => StaffController::class,
         'job-positions' => JobPositionController::class,
         'assets' => AssetController::class,
+        'asset-brands' => AssetBrandController::class,
         'asset-accounts' => AssetAccountController::class,
         'asset-categories' => AssetCategoryController::class,
         'leave-histories' => LeaveHistoryController::class,
+        'login-histories' => LoginHistoryController::class,
     ]);
-
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);

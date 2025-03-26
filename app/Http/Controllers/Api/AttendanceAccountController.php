@@ -26,9 +26,9 @@ class AttendanceAccountController extends Controller
             'role_id',
             'email',
             'phone',
-            'day_off',
             'quit_work',
         )
+            ->with('dayoffAccount')
             ->where('quit_work', false)
             ->get();
 
@@ -58,6 +58,10 @@ class AttendanceAccountController extends Controller
             ->get();
 
         foreach ($accounts as $account) {
+            if ($account->dayoffAccount != null) {
+                $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+                unset($account->dayoffAccount);
+            }
             if ($account->quit_work == true) {
                 $account['role'] = 'Vô hiệu hoá';
             } else {

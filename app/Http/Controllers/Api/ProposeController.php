@@ -7,8 +7,10 @@ use App\Http\Requests\ProposeStoreRequest;
 use App\Models\Account;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
+use App\Models\DayoffAccount;
 use App\Models\Notification;
 use App\Models\Propose;
+use App\Models\ProposeCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -111,7 +113,7 @@ class ProposeController extends Controller
     {
         $data = $request->except('holiday');
         $data['account_id'] = Auth::id();
-
+        $proposeCategory = ProposeCategory::where('id', $request->propose_category_id)->first();
         if ($request->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $request->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)
@@ -134,7 +136,7 @@ class ProposeController extends Controller
         //         'holiday.start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
         //     ]);
         // }
-        if ($request->name == "Nghỉ có hưởng lương") {
+        if ($proposeCategory->name == "Đăng ký nghỉ") {
             foreach ($request->holiday as $date2) {
                 $startDate = Carbon::parse($date2['start_date']);
                 $endDate = Carbon::parse($date2['end_date']);
@@ -170,18 +172,20 @@ class ProposeController extends Controller
                     }
                 }
             }
-            if ($numberHoliDay >= Auth::user()->day_off) {
-                return response()->json([
-                    'message' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn',
-                    'errors' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn'
-                ], 401);
+            if ($request->name == "Nghỉ có hưởng lương") {
+                if ($numberHoliDay >= Auth::user()->day_off) {
+                    return response()->json([
+                        'message' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn',
+                        'errors' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn'
+                    ], 401);
+                }
             }
         }
         $arr = [];
         $propose = Propose::query()->create($data);
         if (isset($request->holiday)) {
             foreach ($request->holiday as $date) {
-                if ($request->name == "Nghỉ có hưởng lương") {
+                if ($proposeCategory->name == "Đăng ký nghỉ") {
                     $a = [
                         'propose_id' => $propose->id,
                         'number_of_days' => $numberHoliDay
@@ -215,10 +219,28 @@ class ProposeController extends Controller
             }
         }
         $propose = Propose::query()->with('propose_category')->findOrFail($id);
+        $dayOffAccount = DayoffAccount::where('account_id', $propose->account_id)->first();
         $data = $request->all();
         if (isset($request->status)) {
             $data['approved_by'] = Auth::id();
         }
+
+        if ($request->status == 'approved' && $propose->propose_category->name == 'Nghỉ có hưởng lương') {
+            $numberHoliDay = 0;
+            foreach ($propose->date_holidays as $date2) {
+                $numberHoliDay += $date2->number_of_days;
+            }
+            if ($dayOffAccount->dayoff_count - $numberHoliDay < 0) {
+                return response()->json([
+                    'message' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn',
+                    'errors' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn'
+                ], status: 401);
+            }
+            $dayOffAccount->update([
+                'dayoff_count' => $dayOffAccount->dayoff_count - $numberHoliDay
+            ]);
+        }
+
         $propose->update($data);
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $propose->start_time)[0];
@@ -237,16 +259,8 @@ class ProposeController extends Controller
                 ]);
             }
         }
-        if ($request->status == 'approved' && $propose->propose_category->name == 'Nghỉ có hưởng lương') {
-            $numberHoliDay = 0;
-            foreach ($propose->date_holidays as $date2) {
-                $numberHoliDay += $date2->number_of_days;
-            }
-            $account = Account::find($propose->account_id);
-            $account->update([
-                'day_off' => $account->day_off - $numberHoliDay
-            ]);
-        }
+
+
         $name = $propose->propose_category->name;
         $status = $propose->status == 'approved' ? 'được chấp nhận' : 'bị từ chối';
         Notification::create([

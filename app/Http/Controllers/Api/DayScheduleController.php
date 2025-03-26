@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\AccountDepartment;
-use App\Models\Department;
 use App\Models\Schedule;
 use Auth;
 use Carbon\Carbon;

@@ -14,6 +14,9 @@ class JobPosition extends Model
         'name',
         'status',
         'description',
+        'old_postion',
+        'reason',
+        'files',
     ];
 
     public function account()

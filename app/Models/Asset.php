@@ -24,7 +24,10 @@ class Asset extends Model
         'buyer_id',
         'seller_id',
         'asset_category_id',
-        'account_id'
+        'account_id',
+        'brand_link',
+        'start_date',
+        'brand_id'
     ];
 
     public function buyer()
@@ -45,5 +48,15 @@ class Asset extends Model
     public function account()
     {
         return $this->belongsTo(Account::class)->select('id', 'full_name', 'email', 'phone', 'address');
+    }
+
+    public function historyAssets()
+    {
+        return $this->hasMany(HistoryAsset::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(AssetBrand::class);
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Requests\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
+use App\Models\Asset;
 use App\Models\DateHoliday;
 use App\Models\Department;
 use App\Models\Education;
@@ -20,12 +21,13 @@ use App\Models\Task;
 use App\Models\View;
 use App\Models\WorkHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-class   AccountController extends Controller
+class AccountController extends Controller
 {
     public function register(AccountStoreRequest $request)
     {
@@ -36,7 +38,6 @@ class   AccountController extends Controller
             'password' => Hash::make($request->safe()->password),
             'username' => $username,
             'full_name' => $request->full_name,
-            'day_off' => 0
         ]);
 
         return response()->json($account);
@@ -52,10 +53,8 @@ class   AccountController extends Controller
             'job_position' => JobPosition::class,
             'salary' => Salary::class,
         ];
-
         if (Auth::user()->isSeniorAdmin()) {
-            $data = $request->except('password', 'avatar', 'position', 'department_id');
-
+            $data = $request->except('password', 'avatar', 'position', 'department_id', 'personal_documents');
             foreach ($models as $key => $model) {
                 $arr = [];
                 if ($request->filled($key)) {
@@ -73,9 +72,16 @@ class   AccountController extends Controller
                     }
                 }
             }
-            if (isset($request->department_name)) {
-                $department = Department::where('name', $request->department_name)->first();
+            if (isset($request->department_id)) {
+                $department = Department::findOrFail($request->department_id);
                 AccountDepartment::where('account_id', $id)->update(['department_id' => $department->id]);
+            }
+            if (isset($request->personal_documents)) {
+                $newPersonalDocuments = $account->personal_documents;
+                foreach ($request->personal_documents as $personalDocument) {
+                    $newPersonalDocuments[] = $personalDocument;
+                }
+                $data['personal_documents'] = $newPersonalDocuments;
             }
             $account->update($data);
             if ($request->filled('position')) {
@@ -97,10 +103,17 @@ class   AccountController extends Controller
                     'old_postion' => $name,
                     'status' => 'active',
                 ]);
-                $travelAllowance = $salary->travel_allowance ?? 0;
-                $eatAllowance = $salary->eat_allowance ?? 0;
-                $kpi = $salary->kpi ?? 0;
-                $basicSalary = $salary->basic_salary ?? 0;
+                if ($request->filled('salary')) {
+                    $travelAllowance = $request->salary['travel_allowance'] ?? 0;
+                    $eatAllowance = $request->salary['eat_allowance'] ?? 0;
+                    $kpi = $request->salary['kpi'] ?? 0;
+                    $basicSalary = $request->salary['basic_salary'] ?? 0;
+                } else {
+                    $travelAllowance = $salary->travel_allowance ?? 0;
+                    $eatAllowance = $salary->eat_allowance ?? 0;
+                    $kpi = $salary->kpi ?? 0;
+                    $basicSalary = $salary->basic_salary ?? 0;
+                }
                 Salary::create([
                     'job_position_id' => $jobPosition2->id,
                     'travel_allowance' => $travelAllowance,
@@ -114,10 +127,13 @@ class   AccountController extends Controller
         }
 
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_id', 'email', 'username', 'educations', 'history_works', 'family_members'));
-        $oldData = Account::select($arrKeys)
-            ->where('id', $id)
-            ->first();
+        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_id', 'email', 'username', 'education', 'history_works', 'family_members'));
+        $oldData = [];
+        if ($arrKeys != null) {
+            $oldData = Account::select($arrKeys)
+                ->where('id', $id)
+                ->first();
+        }
 
         foreach ($models as $key => $model) {
             if ($request->filled($key)) {
@@ -125,8 +141,11 @@ class   AccountController extends Controller
                     ->get();
             }
         }
+        if ($oldData instanceof Collection) {
+            $oldData = $oldData->toArray();
+        }
 
-        $this->requestUpdateProfile($oldData->toArray(), $request->all());
+        $this->requestUpdateProfile($oldData, $request->all());
 
         return response()->json($account);
     }
@@ -136,14 +155,13 @@ class   AccountController extends Controller
         // Lấy tên từ username đẩy lên
         $name = $request->username;
         // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
-
         if (isset($request->include)) {
             if ($request->include == 'profile') {
-                $accounts = Account::with(['jobPosition', 'department', 'educations', 'familyMembers']);
+                $accounts = Account::with(['jobPosition', 'department', 'workHistories', 'educations', 'familyMembers', 'dayoffAccount']);
             } else if ($request->include == 'list') {
                 if ($request->filled('view_id')) {
                     $view = View::findOrFail($request->view_id);
-                    $dataSelect = ['full_name'];
+                    $dataSelect = ['id'];
                     $dataWith = [];
                     if (isset($view->field_name['personal_info'])) {
                         $dataSelect = array_merge($dataSelect, $view->field_name['personal_info']);
@@ -154,28 +172,29 @@ class   AccountController extends Controller
                     if (isset($view->field_name['contract'])) {
                         $dataWith = array_merge($dataWith, ['contract']);
                     }
+                    if (isset($view->field_name['department'])) {
+                        $dataWith = array_merge($dataWith, ['department']);
+                    }
                     $accounts = Account::select($dataSelect)
-                        ->with('jobPosition');
-                } else {
-                    $accounts = Account::select(
-                        'id',
-                        'username',
-                        'full_name',
-                        'avatar',
-                        'role_id',
-                        'email',
-                        'phone',
-                        'day_off',
-                        'status',
-                        'gender',
-                        'birthday',
-                        'contract_file',
-                        'start_work_date',
-                        'personal_documents',
-                        'quit_work'
-                    )
-                        ->with('department');
+                        ->with($dataWith)
+                        ->get();
                 }
+                $accounts = Account::select(
+                    'id',
+                    'username',
+                    'full_name',
+                    'avatar',
+                    'role_id',
+                    'email',
+                    'phone',
+                    'status',
+                    'gender',
+                    'birthday',
+                    'start_work_date',
+                    'personal_documents',
+                    'quit_work'
+                )
+                    ->with('department', 'jobPosition', 'dayoffAccount');
             }
         } else {
             $accounts = Account::select(
@@ -186,9 +205,8 @@ class   AccountController extends Controller
                 'role_id',
                 'email',
                 'phone',
-                'day_off',
                 'quit_work'
-            );
+            )->with('dayoffAccount');
         }
         $accounts = $accounts->where('username', 'like', "%$name%");
         $accounts = $accounts->when($request->filled('role_id'), function ($query) use ($request) {
@@ -199,12 +217,19 @@ class   AccountController extends Controller
                 return $query->where('quit_work', $request->quit_work);
             })
             ->get();
-
         foreach ($accounts as $account) {
+            if ($account->dayoffAccount != null) {
+                $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+                unset($account->dayoffAccount);
+            }
+            if ($account->jobPosition->where('status', 'active')->first() != null) {
+                $account->position = $account->jobPosition->where('status', 'active')->first()->name;
+            } else {
+                $account->position = null;
+            }
             if (!empty($account->department->toArray())) {
                 $account->department_name = $account->department[0]->name;
             }
-            unset($account->department);
             if ($account->quit_work == true) {
                 $account['role'] = 'Vô hiệu hoá';
             } else {
@@ -224,7 +249,7 @@ class   AccountController extends Controller
     public function show(int $id, Request $request)
     {
         if ($request->include == 'profile') {
-            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition' => function ($query) {
+            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'dayoffAccount', 'jobPosition' => function ($query) {
                 $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
                     ->addSelect('job_positions.*')
                     ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
@@ -295,7 +320,7 @@ class   AccountController extends Controller
     public function myAccount(Request $request)
     {
         if ($request->include == 'profile') {
-            $account = Account::with(['educations', 'workHistories', 'familyMembers', 'jobPosition' => function ($query) {
+            $account = Account::with(['educations', 'workHistories', 'dayoffAccount', 'familyMembers', 'jobPosition' => function ($query) {
                 $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
                     ->addSelect('job_positions.*')
                     ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
@@ -312,7 +337,7 @@ class   AccountController extends Controller
             $account->department_name = $account->department[0]->name;
             unset($account->department);
         } else if ($request->include == 'my-job') {
-            $account = Account::with(['jobPosition' => function ($query) {
+            $account = Account::with(['dayoffAccount', 'jobPosition' => function ($query) {
                 $query->with('salary') // Vẫn lấy đầy đủ thông tin từ salary
                     ->addSelect('job_positions.*')
                     ->leftJoin('salaries', 'job_positions.id', '=', 'salaries.job_position_id')
@@ -321,7 +346,8 @@ class   AccountController extends Controller
             $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
             $account->salary = $salary;
         } else {
-            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'day_off')
+            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone')
+                ->with('dayoffAccount')
                 ->where('id', Auth::id())
                 ->first();
         }
@@ -349,6 +375,10 @@ class   AccountController extends Controller
         $a = 0;
         foreach ($holidays as $date) {
             $a += $date->number_of_days;
+        }
+        if ($account->dayoffAccount != null) {
+            $account['day_off'] = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+            unset($account->dayoffAccount);
         }
         $account['day_off_used'] = $a;
         $account['avatar'] = $account->avatar;
@@ -382,7 +412,7 @@ class   AccountController extends Controller
             return response()->json([
                 'errors' => 'Không có file được tải lên',
                 'message' => 'Không có file được tải lên'
-            ], 400);
+            ], 401);
         }
     }
 
@@ -412,7 +442,6 @@ class   AccountController extends Controller
                 ['label' => 'Ngày sinh', 'value' => 'birthday'],
                 ['label' => 'Giới tính', 'value' => 'gender'],
                 ['label' => 'Địa chỉ', 'value' => 'address'],
-                ['label' => 'Hợp đồng lao động', 'value' => 'contract_file'],
                 ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
                 ['label' => 'Trạng thái nghỉ việc', 'value' => 'quit_work'],
                 ['label' => 'Ảnh đại diện', 'value' => 'avatar'],
@@ -448,8 +477,6 @@ class   AccountController extends Controller
         ];
         $arraySalary = [
             'children' => [
-                ['label' => 'Lương gross', 'value' => 'gross_salary'],
-                ['label' => 'Lương thực nhận', 'value' => 'net_salary'],
                 ['label' => 'Lương cơ bản', 'value' => 'basic_salary'],
                 ['label' => 'Phụ cấp đi lại', 'value' => 'travel_allowance'],
                 ['label' => 'Phụ cấp ăn uống', 'value' => 'eat_allowance'],
@@ -461,12 +488,13 @@ class   AccountController extends Controller
         ];
         $arrayContract = [
             'children' => [
-                ['label' => 'Loại hợp đồng', 'value' => 'contract_type'],
                 ['label' => 'Ghi chú', 'value' => 'note'],
                 ['label' => 'Loại hợp đồng', 'value' => 'category__contract_id'],
-                ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'contract_start_date'],
-                ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'contract_end_date'],
+                ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'start_date'],
+                ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'end_date'],
                 ['label' => 'Trạng thái của hợp đồng', 'value' => 'status'],
+                ['label' => 'Tài liệu hợp đồng', 'value' => 'files'],
+                ['label' => 'Người tạo hợp đồng', 'value' => 'creator_by'],
             ],
             'name' => 'Hợp đồng',
             'value' => 'contract',
@@ -507,10 +535,15 @@ class   AccountController extends Controller
             ]);
             $account->tokens()->delete();
             AccountWorkflow::where('account_id', $id)->delete();
+            // xét các công việc về null
             Task::where('account_id', $id)->update([
                 'account_id' => null,
                 'started_at' => null,
                 'expired' => null,
+            ]);
+            // Xét các tài nguyên về null
+            Asset::where('account_id', $id)->update([
+                'account_id' => null,
             ]);
 
             return response()->json([

@@ -22,6 +22,7 @@ class AttendanceController extends Controller
         $year = Carbon::now()->year;
         $startMonth = Carbon::now()->startOfMonth();
         $now = Carbon::now();
+
         if (isset($request->me)) {
             $account = Auth::user();
             $attendance = Attendance::query()
@@ -36,6 +37,10 @@ class AttendanceController extends Controller
             if (isset($request->start) && isset($request->end)) {
                 $attendance->where('created_at', '>=', $request->start)
                     ->where('created_at', '<=', $request->end);
+            }
+
+            if (isset($request->account_id)) {
+                $attendance->where('account_id', $request->account_id);
             }
             //  Lọc theo tháng
             if (isset($request->date)) {
@@ -53,6 +58,22 @@ class AttendanceController extends Controller
             }
             $attendance = $attendance->get();
             $isSalesMember = Auth::user()->isSalesMember();
+
+            $proposes = Propose::with('date_holidays')->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT', 'Nghỉ không hưởng lương'])
+                ->select('id', 'account_id')
+                ->where('status', 'approved')
+                ->whereMonth('created_at', $month ?? now()->month)
+                ->whereYear('created_at', $year ?? now()->year);
+
+            if ($request->filled('account_id')) {
+                $proposes->where('account_id', $request->account_id);
+            } else {
+                if (!Auth::user()->isSeniorAdmin()) {
+                    $proposes->where('account_id', Auth::id());
+                }
+            }
+
+            $proposes = $proposes->get();
 
             foreach ($attendance as $item) {
                 $hours = 0;
@@ -80,8 +101,15 @@ class AttendanceController extends Controller
                 $workday = number_format($hours, 2) / 7.5;
                 $item['workday'] = number_format($workday, 2);
             }
-
             $data = [];
+            $arrDateHoliday = [];
+            foreach ($proposes as $propose) {
+                foreach ($propose->date_holidays as $holiday) {
+                    $holiday['account_id'] = $propose->account_id;
+                    $arrDateHoliday[] = $holiday;
+                }
+            }
+            $data['ot_and_holiday'] = $arrDateHoliday;
             $data['attendances'] = $attendance;
             $data['standard_work'] = Schedule::whereMonth('day_of_week', $month)
                 ->whereYear('day_of_week', $year)
@@ -133,12 +161,7 @@ class AttendanceController extends Controller
 
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
-            $proposes = Propose::whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
-                ->where('account_id', Auth::id())
-                ->where('status', 'approved')
-                ->whereMonth('created_at', $month ?? now()->month)
-                ->whereYear('created_at', $year ?? now()->year)
-                ->get();
+
             $dayOffWithPay = 0;
             $idProposeHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
             $holidays = DateHoliday::whereIn('propose_id', $idProposeHoliday)->get();

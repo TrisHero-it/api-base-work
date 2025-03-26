@@ -113,6 +113,11 @@ class Account extends Authenticatable
         return $this->hasMany(Contract::class);
     }
 
+    public function dayoffAccount()
+    {
+        return $this->hasOne(DayoffAccount::class);
+    }
+
     public function department()
     {
         return $this->belongsToMany(Department::class, 'account_departments', 'account_id', 'department_id');
