@@ -42,6 +42,7 @@ class   AssetController extends Controller
 
         $assets = $assets->paginate($page)
             ->appends($request->all());
+
         return response()->json($assets);
     }
 
@@ -73,10 +74,6 @@ class   AssetController extends Controller
             if ($request->status == 'unused') {
                 $data['start_date'] = null;
                 $data['account_id'] = null;
-            }
-
-            if ($data['status'] != $asset->status) {
-                $status = $data['status'];
             }
         }
         if ($request->filled('category_id')) {

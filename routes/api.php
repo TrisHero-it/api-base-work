@@ -44,12 +44,23 @@ use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ViewController;
 use App\Http\Controllers\ScheduleWorkController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
+
+Route::get('/test', function () {
+    return request()->ip();
+});
+
+Route::get('/test2', function () {
+    $response = Http::get('https://api64.ipify.org?format=json');
+
+    return $response->json();
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([

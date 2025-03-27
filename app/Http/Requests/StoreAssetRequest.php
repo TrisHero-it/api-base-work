@@ -25,7 +25,7 @@ class StoreAssetRequest extends FormRequest
             'code' => 'required|string|max:255',
             'name' => 'string|max:255',
             'category_id' => 'exists:asset_categories,id',
-            'price' => 'numeric|min:0',
+            'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'status' => 'in:using,liquidated,broken,unused,warranty',
             'reason' => 'nullable|string',

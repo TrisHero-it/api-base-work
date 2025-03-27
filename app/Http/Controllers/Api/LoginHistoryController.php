@@ -10,7 +10,9 @@ class   LoginHistoryController extends Controller
 {
     public function index(Request $request)
     {
-        $loginHistories = HistoryLogin::all();
+        $perPage = $request->per_page ?? 10;
+        $loginHistories = HistoryLogin::paginate($perPage);
+
         return response()->json($loginHistories);
     }
 }

@@ -241,7 +241,6 @@ class ProposeController extends Controller
                 'dayoff_count' => $dayOffAccount->dayoff_count - $numberHoliDay
             ]);
         }
-
         $propose->update($data);
         if ($request->status == 'approved' && $propose->propose_category->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $propose->start_time)[0];
@@ -260,8 +259,6 @@ class ProposeController extends Controller
                 ]);
             }
         }
-
-
         $name = $propose->propose_category->name;
         $status = $propose->status == 'approved' ? 'được chấp nhận' : 'bị từ chối';
         Notification::create([
@@ -281,6 +278,4 @@ class ProposeController extends Controller
 
         return response()->json(data: ['success' => 'Xoá thành công']);
     }
-
-    private function ProposeUpdateInformation(Propose $propose) {}
 }
