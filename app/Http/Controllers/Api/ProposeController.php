@@ -173,11 +173,12 @@ class ProposeController extends Controller
                 }
             }
             if ($request->name == "Nghỉ có hưởng lương") {
-                if ($numberHoliDay >= Auth::user()->day_off) {
+                $dayOffAccount = DayoffAccount::where('account_id', Auth::id())->first();
+                if ($dayOffAccount->dayoff_count - $numberHoliDay < 0) {
                     return response()->json([
                         'message' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn',
                         'errors' => 'Số ngày nghỉ vượt quá số ngày nghỉ của bạn'
-                    ], 401);
+                    ], status: 401);
                 }
             }
         }

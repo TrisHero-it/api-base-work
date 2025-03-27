@@ -12,7 +12,6 @@ class HistoryAsset extends Model
     protected $fillable = [
         'asset_id',
         'status',
-        'date_time',
         'account_id'
     ];
 

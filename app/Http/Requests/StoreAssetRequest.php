@@ -29,18 +29,17 @@ class StoreAssetRequest extends FormRequest
             'description' => 'nullable|string',
             'status' => 'in:using,liquidated,broken,unused,warranty',
             'reason' => 'nullable|string',
-            'buy_date' => 'date',
-            'buyer_id' => 'exists:accounts,id',
+            'buy_date' => 'required|date',
+            'buyer_id' => 'required|exists:accounts,id',
             'seller_id' => 'nullable|exists:accounts,id',
             'brand_id' => 'exists:asset_brands,id',
             'account_id' => 'nullable|exists:asset_accounts,id',
-            'warranty_date' => 'date',
+            'warranty_date' => 'required|date',
             'sell_date' => 'nullable|date',
             'sell_price' => 'nullable|numeric|min:0',
             'serial_number' => 'nullable|string',
             'brand_link' => 'nullable|string',
             'start_date' => 'nullable|date',
-            'creator_by' => 'nullable|exists:accounts,id',
         ];
     }
 }

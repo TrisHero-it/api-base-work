@@ -89,7 +89,6 @@ class   AssetController extends Controller
         HistoryAsset::create([
             'asset_id' => $asset->id,
             'status' => $status,
-            'date_time' => now(),
             'account_id' => auth()->user()->id
         ]);
         $asset->update($data);
