@@ -48,10 +48,10 @@ class AttendanceAccountController extends Controller
         // Lấy ra tất cả các ngày xin nghỉ
         $arrIdHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
         $arrIdOverTime = $proposes->where('name', 'Đăng ký OT')->pluck('id');
-        $holidays = DateHoliday::whereIn('propose_id', $arrIdHoliday)
+        $dateHolidays = DateHoliday::whereIn('propose_id', array_merge($arrIdHoliday->toArray(), $arrIdOverTime->toArray()))
             ->get();
-        $overTime = DateHoliday::whereIn('propose_id', $arrIdOverTime)
-            ->get();
+        $holidays = $dateHolidays->whereIn('propose_id', $arrIdHoliday);
+        $overTime = $dateHolidays->whereIn('propose_id', $arrIdOverTime);
 
         $attendances = Attendance::whereMonth('checkin', $month2)
             ->whereYear('checkin', $year2)

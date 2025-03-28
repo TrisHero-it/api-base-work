@@ -61,7 +61,6 @@ Route::get('/test2', function () {
 
     return $response->json();
 });
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
         'accounts' => AccountController::class,
