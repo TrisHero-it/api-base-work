@@ -46,6 +46,19 @@ class AccountController extends Controller
     public function update(int $id, AccountUpdateRequest $request)
     {
         $account = Account::query()->findOrFail($id);
+        if ($request->filled('new_password')) {
+            $change = $this->changePassword($request, $account);
+            if ($change == true) {
+                return response()->json([
+                    'message' => 'đổi mk thành công'
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'Đã xảy ra lỗi',
+                    'error' => 'Đã xảy ra lỗi'
+                ]);
+            }
+        }
         $models = [
             'education' => Education::class,
             'work_history' => WorkHistory::class,
@@ -54,7 +67,7 @@ class AccountController extends Controller
             'salary' => Salary::class,
         ];
         if (Auth::user()->isSeniorAdmin()) {
-            $data = $request->except('password', 'avatar', 'position', 'department_id', 'personal_documents');
+            $data = $request->except('password', 'avatar', 'position', 'department_name', 'personal_documents', 'day_off');
             foreach ($models as $key => $model) {
                 $arr = [];
                 if ($request->filled($key)) {
@@ -72,8 +85,8 @@ class AccountController extends Controller
                     }
                 }
             }
-            if (isset($request->department_id)) {
-                $department = Department::findOrFail($request->department_id);
+            if (isset($request->department_name)) {
+                $department = Department::where('name', $request->department_name)->findOrFail();
                 AccountDepartment::where('account_id', $id)->update(['department_id' => $department->id]);
             }
             if (isset($request->personal_documents)) {
@@ -583,5 +596,17 @@ class AccountController extends Controller
             }
         }
         return $dataFiles;
+    }
+
+    public function changePassword(Request $request, $account)
+    {
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => 'required|min:6',
+        ]);
+
+        $account->update(['password' => Hash::make($request->new_password)]);
+
+        return true;
     }
 }

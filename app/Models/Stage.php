@@ -27,6 +27,7 @@ class Stage extends Model
         return $this->index == 0;
     }
 
+
     public function tasks() {
         return $this->hasMany(Task::class);
     }

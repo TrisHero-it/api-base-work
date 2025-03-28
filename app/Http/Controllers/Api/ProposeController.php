@@ -201,7 +201,8 @@ class ProposeController extends Controller
             }
         }
         DateHoliday::query()->insert($arr);
-        $accounts = Account::where('role_id', 2)->get();
+        $accounts = Account::where('role_id', 2)
+            ->get();
         // foreach ($accounts as $account) {
         //     SendEmail::dispatch($account->email, "Có một yêu cầu $request->name được gửi tới bạn !!");
         // }

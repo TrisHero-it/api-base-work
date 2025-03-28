@@ -9,15 +9,12 @@ use App\Models\DateHoliday;
 use App\Models\Propose;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceAccountController extends Controller
 {
     public function index(Request $request)
     {
-        // Lấy tên từ username đẩy lên
-        $name = $request->username;
-        // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
-
         $accounts = Account::select(
             'id',
             'username',
@@ -48,10 +45,10 @@ class AttendanceAccountController extends Controller
         // Lấy ra tất cả các ngày xin nghỉ
         $arrIdHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
         $arrIdOverTime = $proposes->where('name', 'Đăng ký OT')->pluck('id');
-        $holidays = DateHoliday::whereIn('propose_id', $arrIdHoliday)
+        $dateHolidays = DateHoliday::whereIn('propose_id', array_merge($arrIdHoliday->toArray(), $arrIdOverTime->toArray()))
             ->get();
-        $overTime = DateHoliday::whereIn('propose_id', $arrIdOverTime)
-            ->get();
+        $holidays = $dateHolidays->whereIn('propose_id', $arrIdHoliday);
+        $overTime = $dateHolidays->whereIn('propose_id', $arrIdOverTime);
 
         $attendances = Attendance::whereMonth('checkin', $month2)
             ->whereYear('checkin', $year2)

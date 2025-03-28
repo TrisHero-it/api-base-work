@@ -131,48 +131,27 @@ class AttendanceController extends Controller
             } else {
                 $data['number_of_working_days'] = number_format($numberWorkingDays, 2);
             }
-            $dayoff = 0;
-            $schedules = Schedule::whereDate('day_of_week', '>=', $startMonth)
-                ->whereDate('day_of_week', '<=', $now)
-                ->where('go_to_work', true)
-                ->get();
-            $attendanceDays = Attendance::whereDate('checkin', '>=', $startMonth)
-                ->whereDate('checkin', '<=', $now)
-                ->where('account_id', Auth::id())
-                ->get();
-
-            for ($date = $startMonth; $date->lte($now); $date->addDay()) {
-                $date2 = $date->format('Y-m-d');
-                $schedule = null;
-                // Đây là ngày đi làm
-                $schedule = $schedules->where('day_of_week', $date2)->first();
-                if (isset($schedule) && $schedule != null) {
-                    $atten = null;
-                    // nếu như là ngày đi làm thì check xem hôm đó ông này có điểm danh hay không
-                    $atten = $attendanceDays->filter(function ($item) use ($date2) {
-                        return Carbon::parse($item->checkin)->isSameDay(Carbon::parse($date2));
-                    })->first();
-                    // Nếu như không điểm danh thì tính là 1 hôm nghỉ không phép
-                    if (!(isset($atten) && $atten != null)) {
-                        $dayoff++;
-                    }
-                }
-            }
-
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
 
             $dayOffWithPay = 0;
+            $dayOffWithoutPay = 0;
             $idProposeHoliday = $proposes->where('name', 'Nghỉ có hưởng lương')->pluck('id');
             $holidays = DateHoliday::whereIn('propose_id', $idProposeHoliday)->get();
+            // lấy ra ngày nghỉ không hưởng lương
+            $idProposeDayOff = $proposes->where('name', 'Nghỉ không hưởng lương')->pluck('id');
+            $dayOffWithoutPays = DateHoliday::whereIn('propose_id', $idProposeDayOff)->get();
             foreach ($holidays as $holiday) {
                 $dayOffWithPay += $holiday->number_of_days;
+            }
+            foreach ($dayOffWithoutPays as $dayOff) {
+                $dayOffWithoutPay += $dayOff->number_of_days;
             }
             $overTime = $proposes->where('name', 'Đăng ký OT')->count();
             $data['total_over_time'] = number_format($overTime, 2);
             $data['day_off_with_pay'] = number_format($dayOffWithPay, 2);
             $data['day_off_account'] = number_format($accountDayOff, 2);
-            $data['day_off_without_pay'] = number_format($dayoff - $dayOffWithPay, 2);
+            $data['day_off_without_pay'] = number_format($dayOffWithoutPay, 2);
         }
 
         return response()->json($data);

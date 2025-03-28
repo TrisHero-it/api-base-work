@@ -121,13 +121,16 @@ class TaskController extends Controller
                 ]
             ], 401);
         }
-        if ($request->filled('stage_id') && $task->started_at == null && $task->account_id != null) {
-            return response()->json([
-                'message' => 'Phải bấm bắt đầu trước khi chuyển giai đoạn',
-                'errors' => [
-                    'task' => 'Phải bấm bắt đầu trước khi chuyển giai đoạn'
-                ]
-            ], 401);
+        if ($request->filled('stage_id')) {
+            $nextStage  = Stage::where('stage_id', $request->stage_id)->first();
+            if ($task->isNextStage($nextStage->index) && $task->started_at == null && $task->account_id != null) {
+                return response()->json([
+                    'message' => 'Phải bấm bắt đầu trước khi chuyển giai đoạn',
+                    'errors' => [
+                        'task' => 'Phải bấm bắt đầu trước khi chuyển giai đoạn'
+                    ]
+                ], 401);
+            }
         }
         if (isset($request->stage_id)) {
             //  Lấy ra stage mà mình muốn chuyển đến

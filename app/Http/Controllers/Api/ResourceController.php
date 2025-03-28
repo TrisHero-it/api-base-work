@@ -36,7 +36,7 @@ class ResourceController extends Controller
 
     public function store(Request $request)
     {
-        if (Auth::user()->isSeniorAdmin()) {
+        if (Auth::user()->isAdmin()) {
             $data = $request->except('members', 'receivers');
             $resource = Resource::create($data);
             $members = $request->members;
