@@ -72,7 +72,7 @@ class AccountController extends Controller
                 $arr = [];
                 if ($request->filled($key)) {
                     if (isset($request->$key['id']) && $key != 'job_position') {
-                        $newValue = collect($request->input($key))->except('gross_salary', 'net_salary')->toArray();
+                        $newValue = collect($request->input($key))->except('gross_salary', 'net_salary', 'department_name')->toArray();
                         $model::where('id', $request->$key['id'])->update($newValue);
                     } else {
                         if ($key == 'job_position') {
@@ -140,7 +140,7 @@ class AccountController extends Controller
         }
 
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_id', 'email', 'username', 'education', 'history_works', 'family_members'));
+        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_name', 'email', 'username', 'education', 'history_works', 'family_members', 'role', 'department', 'job_position', 'dayoff_account'));
         $oldData = [];
         if ($arrKeys != null) {
             $oldData = Account::select($arrKeys)

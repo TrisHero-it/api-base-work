@@ -20,8 +20,6 @@ class AttendanceController extends Controller
     {
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
-        $startMonth = Carbon::now()->startOfMonth();
-        $now = Carbon::now();
 
         if (isset($request->me)) {
             $account = Auth::user();
@@ -187,7 +185,8 @@ class AttendanceController extends Controller
                     if ((Carbon::parse($attendance->checkin)->isToday())) {
                         return response()
                             ->json([
-                                'message' => 'Hôm nay bạn đã điểm danh rồi'
+                                'message' => 'Hôm nay bạn đã điểm danh rồi',
+                                'error' => 'Hôm nay bạn đã điểm danh rồi'
                             ], 403);
                     } else {
                         Attendance::query()
@@ -215,7 +214,8 @@ class AttendanceController extends Controller
         } else {
             return response()
                 ->json([
-                    'message' => 'Không được điểm danh vào thời gian này'
+                    'message' => 'Không được điểm danh vào thời gian này',
+                    'error' => 'Không được điểm danh vào thời gian này'
                 ], 403);
         }
     }
