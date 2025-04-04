@@ -26,7 +26,7 @@ class ProposeController extends Controller
 
             return response()->json($proposes);
         }
-
+        $perPage = $request->per_page ?? 10;
         $proposes = Propose::query()->with(['account', 'propose_category', 'date_holidays', 'approved_by'])
             ->orderByRaw("CASE WHEN status = 'Đang chờ duyệt' THEN 1 ELSE 2 END")
             ->orderBy('created_at', 'desc');
@@ -39,10 +39,13 @@ class ProposeController extends Controller
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
         }
 
-        if (isset($request->account_id)) {
-            $proposes = $proposes->where('account_id', $request->account_id);
+        if (!Auth::user()->isSeniorAdmin()) {
+            $proposes = $proposes->where('account_id', Auth::id());
+        } else {
+            if (isset($request->account_id)) {
+                $proposes = $proposes->where('account_id', $request->account_id);
+            }
         }
-
 
         if (isset($request->date)) {
             $date = explode("-", $request->date);
@@ -51,7 +54,7 @@ class ProposeController extends Controller
             $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
 
-        $proposes = $proposes->get();
+        $proposes = $proposes->paginate($perPage);
         foreach ($proposes as $propose) {
             $propose['date'] = $propose->date_holidays;
             $propose['account'] = $propose->account;

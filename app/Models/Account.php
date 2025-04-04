@@ -49,8 +49,8 @@ class Account extends Authenticatable
         'place_of_registration',
         'is_active',
         'end_work_date',
-        'personnel_class',
         'is_active',
+        'staff_type',
     ];
 
     protected $casts = [
@@ -61,6 +61,11 @@ class Account extends Authenticatable
     {
 
         return $this->role_id == 2 || $this->role_id == 3;
+    }
+
+    public function contractActive()
+    {
+        return $this->hasOne(Contract::class, 'account_id', 'id')->where('active', true);
     }
 
     public function isSeniorAdmin()
@@ -95,7 +100,7 @@ class Account extends Authenticatable
 
     public function jobPosition()
     {
-        return $this->hasMany(JobPosition::class, 'account_id', 'id');
+        return $this->hasMany(JobPosition::class, 'account_id', 'id')->orderBy('id', 'desc');
     }
 
     public function leaveHistory()
@@ -115,11 +120,16 @@ class Account extends Authenticatable
 
     public function dayoffAccount()
     {
-        return $this->hasOne(DayoffAccount::class);
+        return $this->hasOne(DayoffAccount::class, 'account_id', 'id');
     }
 
     public function department()
     {
         return $this->belongsToMany(Department::class, 'account_departments', 'account_id', 'department_id');
+    }
+
+    public function dayOff()
+    {
+        return $this->hasOne(DayoffAccount::class, 'account_id', 'id');
     }
 }

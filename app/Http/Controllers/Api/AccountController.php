@@ -10,6 +10,7 @@ use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
 use App\Models\Asset;
 use App\Models\DateHoliday;
+use App\Models\DayoffAccount;
 use App\Models\Department;
 use App\Models\Education;
 use App\Models\FamilyMember;
@@ -21,6 +22,7 @@ use App\Models\Task;
 use App\Models\View;
 use App\Models\WorkHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -67,7 +69,7 @@ class AccountController extends Controller
             'salary' => Salary::class,
         ];
         if (Auth::user()->isSeniorAdmin()) {
-            $data = $request->except('password', 'avatar', 'position', 'department_name', 'personal_documents', 'day_off');
+            $data = $request->except('password', 'avatar', 'position', 'department_name', 'personal_documents', 'day_off', 'staff_type');
             foreach ($models as $key => $model) {
                 $arr = [];
                 if ($request->filled($key)) {
@@ -86,7 +88,7 @@ class AccountController extends Controller
                 }
             }
             if (isset($request->department_name)) {
-                $department = Department::where('name', $request->department_name)->findOrFail();
+                $department = Department::where('name', $request->department_name)->first();
                 AccountDepartment::where('account_id', $id)->update(['department_id' => $department->id]);
             }
             if (isset($request->personal_documents)) {
@@ -144,17 +146,15 @@ class AccountController extends Controller
         $oldData = [];
         if ($arrKeys != null) {
             $oldData = Account::select($arrKeys)
-                ->where('id', $id)
-                ->first();
+                ->find($id);
         }
-
         foreach ($models as $key => $model) {
             if ($request->filled($key)) {
                 $oldData[$key] = $model::where('account_id', $id)
                     ->get();
             }
         }
-        if ($oldData instanceof Collection) {
+        if (!is_array($oldData)) {
             $oldData = $oldData->toArray();
         }
 
@@ -165,50 +165,10 @@ class AccountController extends Controller
 
     public function index(Request $request)
     {
-        // Lấy tên từ username đẩy lên
-        $name = $request->username;
-        // Nếu truyền lên category_id thì láy ra những account nằm trong category đó
+        $name = $request->search;
+        $perPage = $request->per_page ?? 10;
         if (isset($request->include)) {
-            if ($request->include == 'profile') {
-                $accounts = Account::with(['jobPosition', 'department', 'workHistories', 'educations', 'familyMembers', 'dayoffAccount']);
-            } else if ($request->include == 'list') {
-                if ($request->filled('view_id')) {
-                    $view = View::findOrFail($request->view_id);
-                    $dataSelect = ['id'];
-                    $dataWith = [];
-                    if (isset($view->field_name['personal_info'])) {
-                        $dataSelect = array_merge($dataSelect, $view->field_name['personal_info']);
-                    }
-                    if (isset($view->field_name['salary'])) {
-                        $dataWith = array_merge($dataWith, ['jobPosition.salary']);
-                    }
-                    if (isset($view->field_name['contract'])) {
-                        $dataWith = array_merge($dataWith, ['contract']);
-                    }
-                    if (isset($view->field_name['department'])) {
-                        $dataWith = array_merge($dataWith, ['department']);
-                    }
-                    $accounts = Account::select($dataSelect)
-                        ->with($dataWith)
-                        ->get();
-                }
-                $accounts = Account::select(
-                    'id',
-                    'username',
-                    'full_name',
-                    'avatar',
-                    'role_id',
-                    'email',
-                    'phone',
-                    'status',
-                    'gender',
-                    'birthday',
-                    'start_work_date',
-                    'personal_documents',
-                    'quit_work'
-                )
-                    ->with('department', 'jobPosition', 'dayoffAccount');
-            }
+            $accounts = Account::with(['jobPosition', 'department', 'workHistories', 'educations', 'familyMembers', 'dayoffAccount', 'contracts', 'contractActive']);
         } else {
             $accounts = Account::select(
                 'id',
@@ -221,7 +181,7 @@ class AccountController extends Controller
                 'quit_work'
             )->with('dayoffAccount');
         }
-        $accounts = $accounts->where('username', 'like', "%$name%");
+        $accounts = $accounts->where('username', 'like', "%$name%")->orWhere('full_name', 'like', "%$name%");
         $accounts = $accounts->when($request->filled('role_id'), function ($query) use ($request) {
             return $query->where('role_id', $request->role_id)
                 ->where('quit_work', false);
@@ -229,11 +189,21 @@ class AccountController extends Controller
             ->when($request->filled('quit_work'), function ($query) use ($request) {
                 return $query->where('quit_work', $request->quit_work);
             })
-            ->get();
+            ->paginate($perPage);
         foreach ($accounts as $account) {
+            if ($account->start_work_date != null) {
+                $mocThoiGian = Carbon::parse($account->start_work_date); // mốc thời gian
+                $hienTai = Carbon::now();
+                $thoiGianLamViec = $mocThoiGian->diff($hienTai);
+                $account->seniority = $thoiGianLamViec->y . ' năm ' . $thoiGianLamViec->m . ' tháng ' . $thoiGianLamViec->d . ' ngày';
+            }
+            if ($account->contractActive != null) {
+                $account->name_contract = $account->contractActive['files'][0]['file_name'];
+                $account->url_contract = $account->contractActive['files'][0]['file_url'];
+                unset($account->contractActive);
+            }
             if ($account->dayoffAccount != null) {
                 $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
-                unset($account->dayoffAccount);
             }
             if ($account->jobPosition->where('status', 'active')->first() != null) {
                 $account->position = $account->jobPosition->where('status', 'active')->first()->name;
@@ -242,6 +212,7 @@ class AccountController extends Controller
             }
             if (!empty($account->department->toArray())) {
                 $account->department_name = $account->department[0]->name;
+                unset($account->department);
             }
             if ($account->quit_work == true) {
                 $account['role'] = 'Vô hiệu hoá';
@@ -280,6 +251,10 @@ class AccountController extends Controller
             if ($account->department != null) {
                 $account->department_name = $account->department[0]->name;
             }
+            if ($account->dayoffAccount != null) {
+                $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+            }
+
             unset($account->department);
         } else if ($request->include == 'my-job') {
             $account = Account::with(['jobPosition' => function ($query) {
@@ -352,7 +327,9 @@ class AccountController extends Controller
                 $account->salary = $salary;
                 $account->position = $account->jobPosition->where('status', 'active')->first()->name;
             }
-            $account->department_name = $account->department[0]->name;
+            if ($account->department_id != null) {
+                $account->department_name = $account->department[0]->name;
+            }
             unset($account->department);
         } else if ($request->include == 'my-job') {
             $account = Account::with(['dayoffAccount', 'jobPosition' => function ($query) {
@@ -408,7 +385,6 @@ class AccountController extends Controller
     {
         if ($request->hasFile('files')) {
             $file = $request->file('files');
-
             if (!is_array($file)) {
                 $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
                 $path = 'public/files/' . $filename;
@@ -534,7 +510,6 @@ class AccountController extends Controller
             'name' => 'Học vấn',
             'value' => 'education',
         ];
-
         $data[] = $arrayPersonalInfo;
         $data[] = $arraySalary;
         $data[] = $arrayContract;
@@ -544,7 +519,7 @@ class AccountController extends Controller
         return $data;
     }
 
-    public function disableAccount(int $id, Request $request)
+    public function disableAccount(int $id)
     {
         if (Auth::user()->isSeniorAdmin()) {
             $account = Account::query()->findOrFail($id);
@@ -568,6 +543,7 @@ class AccountController extends Controller
                 'message' => 'Vô hiệu hoá tài khoản thành công'
             ]);
         } else {
+
             return response()->json([
                 'message' => 'Bạn không có quyền vô hiệu hoá tài khoản',
                 'error' => 'Bạn không có quyền vô hiệu hoá tài khoản'
@@ -595,6 +571,7 @@ class AccountController extends Controller
                 ];
             }
         }
+
         return $dataFiles;
     }
 
@@ -604,7 +581,6 @@ class AccountController extends Controller
             'old_password' => 'required',
             'new_password' => 'required|min:6',
         ]);
-
         $account->update(['password' => Hash::make($request->new_password)]);
 
         return true;

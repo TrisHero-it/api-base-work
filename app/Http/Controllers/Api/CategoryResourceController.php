@@ -9,15 +9,19 @@ use Illuminate\Support\Facades\Auth;
 
 class CategoryResourceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $categoryResources = CategoryResource::with([
-            'resources' => function ($query) {
-                $query->whereHas('members', function ($q) {
-                   if(!Auth::user()->isSeniorAdmin()){
-                    $q->where('account_id', Auth::id());
-                   }
+            'resources' => function ($query) use ($request) {
+                $query->whereHas('members', function ($q) use ($request) {
+                    if (!Auth::user()->isSeniorAdmin()) {
+                        $q->where('account_id', Auth::id());
+                    }
                 })->with('members', 'receivers');
+
+                if ($request->has('search')) {
+                    $query->where('name', 'like', '%' . $request->search . '%');
+                };
             }
         ])->get();
 

@@ -6,13 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\LeaveHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveHistoryController extends Controller
 {
+    // good, bad, normal
     public function index(Request $request)
     {
-        $leaveHistories = LeaveHistory::all();
+        $leaveHistories = LeaveHistory::query();
+        if ($request->filled('type')) {
+            $leaveHistories = $leaveHistories->where('type', $request->type);
+        }
 
+        if (!Auth::user()->isSeniorAdmin()) {
+            $leaveHistories = $leaveHistories->where('account_id', Auth::id());
+        } else {
+            if ($request->filled('account_id')) {
+                $leaveHistories = $leaveHistories->where('account_id', $request->account_id);
+            }
+        }
+
+        $leaveHistories = $leaveHistories->get();
+        
         return response()->json($leaveHistories);
     }
 
@@ -26,10 +41,10 @@ class LeaveHistoryController extends Controller
             ]);
         $data['status'] = 'active';
         $leaveHistory = LeaveHistory::create($data);
-        $account = Account::find($data['account_id'])->update([
-            'quit_work' => true
-        ]);
-
+        if ($leaveHistory->type == 'quit') {
+            $obj = new AccountController();
+            $obj->disableAccount($request->account_id);
+        }
 
         return response()->json($leaveHistory);
     }

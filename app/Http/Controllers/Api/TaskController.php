@@ -308,11 +308,6 @@ class TaskController extends Controller
             };
         }
         $task->update($data);
-        if (isset($stage)) {
-            if ($stage->isSuccessStage()) {
-                $this->chuyenNhiemVuKhiThanhCongAnhThinh($stage->id, $task->toArray());
-            }
-        }
         if (isset($tag)) {
             $task['tag'] = $tag;
         }
@@ -357,7 +352,7 @@ class TaskController extends Controller
     {
         $task = Task::query()->findOrFail($id);
         $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
-
+        $task['workflow_id'] = $task->stage->workflow_id;
         return response()->json($task);
     }
 
@@ -414,14 +409,5 @@ class TaskController extends Controller
         return response()->json([
             'success' => 'Cập nhập thành công'
         ]);
-    }
-
-    public function chuyenNhiemVuKhiThanhCongAnhThinh($stageId, array $task)
-    {
-        if ($stageId == 235 || $stageId == 126) {
-            $data = $task;
-            $data['stage_id'] = 353;
-            Task::create($data);
-        }
     }
 }

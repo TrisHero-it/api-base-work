@@ -58,7 +58,6 @@ Route::get('/test', function () {
 
 Route::get('/test2', function () {
     $response = Http::get('https://api64.ipify.org?format=json');
-
     return $response->json();
 });
 
