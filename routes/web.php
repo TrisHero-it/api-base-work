@@ -5,6 +5,8 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Route;
 use GuzzleHttp\Promise;
+use Illuminate\Http\Request;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,4 +20,8 @@ use GuzzleHttp\Promise;
 
 Route::get('/', function () {
     return redirect('/api/telescope');
+});
+
+Route::get('/test', function (Request $request) {
+    dd($request->aaa == null);
 });

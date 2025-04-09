@@ -227,6 +227,7 @@ class AttendanceController extends Controller
         return response()->json([$attendance]);
     }
 
+
     public function checkOut(Request $request)
     {
         $isToday = false;
@@ -293,5 +294,99 @@ class AttendanceController extends Controller
         }
 
         return ['hours_work' => number_format($hoursWork, 2), 'start' => $start, 'end' => $end];
+    }
+
+    const ARRAY_ID_RONALJACK = [
+        [
+            "machine_id" => 1,
+            'account_id' => 11
+        ],
+        [
+            "machine_id" => 2,
+            'account_id' => 14
+        ],
+        [
+            "machine_id" => 3,
+            'account_id' => 13
+        ],
+        [
+            "machine_id" => 6,
+            'account_id' => 5
+        ],
+        [
+            "machine_id" => 8,
+            'account_id' => 8
+        ],
+        [
+            "machine_id" => 9,
+            'account_id' => 2
+        ],
+        [
+            "machine_id" => 10,
+            'account_id' => 25
+        ],
+        [
+            "machine_id" => 12,
+            'account_id' => 6
+        ],
+    ];
+
+    public function checkInOut(Request $request)
+    {
+        $currentTime = Carbon::now();
+        $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
+        $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
+        $arrId = [];
+        $department = Department::where('name', 'Phòng sales')->first()->id;
+        $accountDepartments = AccountDepartment::where('department_id', $department)->get();
+        $arrId = $accountDepartments->pluck('account_id')->toArray();
+        $saleMembers = Account::whereIn('id', $arrId)->get();
+        $arrAccountId = $saleMembers->pluck('id')->toArray();
+
+        foreach ($request->attendances as $attendance) {
+            $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
+            foreach (self::ARRAY_ID_RONALJACK as $item) {
+                if ($attendance['user_id'] == $item['machine_id']) {
+                    $attendance2 = Attendance::where('account_id', $item['account_id'])->latest('id')->first();
+                    // check xem có trong khoảng giờ nghỉ trưa hay không
+                    if (!$currentTime->between($startTime, $endTime)) {
+                        // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
+                        if (in_array($item['account_id'], $arrAccountId)) {
+                            if ($attendance2 != null && (Carbon::parse($attendance2->checkin)->isToday()) && $attendance2->checkout == null) {
+                                $attendance2->update([
+                                    'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
+                                ]);
+                            } else {
+                                Attendance::query()
+                                    ->create([
+                                        'account_id' => $item['account_id'],
+                                        'checkin' => $time
+                                    ]);
+                            }
+                        } else {
+                            if ($attendance2 != null) {
+                                if ((Carbon::parse($attendance2->checkin)->isToday()) && $attendance2->checkout == null) {
+                                    $attendance2->update([
+                                        'checkout' => $time
+                                    ]);
+                                } else {
+                                    Attendance::query()
+                                        ->create([
+                                            'account_id' => $item['account_id'],
+                                            'checkin' => $time
+                                        ]);
+                                }
+                            } else {
+                                Attendance::query()
+                                    ->create([
+                                        'account_id' => $item['account_id'],
+                                        'checkin' => $time
+                                    ]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

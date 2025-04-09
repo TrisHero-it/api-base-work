@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\CategoryResourceController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ContractCategoryController;
 use App\Http\Controllers\Api\ContractController;
+use App\Http\Controllers\Api\DayoffAccountController;
 use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\FieldController;
@@ -105,6 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'asset-categories' => AssetCategoryController::class,
         'leave-histories' => LeaveHistoryController::class,
         'login-histories' => LoginHistoryController::class,
+        'day-off-accounts' => DayoffAccountController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
@@ -118,3 +120,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/disable-account/{id}', [AccountController::class, 'disableAccount']);
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
 });
+
+Route::post('/check-in-out', [AttendanceController::class, 'checkInOut']);
