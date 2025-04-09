@@ -21,10 +21,8 @@ class ViewController extends Controller
             ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
             ['label' => 'Trạng thái nghỉ việc', 'value' => 'quit_work'],
             ['label' => 'Ảnh đại diện', 'value' => 'avatar'],
-            ['label' => 'Tài liệu', 'value' => 'files'],
             ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
             ['label' => 'Tên tài khoản', 'value' => 'username'],
-            ['label' => 'Mật khẩu', 'value' => 'password'],
             ['label' => 'Trạng thái', 'value' => 'status'],
             ['label' => 'Chức vụ', 'value' => 'position'],
             ['label' => 'Ngày bắt đầu', 'value' => 'start_work_date'],
@@ -47,13 +45,12 @@ class ViewController extends Controller
             ['label' => 'Chính sách bảo hiểm', 'value' => 'insurance_policy'],
             ['label' => 'Ngày bắt đầu thử việc', 'value' => 'start_trial_date'],
             ['label' => 'Phân quyền', 'value' => 'role_id'],
-            ['label' => 'Lương gross', 'value' => 'gross_salary'],
             ['label' => 'Lương thực nhận', 'value' => 'net_salary'],
             ['label' => 'Lương cơ bản', 'value' => 'basic_salary'],
             ['label' => 'Phụ cấp đi lại', 'value' => 'travel_allowance'],
             ['label' => 'Phụ cấp ăn uống', 'value' => 'eat_allowance'],
             ['label' => 'KPI', 'value' => 'kpi'],
-            ['label' => 'Chức vụ', 'value' => 'job_position_id'],
+            ['label' => 'Chức vụ', 'value' => 'position'],
             ['label' => 'Loại hợp đồng', 'value' => 'contract_type'],
             ['label' => 'Ghi chú', 'value' => 'note'],
             ['label' => 'Loại hợp đồng', 'value' => 'category__contract_id'],
@@ -71,7 +68,6 @@ class ViewController extends Controller
     ];
     public function index()
     {
-
         $views = View::all();
         $overView = [
             [

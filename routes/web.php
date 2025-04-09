@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Account;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Route;

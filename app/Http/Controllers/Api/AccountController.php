@@ -168,7 +168,7 @@ class AccountController extends Controller
         $name = $request->search;
         $perPage = $request->per_page ?? 10;
         if (isset($request->include)) {
-            $accounts = Account::with(['jobPosition', 'department', 'workHistories', 'educations', 'familyMembers', 'dayoffAccount', 'contracts', 'contractActive']);
+            $accounts = Account::with(['jobPosition.salary', 'department', 'workHistories', 'educations', 'familyMembers', 'dayoffAccount', 'contracts.category', 'contractActive']);
         } else {
             $accounts = Account::select(
                 'id',
@@ -191,6 +191,7 @@ class AccountController extends Controller
             })
             ->paginate($perPage);
         foreach ($accounts as $account) {
+
             if ($account->start_work_date != null) {
                 $mocThoiGian = Carbon::parse($account->start_work_date); // mốc thời gian
                 $hienTai = Carbon::now();
@@ -199,6 +200,7 @@ class AccountController extends Controller
             }
             if ($account->contractActive != null) {
                 $account->name_contract = $account->contractActive['files'][0]['file_name'];
+                $account->category__contract_id = $account->contractActive->category->name;
                 $account->url_contract = $account->contractActive['files'][0]['file_url'];
                 unset($account->contractActive);
             }
@@ -206,6 +208,17 @@ class AccountController extends Controller
                 $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
             }
             if ($account->jobPosition->where('status', 'active')->first() != null) {
+                if (!empty($account->jobPosition)) {
+                    $account->kpi = $account->jobPosition->where('status', 'active')->first()->salary->kpi;
+                    $account->basic_salary = $account->jobPosition->where('status', 'active')->first()->salary->basic_salary;
+                    $account->travel_allowance = $account->jobPosition->where('status', 'active')->first()->salary->travel_allowance;
+                    $account->eat_allowance = $account->jobPosition->where('status', 'active')->first()->salary->eat_allowance;
+                } else {
+                    $account->kpi = 0;
+                    $account->basic_salary = 0;
+                    $account->travel_allowance = 0;
+                    $account->eat_allowance = 0;
+                }
                 $account->position = $account->jobPosition->where('status', 'active')->first()->name;
             } else {
                 $account->position = null;
