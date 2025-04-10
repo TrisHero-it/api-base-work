@@ -231,28 +231,34 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
-        $isToday = false;
-        $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
-        $isToday = Carbon::parse($account->checkin)->isToday();
-        if ($isToday == false) {
-            return response()->json([
-                'error' => 'Bạn chưa điểm danh @@'
-            ]);
-        } else {
-            if ($account->checkout != null) {
-
+        if (Auth::user()->workAtHome()) {
+            $isToday = false;
+            $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
+            $isToday = Carbon::parse($account->checkin)->isToday();
+            if ($isToday == false) {
                 return response()->json([
-                    'error' => 'Hôm nay bạn đã checkout rồi'
+                    'error' => 'Bạn chưa điểm danh @@'
                 ]);
             } else {
-                $account->update([
-                    'checkout' => now()
-                ]);
+                if ($account->checkout != null) {
 
-                return response()->json([
-                    'success' => 'checkout thành công'
-                ]);
+                    return response()->json([
+                        'error' => 'Hôm nay bạn đã checkout rồi'
+                    ]);
+                } else {
+                    $account->update([
+                        'checkout' => now()
+                    ]);
+
+                    return response()->json([
+                        'success' => 'checkout thành công'
+                    ]);
+                }
             }
+        } else {
+            return response()->json([
+                'error' => 'Vui lòng checkout bằng máy trên công ty'
+            ]);
         }
     }
 
@@ -370,7 +376,7 @@ class AttendanceController extends Controller
                                 if (Carbon::parse($attendance2->checkin)->isToday()) {
                                     if ($attendance2->checkout == null) {
                                         $attendance2->update([
-                                            'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
+                                            'checkout' => $time
                                         ]);
                                     } else {
                                         Attendance::query()

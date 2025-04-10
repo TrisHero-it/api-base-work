@@ -128,6 +128,11 @@ class Account extends Authenticatable
         return $this->belongsToMany(Department::class, 'account_departments', 'account_id', 'department_id');
     }
 
+    public function workAtHome()
+    {
+        $this->attendance_at_home == true;
+    }
+
     public function dayOff()
     {
         return $this->hasOne(DayoffAccount::class, 'account_id', 'id');

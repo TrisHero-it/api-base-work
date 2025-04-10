@@ -241,11 +241,21 @@ class AccountController extends Controller
                 }
             }
         }
-        $a = Account::where('full_name', 'like', "%$name%")->get();
+        $a = Account::query();
+        if ($name != null) {
+            $a->where('full_name', 'like', "%$name%");
+        }
+        if ($request->filled('role_id')) {
+            $a->where('role_id', $request->role_id);
+        }
+        if ($request->filled('quit_work')) {
+            $a->where('quit_work', $request->quit_work);
+        }
+        $a = $a->get();
         $countRoleAccount = [
-            'Thành viên thông thường' => $a->where('role_id', 1)->count(),
-            'Quản trị' => $a->where('role_id', 2)->count(),
-            'Quản trị cấp cao' => $a->where('role_id', 3)->count(),
+            'Thành viên thông thường' => $a->where('role_id', 1)->where('quit_work', false)->count(),
+            'Quản trị' => $a->where('role_id', 2)->where('quit_work', false)->count(),
+            'Quản trị cấp cao' => $a->where('role_id', 3)->where('quit_work', false)->count(),
             'Vô hiệu hoá' => $a->where('quit_work', true)->count(),
         ];
 
