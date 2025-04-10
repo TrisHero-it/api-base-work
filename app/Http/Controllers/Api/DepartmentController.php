@@ -69,20 +69,20 @@ class DepartmentController extends Controller
         $arrAccount = [];
         $accounts = AccountDepartment::query()->where('department_id', $department->id)->get();
         foreach ($accounts as $account) {
-            $arrAccount[] = Account::query()->select('username', 'avatar','full_name', 'id')->find($account->account_id);
+            $arrAccount[] = Account::query()->select('username', 'avatar', 'full_name', 'id')->find($account->account_id);
         }
 
         $department['members'] = $arrAccount;
         return response()->json($department);
     }
 
-    public function destroy(int $id)
-    {
-        $department = Department::query()->findOrFail($id);
-        $department->delete();
+    // public function destroy(int $id)
+    // {
+    //     $department = Department::query()->findOrFail($id);
+    //     $department->delete();
 
-        return response()->json([
-            'success' => 'Xoá thành công'
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => 'Xoá thành công'
+    //     ]);
+    // }
 }

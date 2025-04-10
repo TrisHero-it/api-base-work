@@ -57,8 +57,8 @@ class AttendanceController extends Controller
             $attendance = $attendance->get();
             $isSalesMember = Auth::user()->isSalesMember();
 
-            $proposes = Propose::with('date_holidays')->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT', 'Nghỉ không hưởng lương'])
-                ->select('id', 'account_id')
+            $proposes = Propose::with(['date_holidays', 'propose_category'])->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT', 'Nghỉ không hưởng lương'])
+                ->select('id', 'account_id', 'name', 'propose_category_id')
                 ->where('status', 'approved')
                 ->whereMonth('created_at', $month ?? now()->month)
                 ->whereYear('created_at', $year ?? now()->year);
@@ -72,7 +72,6 @@ class AttendanceController extends Controller
             }
 
             $proposes = $proposes->get();
-
             foreach ($attendance as $item) {
                 $hours = 0;
                 $workday = 0;
@@ -104,6 +103,8 @@ class AttendanceController extends Controller
             foreach ($proposes as $propose) {
                 foreach ($propose->date_holidays as $holiday) {
                     $holiday['account_id'] = $propose->account_id;
+                    $holiday['name'] = $propose->name;
+                    $holiday['name_category'] = $propose->propose_category->name;
                     $arrDateHoliday[] = $holiday;
                 }
             }
@@ -299,35 +300,48 @@ class AttendanceController extends Controller
     const ARRAY_ID_RONALJACK = [
         [
             "machine_id" => 1,
-            'account_id' => 11
+            'account_id' => 11,
+            'name' => 'Long'
         ],
         [
             "machine_id" => 2,
-            'account_id' => 14
+            'account_id' => 14,
+            'name' => 'Nghia'
         ],
         [
             "machine_id" => 3,
-            'account_id' => 13
+            'account_id' => 13,
+            'name' => 'Manh'
         ],
         [
             "machine_id" => 6,
-            'account_id' => 5
+            'account_id' => 5,
+            'name' => 'Vanh'
         ],
         [
             "machine_id" => 8,
-            'account_id' => 8
+            'account_id' => 8,
+            'name' => 'Giang'
         ],
         [
             "machine_id" => 9,
-            'account_id' => 2
+            'account_id' => 2,
+            'name' => 'Trí'
         ],
         [
             "machine_id" => 10,
-            'account_id' => 25
+            'account_id' => 25,
+            'name' => 'Quý'
         ],
         [
             "machine_id" => 12,
-            'account_id' => 6
+            'account_id' => 6,
+            'name' => 'Thọ'
+        ],
+        [
+            'machine_id' => 14,
+            'account_id' => 28,
+            'name' => 'Khang'
         ],
     ];
 
@@ -352,10 +366,26 @@ class AttendanceController extends Controller
                     if (!$currentTime->between($startTime, $endTime)) {
                         // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
                         if (in_array($item['account_id'], $arrAccountId)) {
-                            if ($attendance2 != null && (Carbon::parse($attendance2->checkin)->isToday()) && $attendance2->checkout == null) {
-                                $attendance2->update([
-                                    'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
-                                ]);
+                            if ($attendance2 != null) {
+                                if (Carbon::parse($attendance2->checkin)->isToday()) {
+                                    if ($attendance2->checkout == null) {
+                                        $attendance2->update([
+                                            'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
+                                        ]);
+                                    } else {
+                                        Attendance::query()
+                                            ->create([
+                                                'account_id' => $item['account_id'],
+                                                'checkin' => $time
+                                            ]);
+                                    }
+                                } else {
+                                    Attendance::query()
+                                        ->create([
+                                            'account_id' => $item['account_id'],
+                                            'checkin' => $time
+                                        ]);
+                                }
                             } else {
                                 Attendance::query()
                                     ->create([
@@ -365,10 +395,43 @@ class AttendanceController extends Controller
                             }
                         } else {
                             if ($attendance2 != null) {
-                                if ((Carbon::parse($attendance2->checkin)->isToday()) && $attendance2->checkout == null) {
-                                    $attendance2->update([
-                                        'checkout' => $time
+                                if ((Carbon::parse($attendance2->checkin)->isToday())) {
+                                    if ($attendance2->checkout == null) {
+                                        $attendance2->update([
+                                            'checkout' => $time
+                                        ]);
+                                    }
+                                } else {
+                                    Attendance::query()
+                                        ->create([
+                                            'account_id' => $item['account_id'],
+                                            'checkin' => $time
+                                        ]);
+                                }
+                            } else {
+                                Attendance::query()
+                                    ->create([
+                                        'account_id' => $item['account_id'],
+                                        'checkin' => $time
                                     ]);
+                            }
+                        }
+                    } else {
+
+                        if (in_array($item['account_id'], $arrAccountId)) {
+                            if ($attendance2 != null) {
+                                if (Carbon::parse($attendance2->checkin)->isToday()) {
+                                    if ($attendance2->checkout == null) {
+                                        $attendance2->update([
+                                            'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
+                                        ]);
+                                    } else {
+                                        Attendance::query()
+                                            ->create([
+                                                'account_id' => $item['account_id'],
+                                                'checkin' => $time
+                                            ]);
+                                    }
                                 } else {
                                     Attendance::query()
                                         ->create([

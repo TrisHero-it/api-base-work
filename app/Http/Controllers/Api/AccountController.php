@@ -181,17 +181,19 @@ class AccountController extends Controller
                 'quit_work'
             )->with('dayoffAccount');
         }
-        $accounts = $accounts->where('username', 'like', "%$name%")->orWhere('full_name', 'like', "%$name%");
-        $accounts = $accounts->when($request->filled('role_id'), function ($query) use ($request) {
-            return $query->where('role_id', $request->role_id)
+        if ($name != null) {
+            $accounts = $accounts->where('full_name', 'like', "%$name%");
+        }
+        if ($request->filled('role_id')) {
+            $accounts = $accounts->where('role_id', $request->role_id)
                 ->where('quit_work', false);
-        })
-            ->when($request->filled('quit_work'), function ($query) use ($request) {
-                return $query->where('quit_work', $request->quit_work);
-            })
-            ->paginate($perPage);
-        foreach ($accounts as $account) {
+        }
+        if ($request->filled('quit_work')) {
+            $accounts = $accounts->where('quit_work', $request->quit_work);
+        }
 
+        $accounts = $accounts->paginate($perPage);
+        foreach ($accounts as $account) {
             if ($account->start_work_date != null) {
                 $mocThoiGian = Carbon::parse($account->start_work_date); // mốc thời gian
                 $hienTai = Carbon::now();
@@ -239,8 +241,30 @@ class AccountController extends Controller
                 }
             }
         }
+        $a = Account::where('full_name', 'like', "%$name%")->get();
+        $countRoleAccount = [
+            'Thành viên thông thường' => $a->where('role_id', 1)->count(),
+            'Quản trị' => $a->where('role_id', 2)->count(),
+            'Quản trị cấp cao' => $a->where('role_id', 3)->count(),
+            'Vô hiệu hoá' => $a->where('quit_work', true)->count(),
+        ];
 
-        return response()->json($accounts);
+        return response()->json([
+            'current_page' => $accounts->currentPage(),
+            'data' => $accounts->items(),
+            'first_page_url' => $accounts->url(1),
+            'from' => $accounts->firstItem(),
+            'last_page' => $accounts->lastPage(),
+            'last_page_url' => $accounts->url($accounts->lastPage()),
+            'links' => $accounts->links(),
+            'next_page_url' => $accounts->nextPageUrl(),
+            'path' => $accounts->path(),
+            'per_page' => $accounts->perPage(),
+            'prev_page_url' => $accounts->previousPageUrl(),
+            'to' => $accounts->lastItem(),
+            'total' => $accounts->total(),
+            'count_role_account' => $countRoleAccount,
+        ]);
     }
 
     public function show(int $id, Request $request)

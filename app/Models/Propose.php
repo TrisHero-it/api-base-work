@@ -52,6 +52,6 @@ class Propose extends Model
     public function propose_category()
     {
 
-        return $this->belongsTo(ProposeCategory::class);
+        return $this->belongsTo(ProposeCategory::class, 'propose_category_id', 'id');
     }
 }

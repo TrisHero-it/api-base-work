@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DayoffAccountController;
 use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\EmailController;
+use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\FieldController;
 use App\Http\Controllers\Api\FieldValueController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
@@ -107,6 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'leave-histories' => LeaveHistoryController::class,
         'login-histories' => LoginHistoryController::class,
         'day-off-accounts' => DayoffAccountController::class,
+        'employees' => EmployeeController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);

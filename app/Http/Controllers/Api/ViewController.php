@@ -19,7 +19,6 @@ class ViewController extends Controller
             ['label' => 'Địa chỉ', 'value' => 'address'],
             ['label' => 'Hợp đồng lao động', 'value' => 'contract_file'],
             ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
-            ['label' => 'Trạng thái nghỉ việc', 'value' => 'quit_work'],
             ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
             ['label' => 'Tên tài khoản', 'value' => 'username'],
             ['label' => 'Trạng thái', 'value' => 'status'],
@@ -87,7 +86,6 @@ class ViewController extends Controller
                     ['label' => 'Thâm niên', 'value' => 'seniority'],
                     ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
                     ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
-                    ['label' => 'Trạng thái nghỉ việc', 'value' => 'quit_work'],
                 ]
             ]
         ];
