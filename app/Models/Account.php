@@ -130,7 +130,7 @@ class Account extends Authenticatable
 
     public function workAtHome()
     {
-        $this->attendance_at_home == true;
+        return $this->attendance_at_home == true;
     }
 
     public function dayOff()
