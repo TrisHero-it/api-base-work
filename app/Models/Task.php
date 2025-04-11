@@ -56,7 +56,6 @@ class Task extends Model
 
     public function isNextStage($index)
     {
-
         return $this->stage->index > $index;
     }
 }

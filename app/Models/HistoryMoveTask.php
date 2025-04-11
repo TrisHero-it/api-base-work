@@ -27,7 +27,14 @@ class HistoryMoveTask extends Model
 
     public function worker()
     {
-        return $this->belongsTo(Account::class, 'worker', 'id');
+        return $this->belongsTo(Account::class, 'worker', 'id')
+            ->select('id', 'email', 'full_name', 'avatar', 'username');
+    }
+
+    public function doer()
+    {
+        return $this->belongsTo(Account::class, 'worker', 'id')
+            ->select('id', 'email', 'full_name', 'avatar', 'username');
     }
 
     public function task()

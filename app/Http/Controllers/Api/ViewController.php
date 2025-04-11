@@ -118,4 +118,18 @@ class ViewController extends Controller
         ]);
         return response()->json($view);
     }
+
+    public function update(Request $request, $id)
+    {
+        $view = View::find($id);
+        $view->update($request->all());
+        return response()->json($view);
+    }
+
+    public function destroy($id)
+    {
+        $view = View::find($id);
+        $view->delete();
+        return response()->json($view);
+    }
 }

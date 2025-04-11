@@ -99,7 +99,7 @@ class AttendanceAccountController extends Controller
                     $checkout = Carbon::parse($newAttendance->checkout);
                     $diff = $checkout->diffInMinutes($newAttendance->checkin);
                     $hours = $diff / 60;
-                    $workday = $hours / 9;
+                    $workday = $hours > 9 ? 1 : $hours / 9;
                 }
                 $totalWorkDay += $workday;
             }

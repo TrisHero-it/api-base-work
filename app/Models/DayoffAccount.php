@@ -11,7 +11,8 @@ class DayoffAccount extends Model
 
     protected $fillable = [
         'account_id',
-        'dayoff_count',
-        'dayoff_long_time_worker'
+        'total_holiday_with_salary',
+        'seniority_holiday',
+        'effective_date'
     ];
 }

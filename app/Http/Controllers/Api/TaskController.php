@@ -317,7 +317,7 @@ class TaskController extends Controller
 
     public function assignWork(int $id, Request $request)
     {
-        if (Auth::user()->isSeniorAdmin() || $request->account_id == Auth::id()) {
+        if (Auth::user()->isAdmin() || $request->account_id == Auth::id()) {
             $task = Task::with('stage')->findOrFail($id);
             $data = [];
 
@@ -352,7 +352,9 @@ class TaskController extends Controller
     {
         $task = Task::query()->findOrFail($id);
         $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
-        $task['workflow_id'] = $task->stage->workflow_id;
+        if ($task->stage_id != null) {
+            $task['workflow_id'] = $task->stage->workflow_id;
+        }
         return response()->json($task);
     }
 
@@ -360,10 +362,14 @@ class TaskController extends Controller
     {
         try {
             $task = Task::query()->findOrFail($id);
+            if ($task->account_id != Auth::id() && !Auth::user()->isSeniorAdmin()) {
+                return response()->json([
+                    'message' => 'Bạn không có quyền xóa nhiệm vụ này'
+                ], 401);
+            }
             $task->delete();
-
             return response()->json([
-                'success' => 'Xoá thành công'
+                'success' => 'Xóa thành công'
             ]);
         } catch (\Exception $exception) {
 

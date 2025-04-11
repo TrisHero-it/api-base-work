@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\AffiliateController;
 use App\Http\Controllers\Api\AssetAccountController;
 use App\Http\Controllers\Api\AssetBrandController;
 use App\Http\Controllers\Api\AssetCategoryController;
@@ -109,6 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'login-histories' => LoginHistoryController::class,
         'day-off-accounts' => DayoffAccountController::class,
         'employees' => EmployeeController::class,
+        'affiliates' => AffiliateController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);

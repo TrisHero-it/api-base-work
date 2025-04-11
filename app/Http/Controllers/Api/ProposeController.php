@@ -53,6 +53,10 @@ class ProposeController extends Controller
             $month = $date[1];
             $proposes = $proposes->whereMonth('created_at', $month)->whereYear('created_at', $year);
         }
+        $count = [];
+        $count['pending'] = Propose::where('status', 'pending')->count();
+        $count['approved'] = Propose::where('status', 'approved')->count();
+        $count['canceled'] = Propose::where('status', 'canceled')->count();
 
         $proposes = $proposes->paginate($perPage);
         foreach ($proposes as $propose) {
@@ -62,7 +66,17 @@ class ProposeController extends Controller
             $propose['category_name'] = $propose->propose_category_id == null ? 'Tuỳ chỉnh' : $propose->propose_category->name;
         }
 
-        return response()->json($proposes);
+        return response()->json([
+            'current_page' => $proposes->currentPage(),
+            'data' => $proposes->items(),
+            'per_page' => $proposes->perPage(),
+            'last_page' => $proposes->lastPage(),
+            'from' => $proposes->firstItem(),
+            'to' => $proposes->lastItem(),
+            'total_pages' => $proposes->lastPage(),
+            'total' => $proposes->total(),
+            'count' => $count
+        ]);
     }
 
     public function show(int $id)

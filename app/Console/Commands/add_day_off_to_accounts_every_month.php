@@ -30,19 +30,19 @@ class add_day_off_to_accounts_every_month extends Command
         $accounts = Account::with('dayoffAccount')->get();
         $now = Carbon::now();
         foreach ($accounts as $account) {
-            if ($account->dayoffAccount != null) {
-                if ($account->start_work_date != null) {
-                    $diffDay = $now->diffInDays($account->start_work_date);
-                    if ($diffDay > 30) {
-                        $account->dayoffAccount->update([
-                            'dayoff_count' => $account->dayoffAccount->dayoff_count + 1
-                        ]);
-                    }
+            $startWorkDate = Carbon::parse($account->start_work_date);
+            $diffDay = $now->diffInDays($startWorkDate);
+            if ($diffDay > 30) {
+                if ($account->dayoffAccount == null) {
+                    $account->dayoffAccount()->create([
+                        'dayoff_count' => 0,
+                        'dayoff_long_time_worker' => 1
+                    ]);
+                } else {
+                    $account->dayoffAccount->update([
+                        'dayoff_long_time_worker' => $account->dayoffAccount->dayoff_long_time_worker + 1
+                    ]);
                 }
-                $dayoff = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
-                $account['dayoff'] = $dayoff;
-            } else {
-                $account['dayoff'] = 0;
             }
         }
     }

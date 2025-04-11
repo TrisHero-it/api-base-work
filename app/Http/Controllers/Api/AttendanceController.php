@@ -96,6 +96,9 @@ class AttendanceController extends Controller
 
                 $item['hours'] = number_format($hours, 2);
                 $workday = number_format($hours, 2) / 7.5;
+                if ($workday > 1) {
+                    $workday = 1;
+                }
                 $item['workday'] = number_format($workday, 2);
             }
             $data = [];
@@ -160,7 +163,6 @@ class AttendanceController extends Controller
     {
         if (Auth::user()->workAtHome()) {
 
-
             $currentTime = Carbon::now();
             $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
             $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
@@ -224,7 +226,7 @@ class AttendanceController extends Controller
             }
         } else {
             return response()->json([
-                'error' => 'Vui lòng checkin bằng máy chấm công'
+                'error' => 'Bạn không được điểm danh tại nhà'
             ]);
         }
     }
@@ -239,35 +241,35 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
-        if (Auth::user()->workAtHome()) {
-            $isToday = false;
-            $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
-            $isToday = Carbon::parse($account->checkin)->isToday();
-            if ($isToday == false) {
+        // if (Auth::user()->workAtHome()) {
+        $isToday = false;
+        $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
+        $isToday = Carbon::parse($account->checkin)->isToday();
+        if ($isToday == false) {
+            return response()->json([
+                'error' => 'Bạn chưa điểm danh @@'
+            ]);
+        } else {
+            if ($account->checkout != null) {
+
                 return response()->json([
-                    'error' => 'Bạn chưa điểm danh @@'
+                    'error' => 'Hôm nay bạn đã checkout rồi'
                 ]);
             } else {
-                if ($account->checkout != null) {
+                $account->update([
+                    'checkout' => now()
+                ]);
 
-                    return response()->json([
-                        'error' => 'Hôm nay bạn đã checkout rồi'
-                    ]);
-                } else {
-                    $account->update([
-                        'checkout' => now()
-                    ]);
-
-                    return response()->json([
-                        'success' => 'checkout thành công'
-                    ]);
-                }
+                return response()->json([
+                    'success' => 'checkout thành công'
+                ]);
             }
-        } else {
-            return response()->json([
-                'error' => 'Vui lòng checkout bằng máy chấm công'
-            ]);
         }
+        // } else {
+        //     return response()->json([
+        //         'error' => 'Vui lòng checkout bằng máy chấm công'
+        //     ]);
+        // }
     }
 
     public function getHoursWork($task, $date)
@@ -357,6 +359,16 @@ class AttendanceController extends Controller
             'account_id' => 28,
             'name' => 'Khang'
         ],
+        [
+            'machine_id' => 15,
+            'account_id' => 27,
+            'name' => 'Minh'
+        ],
+        [
+            'machine_id' => 16,
+            'account_id' => 10,
+            'name' => 'Tuan Anh'
+        ]
     ];
 
     public function checkInOut(Request $request)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
+use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
@@ -47,7 +48,7 @@ class AccountController extends Controller
 
     public function update(int $id, AccountUpdateRequest $request)
     {
-        $account = Account::query()->findOrFail($id);
+        $account = Account::query()->with('dayoffAccount')->findOrFail($id);
         if ($request->filled('new_password')) {
             $change = $this->changePassword($request, $account);
             if ($change == true) {
@@ -99,6 +100,24 @@ class AccountController extends Controller
                 $data['personal_documents'] = $newPersonalDocuments;
             }
             $account->update($data);
+            if ($request->filled('dayoff_account')) {
+                if ($account->dayoffAccount != null) {
+                    $date = isset($request->dayoff_account['effective_date']) ? $request->dayoff_account['effective_date'] : now();
+                    $account->dayoffAccount->update([
+                        'effective_date' => $date,
+                        'total_holiday_with_salary' => $request->dayoff_account['total_holiday_with_salary'],
+                        'seniority_holiday' => $request->dayoff_account['seniority_holiday']
+                    ]);
+                } else {
+                    DayoffAccount::create([
+                        'account_id' => $id,
+                        'effective_date' => $request->dayoff_account['effective_date'] ?? now(),
+                        'total_holiday_with_salary' => $request->dayoff_account['total_holiday_with_salary'],
+                        'seniority_holiday' => $request->dayoff_account['seniority_holiday']
+                    ]);
+                }
+            }
+
             if ($request->filled('position')) {
                 $jobPosition = JobPosition::where('status', 'active')
                     ->where('account_id', $id)
@@ -166,7 +185,6 @@ class AccountController extends Controller
     public function index(Request $request)
     {
         $name = $request->search;
-        $perPage = $request->per_page ?? 10;
         if (isset($request->include)) {
             $accounts = Account::with(['jobPosition.salary', 'department', 'workHistories', 'educations', 'familyMembers', 'dayoffAccount', 'contracts.category', 'contractActive']);
         } else {
@@ -192,7 +210,7 @@ class AccountController extends Controller
             $accounts = $accounts->where('quit_work', $request->quit_work);
         }
 
-        $accounts = $accounts->paginate($perPage);
+        $accounts = $accounts->get();
         foreach ($accounts as $account) {
             if ($account->start_work_date != null) {
                 $mocThoiGian = Carbon::parse($account->start_work_date); // mốc thời gian
@@ -208,6 +226,8 @@ class AccountController extends Controller
             }
             if ($account->dayoffAccount != null) {
                 $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+                $account->paid_day_off = $account->dayoffAccount->dayoff_count;
+                $account->dayoff_long_time_worker = $account->dayoffAccount->dayoff_long_time_worker;
             }
             if ($account->jobPosition->where('status', 'active')->first() != null) {
                 if (!empty($account->jobPosition)) {
@@ -241,40 +261,8 @@ class AccountController extends Controller
                 }
             }
         }
-        $a = Account::query();
-        if ($name != null) {
-            $a->where('full_name', 'like', "%$name%");
-        }
-        if ($request->filled('role_id')) {
-            $a->where('role_id', $request->role_id);
-        }
-        if ($request->filled('quit_work')) {
-            $a->where('quit_work', $request->quit_work);
-        }
-        $a = $a->get();
-        $countRoleAccount = [
-            'Thành viên thông thường' => $a->where('role_id', 1)->where('quit_work', false)->count(),
-            'Quản trị' => $a->where('role_id', 2)->where('quit_work', false)->count(),
-            'Quản trị cấp cao' => $a->where('role_id', 3)->where('quit_work', false)->count(),
-            'Vô hiệu hoá' => $a->where('quit_work', true)->count(),
-        ];
 
-        return response()->json([
-            'current_page' => $accounts->currentPage(),
-            'data' => $accounts->items(),
-            'first_page_url' => $accounts->url(1),
-            'from' => $accounts->firstItem(),
-            'last_page' => $accounts->lastPage(),
-            'last_page_url' => $accounts->url($accounts->lastPage()),
-            'links' => $accounts->links(),
-            'next_page_url' => $accounts->nextPageUrl(),
-            'path' => $accounts->path(),
-            'per_page' => $accounts->perPage(),
-            'prev_page_url' => $accounts->previousPageUrl(),
-            'to' => $accounts->lastItem(),
-            'total' => $accounts->total(),
-            'count_role_account' => $countRoleAccount,
-        ]);
+        return response()->json($accounts);
     }
 
     public function show(int $id, Request $request)
@@ -295,11 +283,14 @@ class AccountController extends Controller
                     $account->position = $account->jobPosition->where('status', 'active')->first()->name;
                 }
             }
-            if ($account->department != null) {
+            $account->employee_type = $account->staff_type;
+            if ($account->department != null && isset($account->department[0])) {
                 $account->department_name = $account->department[0]->name;
             }
             if ($account->dayoffAccount != null) {
                 $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+                $account->paid_day_off = $account->dayoffAccount->dayoff_count;
+                $account->dayoff_long_time_worker = $account->dayoffAccount->dayoff_long_time_worker;
             }
 
             unset($account->department);

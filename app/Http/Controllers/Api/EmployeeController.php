@@ -27,15 +27,16 @@ class EmployeeController extends Controller
                 'quit_work'
             )->with('dayoffAccount');
         }
-        $accounts = $accounts->where('quit_work', false)->where('username', 'like', "%$name%")->orWhere('full_name', 'like', "%$name%");
-        $accounts = $accounts->when($request->filled('role_id'), function ($query) use ($request) {
-            return $query->where('role_id', $request->role_id)
+        if ($name != null) {
+            $accounts = $accounts->where('full_name', 'like', "%$name%");
+        }
+        if ($request->filled('role_id')) {
+            $accounts = $accounts->where('role_id', $request->role_id)
                 ->where('quit_work', false);
-        })
-            ->when($request->filled('quit_work'), function ($query) use ($request) {
-                return $query->where('quit_work', $request->quit_work);
-            })
-            ->paginate($perPage);
+        }
+        $accounts = $accounts->where('quit_work', false);
+
+        $accounts = $accounts->paginate($perPage);
         foreach ($accounts as $account) {
             if ($account->start_work_date != null) {
                 $mocThoiGian = Carbon::parse($account->start_work_date); // mốc thời gian
@@ -50,7 +51,7 @@ class EmployeeController extends Controller
                 unset($account->contractActive);
             }
             if ($account->dayoffAccount != null) {
-                $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
+                $account->day_off = $account->dayoffAccount->total_holiday_with_salary + $account->dayoffAccount->seniority_holiday . " Ngày";
             }
             if ($account->jobPosition->where('status', 'active')->first() != null) {
                 if (!empty($account->jobPosition)) {
@@ -84,12 +85,24 @@ class EmployeeController extends Controller
                 }
             }
         }
-        $a = Account::where('username', 'like', "%$name%")->orWhere('full_name', 'like', "%$name%")->get();
+        $a = Account::query();
+
+        if ($name != null) {
+            $a = $a->where('full_name', 'like', "%$name%");
+        }
+        if ($request->filled('role_id')) {
+            $a = $a->where('role_id', $request->role_id)
+                ->where('quit_work', false);
+        }
+        if ($request->filled('quit_work')) {
+            $a = $a->where('quit_work', $request->quit_work);
+        }
+        $a = $a->get();
         $countRoleAccount = [
             'Tất cả' => $a->count(),
-            'Thành viên thông thường' => $a->where('role_id', 1)->count(),
-            'Quản trị' => $a->where('role_id', 2)->count(),
-            'Quản trị cấp cao' => $a->where('role_id', 3)->count(),
+            'Thành viên thông thường' => $a->where('role_id', 1)->where('quit_work', false)->count(),
+            'Quản trị' => $a->where('role_id', 2)->where('quit_work', false)->count(),
+            'Quản trị cấp cao' => $a->where('role_id', 3)->where('quit_work', false)->count(),
             'Vô hiệu hoá' => $a->where('quit_work', true)->count(),
         ];
 
