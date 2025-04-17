@@ -362,7 +362,7 @@ class TaskController extends Controller
     {
         try {
             $task = Task::query()->findOrFail($id);
-            if ($task->account_id != Auth::id() && !Auth::user()->isSeniorAdmin()) {
+            if ($task->account_id != Auth::id() && !Auth::user()->isAdmin()) {
                 return response()->json([
                     'message' => 'Bạn không có quyền xóa nhiệm vụ này'
                 ], 401);

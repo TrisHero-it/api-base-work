@@ -119,7 +119,7 @@ class AttendanceController extends Controller
                 ->get()
                 ->count();
             $numberWorkingDays = 0;
-            foreach ($attendance as $item) {
+            foreach ($attendance->where('account_id', Auth::id()) as $item) {
                 if ($item->checkout != null) {
                     $checkOut = Carbon::parse($item->checkout);
                     $checkIn = Carbon::parse($item->checkin);
@@ -128,11 +128,7 @@ class AttendanceController extends Controller
                     $numberWorkingDays += round($totalHours / 9, 2);
                 }
             }
-            if (Auth::user()->isSeniorAdmin()) {
-                $data['number_of_working_days'] = 0;
-            } else {
-                $data['number_of_working_days'] = number_format($numberWorkingDays, 2);
-            }
+            $data['number_of_working_days'] = number_format($numberWorkingDays, 2);
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản
 
