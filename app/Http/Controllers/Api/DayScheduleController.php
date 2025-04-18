@@ -56,11 +56,9 @@ class DayScheduleController extends Controller
             if ($date->isSaturday()) {
                 if ($offSaturday == true) {
                     $numSaturday++;
-                    if ($numSaturday <= 2) {
-                        $offSaturday = false;
-                        $goToWork = false;
-                        $description = 'Nghỉ thứ 7';
-                    }
+                    $offSaturday = false;
+                    $goToWork = false;
+                    $description = 'Nghỉ thứ 7';
                 } else {
                     $offSaturday = true;
                 }

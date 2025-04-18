@@ -34,7 +34,11 @@ class EmployeeController extends Controller
             $accounts = $accounts->where('role_id', $request->role_id)
                 ->where('quit_work', false);
         }
-        $accounts = $accounts->where('quit_work', false);
+        if ($request->filled('quit_work')) {
+            $accounts = $accounts->where('quit_work', $request->quit_work);
+        } else {
+            $accounts = $accounts->where('quit_work', false);
+        }
 
         $accounts = $accounts->paginate($perPage);
         foreach ($accounts as $account) {
