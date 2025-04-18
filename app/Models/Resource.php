@@ -21,6 +21,7 @@ class Resource extends Model
         'expired_date',
         'notification_before_days',
         'notification_before_hours',
+        'remind',
     ];
 
     public function categoryResource()

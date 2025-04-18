@@ -35,16 +35,26 @@ class ProposeController extends Controller
             $proposes = $proposes->where('status', $request->status);
         }
 
+        if ($request->filled('code')) {
+            $proposes = $proposes->where('id', $request->code);
+        }
+
+        if ($request->filled('start_date') || $request->filled('end_date')) {
+            $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date) : Carbon::parse('2004-01-01');
+            $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date) : Carbon::parse('3000-01-01');
+            $proposes = $proposes->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
         if (isset($request->propose_category_id)) {
             $proposes = $proposes->where('propose_category_id', $request->propose_category_id);
         }
 
         if (!Auth::user()->isSeniorAdmin()) {
             $proposes = $proposes->where('account_id', Auth::id());
-        } else {
-            if (isset($request->account_id)) {
-                $proposes = $proposes->where('account_id', $request->account_id);
-            }
+        }
+
+        if ($request->filled('account_id')) {
+            $proposes = $proposes->where('account_id', $request->account_id);
         }
 
         if (isset($request->date)) {

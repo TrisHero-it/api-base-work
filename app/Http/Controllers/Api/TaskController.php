@@ -350,7 +350,7 @@ class TaskController extends Controller
 
     public function show(int $id)
     {
-        $task = Task::query()->findOrFail($id);
+        $task = Task::query()->with('creatorBy')->findOrFail($id);
         $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
         if ($task->stage_id != null) {
             $task['workflow_id'] = $task->stage->workflow_id;
@@ -414,6 +414,23 @@ class TaskController extends Controller
 
         return response()->json([
             'success' => 'Cập nhập thành công'
+        ]);
+    }
+
+    public function completeTask(int $id)
+    {
+        $task = Task::query()->findOrFail($id);
+        $workflow_id = $task->stage->workflow_id;
+        $stages = Stage::query()->where('workflow_id', $workflow_id)->get();
+        $stage = $stages->where('index', $task->stage->index - 1)->first();
+        if ($stage && $stage->index != 0) {
+            $task->update([
+                'stage_id' => $stage->id
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Chuyển giai đoạn thành công'
         ]);
     }
 }

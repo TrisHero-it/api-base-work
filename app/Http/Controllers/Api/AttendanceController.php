@@ -221,9 +221,11 @@ class AttendanceController extends Controller
                     ], 403);
             }
         } else {
-            return response()->json([
-                'error' => 'Bạn không được điểm danh tại nhà'
-            ]);
+            return response()
+                ->json([
+                    'message' => 'Vui lòng điểm danh bằng máy chấm công',
+                    'error' => 'Vui lòng điểm danh bằng máy chấm công'
+                ], 403);
         }
     }
 

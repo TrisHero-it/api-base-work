@@ -613,14 +613,15 @@ class AccountController extends Controller
         return $dataFiles;
     }
 
-    public function changePassword(Request $request, $account)
+    public function activeAccount(int $id)
     {
-        $request->validate([
-            'old_password' => 'required',
-            'new_password' => 'required|min:6',
+        $account = Account::query()->findOrFail($id);
+        $account->update([
+            'quit_work' => false
         ]);
-        $account->update(['password' => Hash::make($request->new_password)]);
 
-        return true;
+        return response()->json([
+            'message' => 'Kích hoạt tài khoản thành công'
+        ]);
     }
 }

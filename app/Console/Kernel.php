@@ -13,8 +13,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('app:load-youtube-command')->dailyAt('00:00');
-        // $schedule->command('app:send-check-out-email')->saturdays();
         $schedule->command('app:add_day_off_to_accounts_every_month')->lastDayOfMonth();
+        $schedule->command('app:check-duration-resource')->everyMinute();
     }
 
     /**

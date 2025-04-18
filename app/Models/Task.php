@@ -46,7 +46,7 @@ class Task extends Model
 
     public function creatorBy()
     {
-        return $this->belongsTo(Account::class, 'creator_by');
+        return $this->belongsTo(Account::class, 'creator_by')->select('id', 'full_name');
     }
 
     public function account()
