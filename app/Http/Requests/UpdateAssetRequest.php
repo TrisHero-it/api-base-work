@@ -32,7 +32,7 @@ class UpdateAssetRequest extends FormRequest
             'buy_date' => 'nullable|date',
             'buyer_id' => 'exists:accounts,id',
             'seller_id' => 'nullable|exists:accounts,id',
-            'brand_id' => 'exists:asset_brands,id',
+            'brand_id' => 'nullable|exists:asset_brands,id',
             'account_id' => 'nullable|exists:accounts,id',
             'warranty_date' => 'nullable|date',
             'sell_date' => 'nullable|date',

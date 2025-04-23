@@ -103,6 +103,11 @@ class Account extends Authenticatable
         return $this->hasMany(JobPosition::class, 'account_id', 'id')->orderBy('id', 'desc');
     }
 
+    public function jobPositionActive()
+    {
+        return $this->hasOne(JobPosition::class, 'account_id', 'id')->where('status', 'active');
+    }
+
     public function leaveHistory()
     {
         return $this->hasMany(LeaveHistory::class);

@@ -435,12 +435,6 @@ class AccountController extends Controller
             $file = $request->file('files');
             if (!is_array($file)) {
                 $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName(); // Ngày + Tên gốc
-                $path = 'public/files/' . $filename;
-                if (Storage::exists($path)) {
-                    return response()->json([
-                        'error' => 'File đã tồn tại!'
-                    ], 409);
-                }
                 $path = $file->storeAs('/public/files', $filename); // Lưu file với tên mới
                 $fileUrl = Storage::url($path);
                 $fileSizeMB = round($file->getSize() / (1024 * 1024), 2);
