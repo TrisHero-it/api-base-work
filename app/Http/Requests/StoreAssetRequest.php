@@ -33,7 +33,7 @@ class StoreAssetRequest extends FormRequest
             'buyer_id' => 'required|exists:accounts,id',
             'seller_id' => 'nullable|exists:accounts,id',
             'brand_id' => 'exists:asset_brands,id',
-            'account_id' => 'nullable|exists:asset_accounts,id',
+            'account_id' => 'nullable|exists:accounts,id',
             'warranty_date' => 'required|date',
             'sell_date' => 'nullable|date',
             'sell_price' => 'nullable|numeric|min:0',

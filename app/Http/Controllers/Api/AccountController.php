@@ -40,7 +40,7 @@ class AccountController extends Controller
             'email' => $email,
             'password' => Hash::make($request->safe()->password),
             'username' => $username,
-            'full_name' => $request->full_name,
+            'full_name' => $request->full_name ?? $username,
         ]);
 
         return response()->json($account);
@@ -49,6 +49,16 @@ class AccountController extends Controller
     public function update(int $id, AccountUpdateRequest $request)
     {
         $account = Account::query()->with('dayoffAccount')->findOrFail($id);
+        if ($request->filled('avatar')) {
+            $account->update([
+                'avatar' => $request->avatar
+            ]);
+            return response()->json([
+                'message' => 'Cập nhật avatar thành công',
+                'avatar' => $request->avatar
+            ]);
+        }
+
         if ($request->filled('new_password')) {
             $change = $this->changePassword($request, $account);
             if ($change == true) {
@@ -572,6 +582,9 @@ class AccountController extends Controller
                 'started_at' => null,
                 'expired' => null,
             ]);
+
+            AccountDepartment::where('account_id', $id)->delete();
+
             // Xét các tài nguyên về null
             Asset::where('account_id', $id)->update([
                 'account_id' => null,

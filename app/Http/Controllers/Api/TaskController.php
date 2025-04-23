@@ -96,6 +96,14 @@ class TaskController extends Controller
     {
         $account = Auth::user();
         $task = Task::query()->find($id);
+
+        if ($request->filled('complete')) {
+            $this->completeTask($id);
+            return response()->json([
+                'message' => 'Chuyển giai đoạn thành công'
+            ]);
+        }
+        
         if (isset($request->tag_id)) {
             $arrTag = $request->tag_id;
             StickerTask::query()
@@ -417,7 +425,7 @@ class TaskController extends Controller
         ]);
     }
 
-    public function completeTask(int $id)
+    private function completeTask(int $id)
     {
         $task = Task::query()->findOrFail($id);
         $workflow_id = $task->stage->workflow_id;

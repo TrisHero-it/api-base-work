@@ -441,7 +441,6 @@ class AttendanceController extends Controller
                             }
                         }
                     } else {
-
                         if (in_array($item['account_id'], $arrAccountId)) {
                             if ($attendance2 != null) {
                                 if (Carbon::parse($attendance2->checkin)->isToday()) {

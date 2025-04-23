@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ViewController extends Controller
 {
@@ -100,10 +101,20 @@ class ViewController extends Controller
             if (isset($view->field_name['contract'])) {
                 $array = array_merge($array, $view->field_name['contract']);
             }
-            $filteredArray = array_filter(self::ARRAY_PERSONAL_INFO['children'], function ($item) use ($array) {
-                return in_array($item['value'], $array);
-            });
-            $view->field_name = array_values($filteredArray);
+            $configMap = collect($array)->keyBy('value');
+            $result = collect(self::ARRAY_PERSONAL_INFO['children'])
+                ->filter(function ($field) use ($configMap) {
+                    return $configMap->has($field['value']);
+                })
+                ->map(function ($field) use ($configMap) {
+                    $field['index'] = $configMap[$field['value']]['index'];
+                    return $field;
+                })
+                ->sortBy('index')
+                ->values(); // Reset lại key
+
+            $view->field_name = $result;
+
             $overView[] = $view;
         }
 
@@ -112,9 +123,11 @@ class ViewController extends Controller
 
     public function store(Request $request)
     {
+        $lastestView = View::orderBy('index', 'desc')->first();
         $view = View::create([
             'name' => $request->name,
             'field_name' => $request->field_name,
+            'index' => isset($lastestView) ? $lastestView->index + 1 : 0,
         ]);
         return response()->json($view);
     }
@@ -122,7 +135,21 @@ class ViewController extends Controller
     public function update(Request $request, $id)
     {
         $view = View::find($id);
-        $view->update($request->all());
+        if (isset($request->index)) {
+            if ($view->isHigherView($request->index)) {
+                View::where('index', '>=', $request->index)
+                    ->where('index', '<=', $view->index)
+                    ->update(['index' => DB::raw('index + 1')]);
+
+                $view->update($request->all());
+            } else if ($view->isLowerView($request->index)) {
+                View::where('index', '>=', $view->index)
+                    ->where('index', '<=', $request->index)
+                    ->update(['index' => DB::raw('index - 1')]);
+
+                $view->update($request->all());
+            }
+        }
         return response()->json($view);
     }
 
