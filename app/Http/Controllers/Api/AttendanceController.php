@@ -371,108 +371,108 @@ class AttendanceController extends Controller
 
     public function checkInOut(Request $request)
     {
-        //     $currentTime = Carbon::now();
-        //     $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
-        //     $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
-        //     $arrId = [];
-        //     $department = Department::where('name', 'Phòng sales')->first()->id;
-        //     $accountDepartments = AccountDepartment::where('department_id', $department)->get();
-        //     $arrId = $accountDepartments->pluck('account_id')->toArray();
-        //     $saleMembers = Account::whereIn('id', $arrId)->get();
-        //     $arrAccountId = $saleMembers->pluck('id')->toArray();
+        $currentTime = Carbon::now();
+        $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
+        $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
+        $arrId = [];
+        $department = Department::where('name', 'Phòng sales')->first()->id;
+        $accountDepartments = AccountDepartment::where('department_id', $department)->get();
+        $arrId = $accountDepartments->pluck('account_id')->toArray();
+        $saleMembers = Account::whereIn('id', $arrId)->get();
+        $arrAccountId = $saleMembers->pluck('id')->toArray();
 
-        //     foreach ($request->attendances as $attendance) {
-        //         $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
-        //         foreach (self::ARRAY_ID_RONALJACK as $item) {
-        //             if ($attendance['user_id'] == $item['machine_id']) {
-        //                 $attendance2 = Attendance::where('account_id', $item['account_id'])->latest('id')->first();
-        //                 // check xem có trong khoảng giờ nghỉ trưa hay không
-        //                 if (!$currentTime->between($startTime, $endTime)) {
-        //                     // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
-        //                     if (in_array($item['account_id'], $arrAccountId)) {
-        //                         if ($attendance2 != null) {
-        //                             if (Carbon::parse($attendance2->checkin)->isToday()) {
-        //                                 if ($attendance2->checkout == null) {
-        //                                     $attendance2->update([
-        //                                         'checkout' => $time
-        //                                     ]);
-        //                                 } else {
-        //                                     Attendance::query()
-        //                                         ->create([
-        //                                             'account_id' => $item['account_id'],
-        //                                             'checkin' => $time
-        //                                         ]);
-        //                                 }
-        //                             } else {
-        //                                 Attendance::query()
-        //                                     ->create([
-        //                                         'account_id' => $item['account_id'],
-        //                                         'checkin' => $time
-        //                                     ]);
-        //                             }
-        //                         } else {
-        //                             Attendance::query()
-        //                                 ->create([
-        //                                     'account_id' => $item['account_id'],
-        //                                     'checkin' => $time
-        //                                 ]);
-        //                         }
-        //                     } else {
-        //                         if ($attendance2 != null) {
-        //                             if ((Carbon::parse($attendance2->checkin)->isToday())) {
-        //                                 if ($attendance2->checkout == null) {
-        //                                     $attendance2->update([
-        //                                         'checkout' => $time
-        //                                     ]);
-        //                                 }
-        //                             } else {
-        //                                 Attendance::query()
-        //                                     ->create([
-        //                                         'account_id' => $item['account_id'],
-        //                                         'checkin' => $time
-        //                                     ]);
-        //                             }
-        //                         } else {
-        //                             Attendance::query()
-        //                                 ->create([
-        //                                     'account_id' => $item['account_id'],
-        //                                     'checkin' => $time
-        //                                 ]);
-        //                         }
-        //                     }
-        //                 } else {
-        //                     if (in_array($item['account_id'], $arrAccountId)) {
-        //                         if ($attendance2 != null) {
-        //                             if (Carbon::parse($attendance2->checkin)->isToday()) {
-        //                                 if ($attendance2->checkout == null) {
-        //                                     $attendance2->update([
-        //                                         'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
-        //                                     ]);
-        //                                 } else {
-        //                                     Attendance::query()
-        //                                         ->create([
-        //                                             'account_id' => $item['account_id'],
-        //                                             'checkin' => $time
-        //                                         ]);
-        //                                 }
-        //                             } else {
-        //                                 Attendance::query()
-        //                                     ->create([
-        //                                         'account_id' => $item['account_id'],
-        //                                         'checkin' => $time
-        //                                     ]);
-        //                             }
-        //                         } else {
-        //                             Attendance::query()
-        //                                 ->create([
-        //                                     'account_id' => $item['account_id'],
-        //                                     'checkin' => $time
-        //                                 ]);
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
+        foreach ($request->attendances as $attendance) {
+            $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
+            foreach (self::ARRAY_ID_RONALJACK as $item) {
+                if ($attendance['user_id'] == $item['machine_id']) {
+                    $attendance2 = Attendance::where('account_id', $item['account_id'])->latest('id')->first();
+                    // check xem có trong khoảng giờ nghỉ trưa hay không
+                    if (!$currentTime->between($startTime, $endTime)) {
+                        // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
+                        if (in_array($item['account_id'], $arrAccountId)) {
+                            if ($attendance2 != null) {
+                                if (Carbon::parse($attendance2->checkin)->isToday()) {
+                                    if ($attendance2->checkout == null) {
+                                        $attendance2->update([
+                                            'checkout' => $time
+                                        ]);
+                                    } else {
+                                        Attendance::query()
+                                            ->create([
+                                                'account_id' => $item['account_id'],
+                                                'checkin' => $time
+                                            ]);
+                                    }
+                                } else {
+                                    Attendance::query()
+                                        ->create([
+                                            'account_id' => $item['account_id'],
+                                            'checkin' => $time
+                                        ]);
+                                }
+                            } else {
+                                Attendance::query()
+                                    ->create([
+                                        'account_id' => $item['account_id'],
+                                        'checkin' => $time
+                                    ]);
+                            }
+                        } else {
+                            if ($attendance2 != null) {
+                                if ((Carbon::parse($attendance2->checkin)->isToday())) {
+                                    if ($attendance2->checkout == null) {
+                                        $attendance2->update([
+                                            'checkout' => $time
+                                        ]);
+                                    }
+                                } else {
+                                    Attendance::query()
+                                        ->create([
+                                            'account_id' => $item['account_id'],
+                                            'checkin' => $time
+                                        ]);
+                                }
+                            } else {
+                                Attendance::query()
+                                    ->create([
+                                        'account_id' => $item['account_id'],
+                                        'checkin' => $time
+                                    ]);
+                            }
+                        }
+                    } else {
+                        if (in_array($item['account_id'], $arrAccountId)) {
+                            if ($attendance2 != null) {
+                                if (Carbon::parse($attendance2->checkin)->isToday()) {
+                                    if ($attendance2->checkout == null) {
+                                        $attendance2->update([
+                                            'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
+                                        ]);
+                                    } else {
+                                        Attendance::query()
+                                            ->create([
+                                                'account_id' => $item['account_id'],
+                                                'checkin' => $time
+                                            ]);
+                                    }
+                                } else {
+                                    Attendance::query()
+                                        ->create([
+                                            'account_id' => $item['account_id'],
+                                            'checkin' => $time
+                                        ]);
+                                }
+                            } else {
+                                Attendance::query()
+                                    ->create([
+                                        'account_id' => $item['account_id'],
+                                        'checkin' => $time
+                                    ]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
