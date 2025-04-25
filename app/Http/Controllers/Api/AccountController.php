@@ -171,7 +171,7 @@ class AccountController extends Controller
         }
 
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_name', 'email', 'username', 'education', 'history_works', 'family_members', 'role', 'department', 'job_position', 'dayoff_account'));
+        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_name', 'email', 'username', 'education', 'history_works', 'family_member', 'role', 'department', 'job_position', 'dayoff_account'));
         $oldData = [];
         if ($arrKeys != null) {
             $oldData = Account::select($arrKeys)
@@ -529,7 +529,7 @@ class AccountController extends Controller
                 ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'start_date'],
                 ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'end_date'],
                 ['label' => 'Trạng thái của hợp đồng', 'value' => 'status'],
-                ['label' => 'Tài liệu hợp đồng', 'value' => 'files'],
+                ['label' => 'Tài liệu hợp đồng', 'value' => 'contract_files'],
                 ['label' => 'Người tạo hợp đồng', 'value' => 'creator_by'],
             ],
             'name' => 'Hợp đồng',
@@ -537,7 +537,7 @@ class AccountController extends Controller
         ];
         $arrayDepartment = [
             'children' => [
-                ['label' => 'Tên phòng ban', 'value' => 'name'],
+                ['label' => 'Tên phòng ban', 'value' => 'department_name'],
             ],
             'name' => 'Phòng ban',
             'value' => 'department',

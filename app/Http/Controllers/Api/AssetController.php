@@ -157,8 +157,8 @@ class   AssetController extends Controller
             $data = $this->handleStatusUpdate($data, $asset);
         }
 
-        if ($request->filled('category_id')) {
-            $data['asset_category_id'] = $request->category_id;
+        if ($request->filled('asset_category_id')) {
+            $data['asset_category_id'] = $request->asset_category_id;
         }
 
         return $data;

@@ -18,7 +18,7 @@ class ViewController extends Controller
             ['label' => 'Ngày sinh', 'value' => 'birthday'],
             ['label' => 'Giới tính', 'value' => 'gender'],
             ['label' => 'Địa chỉ', 'value' => 'address'],
-            ['label' => 'Hợp đồng lao động', 'value' => 'contract_file'],
+            ['label' => 'Hợp đồng lao động', 'value' => 'contract_files'],
             ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
             ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
             ['label' => 'Tên tài khoản', 'value' => 'username'],
@@ -60,36 +60,37 @@ class ViewController extends Controller
             ['label' => 'Thời gian bắt đầu học', 'value' => 'start_date'],
             ['label' => 'Thời gian kết thúc học', 'value' => 'end_date'],
             ['label' => 'Loại học vấn', 'value' => 'type'],
+            ['label' => 'Tên phòng ban', 'value' => 'department_name'],
         ],
         'name' => 'Thông tin cá nhân',
         'value' => 'personal_info',
     ];
     public function index()
     {
-        $views = View::all();
-        $overView = [
-            [
-                "id" => 0,
-                "name" => "Tổng quan",
-                "field_name" => [
-                    ['label' => 'Nhân sự', 'value' => 'full_name'],
-                    ['label' => 'Tài khoản', 'value' => 'username'],
-                    ['label' => 'Email', 'value' => 'email'],
-                    ['label' => 'Trạng thái', 'value' => 'status'],
-                    ['label' => 'Chức vụ', 'value' => 'position'],
-                    ['label' => 'Ngày bắt đầu', 'value' => 'start_work_date'],
-                    ['label' => 'Ngày kết thúc', 'value' => 'end_work_date'],
-                    ['label' => 'Phòng ban', 'value' => 'department_name'],
-                    ['label' => 'Giới tính', 'value' => 'gender'],
-                    ['label' => 'Hợp đồng lao động', 'value' => 'url_contract'],
-                    ['label' => 'Số điện thoại', 'value' => 'phone'],
-                    ['label' => 'Ngày sinh', 'value' => 'birthday'],
-                    ['label' => 'Thâm niên', 'value' => 'seniority'],
-                    ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
-                    ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
-                ]
-            ]
-        ];
+        $views = View::orderBy('index', 'asc')->get();
+        // $overView = [
+        //     [
+        //         "id" => 0,
+        //         "name" => "Tổng quan",
+        //         "field_name" => [
+        //             ['label' => 'Nhân sự', 'value' => 'full_name'],
+        //             ['label' => 'Tài khoản', 'value' => 'username'],
+        //             ['label' => 'Email', 'value' => 'email'],
+        //             ['label' => 'Trạng thái', 'value' => 'status'],
+        //             ['label' => 'Chức vụ', 'value' => 'position'],
+        //             ['label' => 'Ngày bắt đầu', 'value' => 'start_work_date'],
+        //             ['label' => 'Ngày kết thúc', 'value' => 'end_work_date'],
+        //             ['label' => 'Phòng ban', 'value' => 'department_name'],
+        //             ['label' => 'Giới tính', 'value' => 'gender'],
+        //             ['label' => 'Hợp đồng lao động', 'value' => 'url_contract'],
+        //             ['label' => 'Số điện thoại', 'value' => 'phone'],
+        //             ['label' => 'Ngày sinh', 'value' => 'birthday'],
+        //             ['label' => 'Thâm niên', 'value' => 'seniority'],
+        //             ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
+        //             ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
+        //         ]
+        //     ]
+        // ];
         foreach ($views as $view) {
             $array = [];
             if (isset($view->field_name['personal_info'])) {
@@ -101,6 +102,13 @@ class ViewController extends Controller
             if (isset($view->field_name['contract'])) {
                 $array = array_merge($array, $view->field_name['contract']);
             }
+            if (isset($view->field_name['education'])) {
+                $array = array_merge($array, $view->field_name['education']);
+            }
+            if (isset($view->field_name['department'])) {
+                $array = array_merge($array, $view->field_name['department']);
+            }
+
             $configMap = collect($array)->keyBy('value');
             $result = collect(self::ARRAY_PERSONAL_INFO['children'])
                 ->filter(function ($field) use ($configMap) {
@@ -132,6 +140,41 @@ class ViewController extends Controller
         return response()->json($view);
     }
 
+    public function show($id)
+    {
+        $view = View::findOrFail($id);
+        $array = [];
+        $arrField = ['personal_info', 'salary', 'contract', 'education', 'department'];
+        $a = [];
+        foreach ($arrField as $field) {
+            if (isset($view->field_name[$field])) {
+                foreach ($view->field_name[$field] as $newField) {
+                    $data = [];
+                    $data['type'] = $field;
+                    $data = array_merge($data, $newField);
+                    $a[] = $data;
+                }
+                $array = array_merge($array, $a);
+            }
+        }
+        $configMap = collect($array)->keyBy('value');
+        $result = collect(self::ARRAY_PERSONAL_INFO['children'])
+            ->filter(function ($field) use ($configMap) {
+                return $configMap->has($field['value']);
+            })
+            ->map(function ($field) use ($configMap) {
+                $field['index'] = $configMap[$field['value']]['index'];
+                $field['type'] = $configMap[$field['value']]['type'];
+                return $field;
+            })
+            ->sortBy('index')
+            ->values(); // Reset lại key
+
+        $view->field_name = $result;
+
+        return response()->json($view);
+    }
+
     public function update(Request $request, $id)
     {
         $view = View::find($id);
@@ -139,17 +182,23 @@ class ViewController extends Controller
             if ($view->isHigherView($request->index)) {
                 View::where('index', '>=', $request->index)
                     ->where('index', '<=', $view->index)
-                    ->update(['index' => DB::raw('index + 1')]);
+                    ->update(['index' => DB::raw('`index` + 1')]);
 
                 $view->update($request->all());
             } else if ($view->isLowerView($request->index)) {
                 View::where('index', '>=', $view->index)
                     ->where('index', '<=', $request->index)
-                    ->update(['index' => DB::raw('index - 1')]);
+                    ->update(['index' => DB::raw('`index` - 1')]);
 
                 $view->update($request->all());
             }
         }
+
+        if (isset($request->field_name)) {
+            $view->field_name = $request->field_name;
+            $view->save();
+        }
+
         return response()->json($view);
     }
 
@@ -157,6 +206,27 @@ class ViewController extends Controller
     {
         $view = View::find($id);
         $view->delete();
+
         return response()->json($view);
+    }
+
+    public function updateIndexView(Request $request)
+    {
+        $cases = '';
+        $ids = [];
+        foreach ($request->all() as $key => $value) {
+            $id = (int) $value['id'];
+            $index = (int) $key;
+            $cases .= "WHEN {$id} THEN {$index} ";
+            $ids[] = $id;
+        }
+
+        if (!empty($ids)) {
+            $idsStr = implode(',', $ids);
+            DB::update("UPDATE views SET `index` = CASE id {$cases} END WHERE id IN ({$idsStr})");
+        }
+        $views = View::orderBy('index', 'asc')->get();
+
+        return response()->json($views);
     }
 }

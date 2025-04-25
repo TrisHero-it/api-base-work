@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProposeStoreRequest;
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\DayoffAccount;
+use App\Models\Department;
+use App\Models\Education;
+use App\Models\FamilyMember;
+use App\Models\JobPosition;
 use App\Models\Notification;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
@@ -17,6 +22,62 @@ use Illuminate\Support\Facades\Auth;
 
 class ProposeController extends Controller
 {
+    const FIELDS = [
+        ['label' => 'Email', 'value' => 'email'],
+        ['label' => 'Thâm niên', 'value' => 'seniority'],
+        ['label' => 'Số điện thoại', 'value' => 'phone'],
+        ['label' => 'Họ và tên', 'value' => 'full_name'],
+        ['label' => 'Ngày sinh', 'value' => 'birthday'],
+        ['label' => 'Giới tính', 'value' => 'gender'],
+        ['label' => 'Địa chỉ', 'value' => 'address'],
+        ['label' => 'Hợp đồng lao động', 'value' => 'contract_files'],
+        ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
+        ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
+        ['label' => 'Tên tài khoản', 'value' => 'username'],
+        ['label' => 'Trạng thái', 'value' => 'status'],
+        ['label' => 'Chức vụ', 'value' => 'position'],
+        ['label' => 'Ngày bắt đầu', 'value' => 'start_work_date'],
+        ['label' => 'Ngày kết thúc', 'value' => 'end_work_date'],
+        ['label' => 'Làm việc tại nhà', 'value' => 'attendance_at_home'],
+        ['label' => 'Email cá nhân', 'value' => 'personal_email'],
+        ['label' => 'Tên ngân hàng', 'value' => 'name_bank'],
+        ['label' => 'Số tài khoản', 'value' => 'bank_number'],
+        ['label' => 'Người quản lí', 'value' => 'manager_id'],
+        ['label' => 'Số CMND', 'value' => 'identity_card'],
+        ['label' => 'Địa chỉ tạm trú', 'value' => 'temporary_address'],
+        ['label' => 'Hộ chiếu', 'value' => 'passport'],
+        ['label' => 'Mã số thuế', 'value' => 'tax_code'],
+        ['label' => 'Tình trạng hôn nhân', 'value' => 'marital_status'],
+        ['label' => 'Mức giảm trừ gia cảnh', 'value' => 'tax_reduced'],
+        ['label' => 'Chính sách thuế', 'value' => 'tax_policy'],
+        ['label' => 'BHXH', 'value' => 'BHXH'],
+        ['label' => 'Nơi đăng ký thường trú', 'value' => 'place_of_registration'],
+        ['label' => 'Vùng lương', 'value' => 'salary_scale'],
+        ['label' => 'Chính sách bảo hiểm', 'value' => 'insurance_policy'],
+        ['label' => 'Ngày bắt đầu thử việc', 'value' => 'start_trial_date'],
+        ['label' => 'Phân quyền', 'value' => 'role_id'],
+        ['label' => 'Lương thực nhận', 'value' => 'net_salary'],
+        ['label' => 'Lương cơ bản', 'value' => 'basic_salary'],
+        ['label' => 'Phụ cấp đi lại', 'value' => 'travel_allowance'],
+        ['label' => 'Phụ cấp ăn uống', 'value' => 'eat_allowance'],
+        ['label' => 'KPI', 'value' => 'kpi'],
+        ['label' => 'Chức vụ', 'value' => 'position'],
+        ['label' => 'Loại hợp đồng', 'value' => 'contract_type'],
+        ['label' => 'Ghi chú', 'value' => 'note'],
+        ['label' => 'Loại hợp đồng', 'value' => 'category__contract_id'],
+        ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'contract_start_date'],
+        ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'contract_end_date'],
+        ['label' => 'Trạng thái của hợp đồng', 'value' => 'status'],
+        ['label' => 'Tên trường', 'value' => 'school_name'],
+        ['label' => 'Thời gian bắt đầu học', 'value' => 'start_date'],
+        ['label' => 'Thời gian kết thúc học', 'value' => 'end_date'],
+        ['label' => 'Loại học vấn', 'value' => 'type'],
+        ['label' => 'Tên phòng ban', 'value' => 'department_name'],
+        ['label' => 'Quan hệ', 'value' => 'relationship'],
+        ['label' => 'Tên của người thân', 'value' => 'name'],
+        ['label' => 'Số điện thoại', 'value' => 'phone_number'],
+        ['label' => 'Phụ thuộc', 'value' => 'is_dependent'],
+    ];
     public function index(Request $request)
     {
         if (isset($request->include)) {
@@ -131,6 +192,48 @@ class ProposeController extends Controller
                 }
             }
             $propose['number_holiday'] = $numberHoliDay;
+        }
+        $arrayMerge =  [
+            'education',
+            'family_member',
+            'history_works',
+            'job_position',
+            'salary',
+            'dayoff_account',
+
+        ];
+        if ($propose->old_value != null) {
+            $data = $propose->old_value;
+            foreach ($arrayMerge as $key) {
+                if (isset($data[$key])) {
+                    unset($data[$key]);
+                }
+            }
+
+            if ($data != null) {
+                foreach (self::FIELDS as $field) {
+                    $key = $field['value'];
+                    if (array_key_exists($key,  $data)) {
+                        $result[$field['label']] =  $data[$key];
+                    }
+                }
+                $propose['old_value'] = $result;
+            }
+
+            $data = $propose->new_value;
+            if (isset($data['family_member'])) {
+                $data = array_merge($data, $data['family_member']);
+                unset($data['family_member']);
+            }
+            if ($data != null) {
+                foreach (self::FIELDS as $field) {
+                    $key = $field['value'];
+                    if (array_key_exists($key,  $data)) {
+                        $result[$field['label']] =  $data[$key];
+                    }
+                }
+                $propose['new_value'] = $result;
+            }
         }
 
         return response()->json($propose);
@@ -287,6 +390,70 @@ class ProposeController extends Controller
                 ]);
             }
         }
+        if ($request->status == 'approved' && $propose->name == 'Cập nhật thông tin cá nhân') {
+            $account = Account::where('id', $propose->account_id)->first();
+            $data = $propose->new_value;
+            if (isset($data['education'])) {
+                if (isset($data['education']['id'])) {
+                    Education::where('id', $data['education']['id'])->update([
+                        'school_name' => $data['education']['school_name'],
+                        'start_date' => $data['education']['start_date'],
+                        'end_date' => $data['education']['end_date'],
+                        'major' => $data['education']['major'],
+                        'degree' => $data['education']['degree'],
+                    ]);
+                } else {
+                    Education::create([
+                        'school_name' => $data['education']['school_name'],
+                        'start_date' => $data['education']['start_date'],
+                        'end_date' => $data['education']['end_date'],
+                        'major' => $data['education']['major'],
+                        'degree' => $data['education']['degree'],
+                        'account_id' => $propose->account_id,
+                    ]);
+                }
+            }
+
+            if (isset($data['family_member'])) {
+                if (isset($data['family_member']['id'])) {
+                    FamilyMember::where('id', $data['family_member']['id'])->update([
+                        $data['family_member']
+                    ]);
+                } else {
+                    $data['family_member']['account_id'] = $propose->account_id;
+                    FamilyMember::create([
+                        $data['family_member']
+                    ]);
+                }
+            }
+
+            if (isset($data['department_name'])) {
+                $department = Department::where('name', $data['department_name'])->first();
+                AccountDepartment::where('account_id', $propose->account_id)->update([
+                    'department_id' => $department->id
+                ]);
+            }
+
+            if (isset($data['position'])) {
+                $jobPosition = JobPosition::where('name', $data['position'])
+                    ->where('account_id', $propose->account_id)
+                    ->where('status', 'active')
+                    ->first();
+                if ($jobPosition == null) {
+                    JobPosition::where('account_id', $propose->account_id)->update([
+                        'status' => 'inactive'
+                    ]);
+                    JobPosition::create([
+                        'account_id' => $propose->account_id,
+                        'name' => $data['position'],
+                        'status' => 'active',
+                    ]);
+                }
+            }
+
+            $account->update($data); 
+        }
+
         $name = $propose->propose_category->name;
         $status = $propose->status == 'approved' ? 'được chấp nhận' : 'bị từ chối';
         Notification::create([

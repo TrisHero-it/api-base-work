@@ -124,6 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/disable-account/{id}', [AccountController::class, 'disableAccount']);
     Route::put('/active-account/{id}', [AccountController::class, 'activeAccount']);
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
+    Route::put('update-index-views', [ViewController::class, 'updateIndexView']);
 });
 
 Route::post('/check-in-out', [AttendanceController::class, 'checkInOut']);
