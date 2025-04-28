@@ -24,6 +24,7 @@ class Propose extends Model
         'old_check_out',
         'old_value',
         'new_value',
+        'date_wfh',
     ];
 
     protected $casts = [

@@ -72,6 +72,7 @@ class ScheduleWorkController extends Controller
             ->groupBy('old_stage', 'new_stage', 'worker', 'task_id')
             ->pluck('id');
         $accounts = Account::all();
+        
         $taskInHistory = HistoryMoveTask::whereIn('id', $latestTaskIds)
             ->with(['oldStage', 'newStage', 'task'])
             ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))

@@ -403,7 +403,6 @@ class AccountController extends Controller
                 ->with('dayoffAccount')
                 ->where('id', Auth::id())
                 ->first();
-                
         }
         if ($account->role_id == 2) {
             $account['role'] = 'Quản trị';
@@ -415,8 +414,16 @@ class AccountController extends Controller
         unset($account->role_id);
         $month = now()->month;
         $year = now()->year;
-        $category = ProposeCategory::where('name', 'Đăng ký nghỉ')->first();
-        $proposes = Propose::where('propose_category_id', $category->id)
+        $category = ProposeCategory::whereIn('name', ['Đăng ký nghỉ', 'Đăng ký làm ở nhà'])->get();
+        $idHoliday = $category->where('name', 'Đăng ký nghỉ')->first()->id;
+        $idWorkFromHome = $category->where('name', 'Đăng ký làm ở nhà')->first()->id;
+        $proposesWFM = Propose::where('propose_category_id', $idWorkFromHome)
+            ->where('status', 'approved')
+            ->where('account_id', $account->id)
+            ->whereMonth('date_wfh', $month)
+            ->count();
+        $account['WFM_this_month'] = $proposesWFM;
+        $proposes = Propose::where('propose_category_id', $idHoliday)
             ->where('status', 'approved')
             ->where('account_id', $account->id)
             ->whereMonth('created_at', $month)

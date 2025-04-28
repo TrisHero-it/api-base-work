@@ -200,7 +200,7 @@ class ProposeController extends Controller
             'job_position',
             'salary',
             'dayoff_account',
-            ];
+        ];
         if ($propose->old_value != null) {
             $data = $propose->old_value;
             foreach ($arrayMerge as $key) {
@@ -316,6 +316,19 @@ class ProposeController extends Controller
                 }
             }
         }
+        if ($proposeCategory->name == "Đăng ký làm ở nhà") {
+            $count = Propose::where('account_id', Auth::id())
+                ->where('status', 'approved')
+                ->whereMonth('date_wfh', now()->month)
+                ->count();
+            if ($count >= 5) {
+                return response()->json([
+                    'message' => 'Bạn đã đăng ký làm ở nhà quá 5 lần trong tháng',
+                    'errors' => 'Bạn đã đăng ký làm ở nhà quá 5 lần trong tháng'
+                ], status: 401);
+            }
+        }
+
         $arr = [];
         $propose = Propose::query()->create($data);
         if (isset($request->holiday)) {
@@ -333,13 +346,8 @@ class ProposeController extends Controller
 
                 $arr[] = array_merge($a, $date);
             }
+            DateHoliday::query()->insert($arr);
         }
-        DateHoliday::query()->insert($arr);
-        $accounts = Account::where('role_id', 2)
-            ->get();
-        // foreach ($accounts as $account) {
-        //     SendEmail::dispatch($account->email, "Có một yêu cầu $request->name được gửi tới bạn !!");
-        // }
 
         return response()->json($propose);
     }

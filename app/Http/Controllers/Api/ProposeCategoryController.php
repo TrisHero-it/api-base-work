@@ -10,7 +10,8 @@ class ProposeCategoryController extends Controller
 {
     public function index()
     {
-        $categories = ProposeCategory::all();
+        $categories = ProposeCategory::whereNotIn('name', ['Cập nhật thông tin cá nhân'])
+            ->get();
 
         return response()->json($categories);
     }
