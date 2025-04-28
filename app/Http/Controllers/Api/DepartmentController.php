@@ -16,7 +16,9 @@ class DepartmentController extends Controller
         $arrDepartmentId = $departments->pluck('id');
         $accounts = AccountDepartment::query()->whereIn('department_id', $arrDepartmentId)->get();
         $arrAccountId = $accounts->pluck('account_id')->toArray();
-        $members = Account::query()->whereIn('id', $arrAccountId)->get();
+        $members = Account::query()
+            ->select('id', 'full_name', 'avatar')
+            ->whereIn('id', $arrAccountId)->get();
         foreach ($departments as $department) {
             $accounts2 = $accounts->where('department_id', $department->id);
             $members2 = $members->whereIn('id', $accounts2->pluck('account_id'));
@@ -33,7 +35,8 @@ class DepartmentController extends Controller
             'name' => $data['name'],
         ]);
         foreach ($data['members'] as $member) {
-            $account = Account::query()->where('username', $member)->first();
+            $account = Account::query()
+                ->where('username', $member)->first();
             AccountDepartment::query()->create([
                 'department_id' => $department->id,
                 'account_id' => $account->id,

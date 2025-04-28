@@ -8,18 +8,39 @@ use App\Models\Task;
 use App\Models\Workflow;
 use Illuminate\Http\Request;
 use App\Models\Account;
+use App\Models\AccountDepartment;
+use App\Models\Department;
 use App\Models\Schedule;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ScheduleAccountController extends Controller
 {
     public function index(Request $request)
     {
-        $globalBan = [11, 12, 14, 15, 17, 25];
-        $accounts = Account::select('email', 'full_name', 'avatar', 'id')
-            ->whereNotIn('id', $globalBan)
-            ->where('quit_work', false)
-            ->get();
+        $globalBan = [11, 12];
+        if (Auth::user()->isSeniorAdmin()) {
+            $accounts = Account::select('email', 'full_name', 'avatar', 'id')
+                ->with('department')
+                ->whereNotIn('id', $globalBan)
+                ->where('quit_work', false);
+            if (isset($request->department_id)) {
+                $accountDepartment = AccountDepartment::where('department_id', $request->department_id)->get()->pluck('account_id');
+                $accounts = $accounts->whereIn('id', $accountDepartment);
+            }
+            $accounts = $accounts->get();
+        } else {
+            $accountsDepartment = AccountDepartment::where('account_id', Auth::user()->id)->get()->pluck('department_id');
+            $accountsDepartment = AccountDepartment::whereIn('department_id', $accountsDepartment)
+                ->get()
+                ->pluck('account_id');
+            $accounts = Account::select('email', 'full_name', 'avatar', 'id')
+                ->where('quit_work', false)
+                ->with('department')
+                ->whereIn('id', $accountsDepartment)
+                ->whereNotIn('id', $globalBan)
+                ->get();
+        }
         if (isset($request->date)) {
             $date = $request->date;
         } else {
@@ -30,6 +51,10 @@ class ScheduleAccountController extends Controller
         $data = $this->getScheduleAccount($date, $date);
 
         foreach ($accounts as $account) {
+            if (count($account->department) != 0) {
+                $account->department_name = $account->department[0]->name;
+                unset($account->department);
+            }
             $hoursWork = 0;
             if ($dayOff->go_to_work != false) {
                 $newData = array_filter($data, function ($item) use ($account) {

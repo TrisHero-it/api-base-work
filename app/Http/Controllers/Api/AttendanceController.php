@@ -157,7 +157,7 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        // if (Auth::user()->workAtHome()) {
+        if (Auth::user()->workAtHome()) {
             $currentTime = Carbon::now();
             $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
             $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
@@ -219,13 +219,13 @@ class AttendanceController extends Controller
                         'error' => 'Không được điểm danh vào thời gian này'
                     ], 403);
             }
-        // } else {
-        //     return response()
-        //         ->json([
-        //             'message' => 'Vui lòng điểm danh bằng máy chấm công',
-        //             'error' => 'Vui lòng điểm danh bằng máy chấm công'
-        //         ], 403);
-        // }
+        } else {
+            return response()
+                ->json([
+                    'message' => 'Vui lòng điểm danh bằng máy chấm công',
+                    'error' => 'Vui lòng điểm danh bằng máy chấm công'
+                ], 403);
+        }
     }
 
     public function show($id)

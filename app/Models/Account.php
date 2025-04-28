@@ -51,6 +51,7 @@ class Account extends Authenticatable
         'end_work_date',
         'is_active',
         'staff_type',
+        'work_from_home',
     ];
 
     protected $casts = [

@@ -77,7 +77,6 @@ class AccountController extends Controller
             'work_history' => WorkHistory::class,
             'family_member' => FamilyMember::class,
             'job_position' => JobPosition::class,
-            'salary' => Salary::class,
         ];
         if (Auth::user()->isSeniorAdmin()) {
             $data = $request->except('password', 'avatar', 'position', 'department_name', 'personal_documents', 'day_off', 'staff_type');
@@ -171,7 +170,7 @@ class AccountController extends Controller
         }
 
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_name', 'email', 'username', 'education', 'history_works', 'family_member', 'role', 'department', 'job_position', 'dayoff_account'));
+        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_name', 'email', 'username', 'education', 'history_works', 'family_member', 'role', 'department', 'job_position', 'dayoff_account', 'salary'));
         $oldData = [];
         if ($arrKeys != null) {
             $oldData = Account::select($arrKeys)
@@ -183,6 +182,17 @@ class AccountController extends Controller
                     ->get();
             }
         }
+
+        if ($request->filled('salary')) {
+            $jobPosition = JobPosition::where('status', 'active')
+                ->where('account_id', $id)
+                ->first();
+            if (isset($jobPosition)) {
+                $salary = Salary::where('job_position_id', $jobPosition->id)->first();
+                $oldData['salary'] = $salary;
+            }
+        }
+
         if (!is_array($oldData)) {
             $oldData = $oldData->toArray();
         }
@@ -389,10 +399,11 @@ class AccountController extends Controller
             $salary = Salary::where('job_position_id', $account->jobPosition->where('status', 'active')->first()->id)->first();
             $account->salary = $salary;
         } else {
-            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone')
+            $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone', 'work_from_home')
                 ->with('dayoffAccount')
                 ->where('id', Auth::id())
                 ->first();
+                
         }
         if ($account->role_id == 2) {
             $account['role'] = 'Quản trị';

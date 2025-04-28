@@ -68,29 +68,6 @@ class ViewController extends Controller
     public function index()
     {
         $views = View::orderBy('index', 'asc')->get();
-        // $overView = [
-        //     [
-        //         "id" => 0,
-        //         "name" => "Tổng quan",
-        //         "field_name" => [
-        //             ['label' => 'Nhân sự', 'value' => 'full_name'],
-        //             ['label' => 'Tài khoản', 'value' => 'username'],
-        //             ['label' => 'Email', 'value' => 'email'],
-        //             ['label' => 'Trạng thái', 'value' => 'status'],
-        //             ['label' => 'Chức vụ', 'value' => 'position'],
-        //             ['label' => 'Ngày bắt đầu', 'value' => 'start_work_date'],
-        //             ['label' => 'Ngày kết thúc', 'value' => 'end_work_date'],
-        //             ['label' => 'Phòng ban', 'value' => 'department_name'],
-        //             ['label' => 'Giới tính', 'value' => 'gender'],
-        //             ['label' => 'Hợp đồng lao động', 'value' => 'url_contract'],
-        //             ['label' => 'Số điện thoại', 'value' => 'phone'],
-        //             ['label' => 'Ngày sinh', 'value' => 'birthday'],
-        //             ['label' => 'Thâm niên', 'value' => 'seniority'],
-        //             ['label' => 'Ngày nghỉ phép', 'value' => 'day_off'],
-        //             ['label' => 'Giấy tờ tùy thân', 'value' => 'personal_documents'],
-        //         ]
-        //     ]
-        // ];
         foreach ($views as $view) {
             $array = [];
             if (isset($view->field_name['personal_info'])) {

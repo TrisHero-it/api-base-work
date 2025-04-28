@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('proposes', function (Blueprint $table) {
-            $table->text('label_new_values')->nullable();
-            $table->text('label_old_values')->nullable();
+        Schema::table('accounts', function (Blueprint $table) {
+            $table->integer('work_from_home')->default(5);
         });
     }
 
@@ -22,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('proposes', function (Blueprint $table) {
-            $table->dropColumn('label_new_values');
-            $table->dropColumn('label_old_values');
+        Schema::table('accounts', function (Blueprint $table) {
+            $table->dropColumn('work_from_home');
         });
     }
 };

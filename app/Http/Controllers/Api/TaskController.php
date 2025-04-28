@@ -14,6 +14,7 @@ use App\Models\Kpi;
 use App\Models\Stage;
 use App\Models\StickerTask;
 use App\Models\Task;
+use App\Models\Workflow;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -103,7 +104,7 @@ class TaskController extends Controller
                 'message' => 'Chuyển giai đoạn thành công'
             ]);
         }
-        
+
         if (isset($request->tag_id)) {
             $arrTag = $request->tag_id;
             StickerTask::query()
@@ -330,22 +331,33 @@ class TaskController extends Controller
             $data = [];
 
             if (isset($request->account_id)) {
-                if ($task->stage->expired_after_hours) {
-                    $dateTime = Carbon::now();
-                    $dateTime->addHours($task->stage->expired_after_hours);
-                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                $workflow = Workflow::where('id', $task->stage->workflow_id)->first();
+                $isMemberWorkflow = AccountWorkflow::where('workflow_id', $workflow->id)
+                    ->where('account_id', $request->account_id)
+                    ->first();
+
+                if ($isMemberWorkflow != null) {
+                    if ($task->stage->expired_after_hours) {
+                        $dateTime = Carbon::now();
+                        $dateTime->addHours($task->stage->expired_after_hours);
+                        $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                    }
+                    $data['job_assigner'] = Auth::id();
+                    $data['account_id'] = $request->account_id;
+                    $task->update($data);
+                    $account = Account::findOrFail($request->account_id);
+                    event(new NotificationEvent([
+                        'full_name' => $account->full_name,
+                        'task_name' => $task->name,
+                        'workflow_id' => $task->stage->workflow_id,
+                        'account_id' => $request->account_id,
+                        'manager_id' => Auth::id(),
+                    ]));
+                } else {
+                    return response()->json([
+                        'message' => 'Bạn không phải là thành viên của workflow này'
+                    ], 401);
                 }
-                $data['job_assigner'] = Auth::id();
-                $data['account_id'] = $request->account_id;
-                $task->update($data);
-                $account = Account::findOrFail($request->account_id);
-                event(new NotificationEvent([
-                    'full_name' => $account->full_name,
-                    'task_name' => $task->name,
-                    'workflow_id' => $task->stage->workflow_id,
-                    'account_id' => $request->account_id,
-                    'manager_id' => Auth::id(),
-                ]));
             }
 
             return response()->json($task);

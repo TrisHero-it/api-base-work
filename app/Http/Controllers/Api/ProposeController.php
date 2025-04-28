@@ -200,12 +200,12 @@ class ProposeController extends Controller
             'job_position',
             'salary',
             'dayoff_account',
-
-        ];
+            ];
         if ($propose->old_value != null) {
             $data = $propose->old_value;
             foreach ($arrayMerge as $key) {
                 if (isset($data[$key])) {
+                    $data = array_merge($data, $data[$key]);
                     unset($data[$key]);
                 }
             }
@@ -221,10 +221,14 @@ class ProposeController extends Controller
             }
 
             $data = $propose->new_value;
-            if (isset($data['family_member'])) {
-                $data = array_merge($data, $data['family_member']);
-                unset($data['family_member']);
+
+            foreach ($arrayMerge as $key) {
+                if (isset($data[$key])) {
+                    $data = array_merge($data, $data[$key]);
+                    unset($data[$key]);
+                }
             }
+
             if ($data != null) {
                 foreach (self::FIELDS as $field) {
                     $key = $field['value'];
@@ -451,7 +455,7 @@ class ProposeController extends Controller
                 }
             }
 
-            $account->update($data); 
+            $account->update($data);
         }
 
         $name = $propose->propose_category->name;

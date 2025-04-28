@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Category_Contract extends Model
 {
     use HasFactory;
+    protected $fillable = ['name', 'status'];
 }

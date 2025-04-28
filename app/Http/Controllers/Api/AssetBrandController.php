@@ -14,4 +14,27 @@ class AssetBrandController extends Controller
 
         return response()->json($assetBrands);
     }
+
+    public function store(Request $request)
+    {
+        $assetBrand = AssetBrand::create($request->all());
+
+        return response()->json($assetBrand);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $assetBrand = AssetBrand::find($id);
+        $assetBrand->update($request->all());
+
+        return response()->json($assetBrand);
+    }
+
+    public function destroy($id)
+    {
+        $assetBrand = AssetBrand::find($id);
+        $assetBrand->delete();
+
+        return response()->json($assetBrand);
+    }
 }

@@ -21,4 +21,21 @@ class ContractCategoryController extends Controller
 
         return response()->json($contractCategory);
     }
+
+    public function update(Request $request, $id)
+    {
+        $contractCategory = Category_Contract::find($id);
+        $contractCategory->update($request->all());
+
+        return response()->json($contractCategory);
+    }
+
+
+    public function destroy($id)
+    {
+        $contractCategory = Category_Contract::find($id);
+        $contractCategory->delete();
+
+        return response()->json($contractCategory);
+    }
 }
