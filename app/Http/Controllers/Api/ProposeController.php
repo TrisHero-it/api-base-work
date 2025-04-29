@@ -248,6 +248,10 @@ class ProposeController extends Controller
         $data = $request->except('holiday');
         $data['account_id'] = Auth::id();
         $proposeCategory = ProposeCategory::where('id', $request->propose_category_id)->first();
+        if ($request->filled('propose_category')) {
+            $proposeCategory = ProposeCategory::where('name', $request->propose_category)->first();
+            $data['propose_category_id'] = $proposeCategory->id;
+        }
         if ($request->name == 'Sửa giờ vào ra') {
             $date = explode(' ', $request->start_time)[0];
             $attendance = Attendance::whereDate('checkin', $date)
@@ -476,13 +480,5 @@ class ProposeController extends Controller
         ]);
 
         return response()->json($propose);
-    }
-
-    public function destroy(int $id)
-    {
-        $propose = Propose::query()->findOrFail($id);
-        $propose->delete();
-
-        return response()->json(data: ['success' => 'Xoá thành công']);
     }
 }

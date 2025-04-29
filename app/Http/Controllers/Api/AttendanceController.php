@@ -57,8 +57,8 @@ class AttendanceController extends Controller
             $attendance = $attendance->get();
             $isSalesMember = Auth::user()->isSalesMember();
 
-            $proposes = Propose::with(['date_holidays', 'propose_category'])->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT', 'Nghỉ không hưởng lương'])
-                ->select('id', 'account_id', 'name', 'propose_category_id')
+            $proposes = Propose::with(['date_holidays', 'propose_category'])->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT', 'Nghỉ không hưởng lương', 'Đăng ký làm ở nhà'])
+                ->select('id', 'account_id', 'name', 'propose_category_id', 'date_wfh')
                 ->where('status', 'approved')
                 ->whereMonth('created_at', $month ?? now()->month)
                 ->whereYear('created_at', $year ?? now()->year);
@@ -109,6 +109,16 @@ class AttendanceController extends Controller
                     $holiday['name'] = $propose->name;
                     $holiday['name_category'] = $propose->propose_category->name;
                     $arrDateHoliday[] = $holiday;
+                }
+
+                if ($propose->name == 'Đăng ký làm ở nhà') {
+                    $a = [];
+                    $a = array_merge($a, $propose->toArray());
+                    $a['start_date'] = Carbon::parse($propose->date_wfh . ' 08:30:00');
+                    $a['end_date'] = Carbon::parse($propose->date_wfh . ' 17:30:00');
+                    unset($a['propose_category']);
+                    unset($a['date_holidays']);
+                    $arrDateHoliday[] = $a;
                 }
             }
             $data['ot_and_holiday'] = $arrDateHoliday;
@@ -365,7 +375,13 @@ class AttendanceController extends Controller
             'machine_id' => 16,
             'account_id' => 10,
             'name' => 'Tuan Anh'
-        ]
+        ],
+        [
+            'machine_id' => 17,
+            'account_id' => 32,
+            'name' => 'Quang'
+        ],
+
     ];
 
     public function checkInOut(Request $request)
