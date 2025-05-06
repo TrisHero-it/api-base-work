@@ -35,7 +35,9 @@ class ResetWorkFormHomeOfAccount extends Command
             14,
             15,
             30,
-            32
+            32,
+            2,
+            17
         ];
         $account = Account::whereNotIn('id', $globalBan)
             ->where('attendance_at_home', true)

@@ -42,9 +42,11 @@ use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\LeaveHistoryController;
 use App\Http\Controllers\Api\LoginHistoryController;
+use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\ProposeController;
 use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\Api\ResourceController;
+use App\Http\Controllers\Api\ReviewWorkflowController;
 use App\Http\Controllers\Api\ViewController;
 use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Http;
@@ -55,15 +57,6 @@ Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
 
-Route::get('/test', function () {
-    return request()->ip();
-});
-
-Route::get('/test2', function () {
-    $response = Http::get('https://api64.ipify.org?format=json');
-    return $response->json();
-});
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
         'accounts' => AccountController::class,
@@ -73,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'images' => ImageController::class,
         'notifications' => NotificationController::class,
         'workflows' => WorkflowController::class,
+        'review-workflow' => ReviewWorkflowController::class,
         'stages' => StageController::class,
         'tasks' => TaskController::class,
         'workflow-categories' => WorkflowCategoryController::class,
@@ -111,6 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'day-off-accounts' => DayoffAccountController::class,
         'employees' => EmployeeController::class,
         'affiliates' => AffiliateController::class,
+        'notices' => NoticeController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);

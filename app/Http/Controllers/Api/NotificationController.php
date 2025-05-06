@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Account;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +14,7 @@ class NotificationController extends Controller
         if (isset($request->include)) {
             $countNotifications = Notification::where('account_id', Auth::id())
                 ->where('new', true)
+                ->where('is_notice', false)
                 ->count();
 
             return response()->json($countNotifications);
@@ -24,14 +24,31 @@ class NotificationController extends Controller
             ->orderBy('id', 'desc')
             ->where('account_id', Auth::id())
             ->with('manager')
+            ->where('is_notice', false)
             ->get();
 
         return response()->json($notifications);
     }
 
+    public function store(Request $request)
+    {
+        $data = $request->except('new', 'seen');
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $path = $file->store('notifications', 'public');
+            $data['thumbnail'] = $path;
+        } else if ($request->filled('thumbnail')) {
+            $data['thumbnail'] = $request->thumbnail;
+        }
+        $notification = Notification::create($data);
+
+        return response()->json($notification);
+    }
+
     public function update(int $id, Request $request)
     {
-        $notification = Notification::find($id)->update($request->all());
+        $notification = Notification::find($id)
+            ->update($request->all());
 
         return response()->json($notification);
     }

@@ -99,7 +99,7 @@ class CommentController extends Controller
     }
 
     public function notification(Request $request)
-    {
+    {   
         $accounts = Account::query()
             ->whereIn('id', $request->account_id)
             ->get();

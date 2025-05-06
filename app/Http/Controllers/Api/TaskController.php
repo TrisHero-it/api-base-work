@@ -346,13 +346,15 @@ class TaskController extends Controller
                     $data['account_id'] = $request->account_id;
                     $task->update($data);
                     $account = Account::findOrFail($request->account_id);
-                    event(new NotificationEvent([
-                        'full_name' => $account->full_name,
-                        'task_name' => $task->name,
-                        'workflow_id' => $task->stage->workflow_id,
-                        'account_id' => $request->account_id,
-                        'manager_id' => Auth::id(),
-                    ]));
+                    if ($request->account_id != Auth::id()) {
+                        event(new NotificationEvent([
+                            'full_name' => $account->full_name,
+                            'task_name' => $task->name,
+                            'workflow_id' => $task->stage->workflow_id,
+                            'account_id' => $request->account_id,
+                            'manager_id' => Auth::id(),
+                        ]));
+                    }
                 } else {
                     return response()->json([
                         'message' => 'Bạn không phải là thành viên của workflow này'

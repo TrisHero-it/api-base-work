@@ -16,7 +16,8 @@ class Notification extends Model
         'seen',
         'account_id',
         'manager_id',
-        'new'
+        'new',
+        'is_notice'
     ];
 
     public function manager()
