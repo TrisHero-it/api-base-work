@@ -27,7 +27,8 @@ class Asset extends Model
         'account_id',
         'brand_link',
         'start_date',
-        'brand_id'
+        'brand_id',
+        'brand_name'
     ];
 
     public function buyer()

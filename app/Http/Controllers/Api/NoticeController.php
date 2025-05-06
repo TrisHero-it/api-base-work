@@ -18,6 +18,7 @@ class NoticeController extends Controller
     public function store(Request $request)
     {
         $notice = Notification::create($request->all());
+
         return response()->json($notice);
     }
 
@@ -25,6 +26,7 @@ class NoticeController extends Controller
     {
         $notice = Notification::find($id);
         $notice->update($request->all());
+
         return response()->json($notice);
     }
 
@@ -32,6 +34,7 @@ class NoticeController extends Controller
     {
         $notice = Notification::find($id);
         $notice->delete();
+
         return response()->json($notice);
     }
 }

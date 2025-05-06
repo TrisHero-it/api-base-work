@@ -22,6 +22,6 @@ Route::get('/', function () {
     return redirect('/api/telescope');
 });
 
-Route::get('/test', function (Request $request) {
-    dd($request->aaa == null);
+Route::get('/getcode', function (Request $request) {
+    return view('get-code.index');
 });

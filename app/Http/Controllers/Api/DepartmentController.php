@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DepartmentController extends Controller
 {
@@ -30,40 +31,40 @@ class DepartmentController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $department = Department::query()->create([
-            'name' => $data['name'],
-        ]);
-        foreach ($data['members'] as $member) {
-            $account = Account::query()
-                ->where('username', $member)->first();
-            AccountDepartment::query()->create([
-                'department_id' => $department->id,
-                'account_id' => $account->id,
+        if (Auth::user()->isSeniorAdmin()) {
+            $data = $request->all();
+            $department = Department::query()->create([
+                'name' => $data['name'],
             ]);
+            foreach ($data['members'] as $member) {
+                $account = Account::query()
+                    ->where('username', $member)->first();
+                AccountDepartment::query()->create([
+                    'department_id' => $department->id,
+                    'account_id' => $account->id,
+                ]);
+            }
+            $department = array_merge($department->toArray(), $data);
+            return response()->json($department);
+        } else {
+            return response()->json([
+                'error' => 'Bạn không có quyền thực hiện hành động này'
+            ], 403);
         }
-        $department = array_merge($department->toArray(), $data);
-
-        return response()->json($department);
     }
-
+ 
     public function update(int $id, Request $request)
     {
-        $department = Department::query()->findOrFail($id);
-        $data = $request->all();
-        $department->update($data);
-        AccountDepartment::query()->where('department_id', $id)->delete();
-        foreach ($data['members'] as $member) {
-            $account = Account::query()->where('username', $member)->first();
-            AccountDepartment::query()->create([
-                'department_id' => $department->id,
-                'account_id' => $account->id,
-            ]);
+        if (Auth::user()->isSeniorAdmin()) {
+            $data = $request->all();
+            $department = Department::query()->findOrFail($id);
+            $department->update($data);
+            return response()->json($department);
+        } else {
+            return response()->json([
+                'error' => 'Bạn không có quyền thực hiện hành động này'
+            ], 403);
         }
-        $department['members'] = $data['members'];
-        $department['id'] = 'department-' . $department['id'];
-
-        return response()->json($department);
     }
 
     public function show(int $id)
@@ -87,5 +88,5 @@ class DepartmentController extends Controller
     //     return response()->json([
     //         'success' => 'Xoá thành công'
     //     ]);
-    // }
+    // }            
 }

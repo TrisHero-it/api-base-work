@@ -26,7 +26,7 @@ class AttendanceAccountController extends Controller
             'quit_work',
         )
             ->with('dayoffAccount')
-            // ->where('quit_work', false)
+            ->where('quit_work', false)
             ->get();
 
         if (isset($request->date)) {
