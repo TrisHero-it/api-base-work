@@ -7,7 +7,9 @@ use App\Models\Account;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Propose;
+use App\Models\ProposeCategory;
 use Carbon\Carbon;
+use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,9 +35,11 @@ class AttendanceAccountController extends Controller
             $b = explode('-', $request->date);
             $month2 = $b[1];
             $year2 = $b[0];
+            $date = Carbon::parse($request->date)->format('Y-m-d');
         } else {
             $month2 = now()->month;
             $year2 = now()->year;
+            $date = now()->format('Y-m-d');
         }
         $proposes = Propose::where('status', 'approved')
             ->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT'])
@@ -103,9 +107,15 @@ class AttendanceAccountController extends Controller
                 }
                 $totalWorkDay += $workday;
             }
+            $wfhId = ProposeCategory::where('name', 'Đăng ký làm ở nhà')->first()->id;
+            $wfh = Propose::where('propose_category_id', $wfhId)
+                ->where('account_id', $account->id)
+                ->where('status', 'approved')
+                ->whereDate('date_wfh', $date)
+                ->count();
             $account['day_off_used'] = $a;
             $account['hours_over_time'] = number_format($hoursOT, 2);
-            $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay : number_format($totalWorkDay, 3);
+            $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay + $wfh : number_format($totalWorkDay, 3) + $wfh;
         }
 
         return response()->json($accounts);
