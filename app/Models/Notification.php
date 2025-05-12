@@ -17,18 +17,20 @@ class Notification extends Model
         'account_id',
         'manager_id',
         'new',
-        'is_notice'
+        'is_notice',
+        'thumbnail',
+        'is_hidden'
     ];
 
     public function manager()
     {
 
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class)->select('id', 'full_name', 'avatar');
     }
 
     public function account()
     {
 
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class)->select('id', 'full_name', 'avatar');
     }
 }

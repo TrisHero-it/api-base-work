@@ -10,14 +10,35 @@ class NoticeController extends Controller
 {
     public function index(Request $request)
     {
-        $notice = Notification::where('is_notice', true)->get();
+        $perPage = $request->filled('per_page') ?? 10;
+        $notices = Notification::where('is_notice', true);
+        if ($request->filled('include')) {
+            $notices = $notices->where('is_hidden', true);
+        }else {
+        $notices = $notices->where('is_hidden', false);
+        }
 
-        return response()->json($notice);
+        $count = $notices->count();
+        $notices = $notices->paginate($perPage);
+
+        return response()->json($notices);
     }
 
     public function store(Request $request)
     {
-        $notice = Notification::create($request->all());
+        $data = $request->all();
+        $data['manager_id'] = auth()->user()->id;
+        $data['is_notice'] = true;
+        $notice = Notification::create($data);
+
+        return response()->json($notice);
+    }
+
+    public function show($id)
+    {
+        $notice = Notification::where('is_notice', true)
+        ->with(['account', 'manager'])
+        ->findOrFail($id);
 
         return response()->json($notice);
     }

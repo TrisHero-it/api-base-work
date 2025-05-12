@@ -42,6 +42,7 @@ class ContractController extends Controller
             $data['files'] = $dataFiles;
         }
         $contract = Contract::create($data);
+
         return response()->json($contract);
     }
 
@@ -52,6 +53,12 @@ class ContractController extends Controller
         $contract->update($data);
 
         return response()->json($contract);
+    }
+
+    public function show(Request $request, int $id) {
+        $contact = Contract::with(['account', 'creator', 'category'])->find($id);
+
+        return $contact;
     }
 
     private function uploadFile($files)

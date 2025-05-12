@@ -63,6 +63,7 @@ class WorkflowController extends Controller
             ->get();
         $arrAccountId = $members->pluck('account_id');
         $accounts = Account::query()
+        ->select('id', 'full_name', 'avatar', 'role_id')
             ->whereIn('id', $arrAccountId)
             ->get();
         foreach ($accounts as $account) {
@@ -214,7 +215,10 @@ class WorkflowController extends Controller
         $workflow = Workflow::query()->findOrFail($id)->toArray();
         $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
         $arrMemberId = $members->pluck('account_id')->toArray();
-        $accounts = Account::query()->whereIn('id', $arrMemberId)->get();
+        $accounts = Account::query()
+            ->select('id', 'full_name', 'avatar', 'role_id')
+            ->whereIn('id', $arrMemberId)
+            ->get();
         foreach ($accounts as $account) {
             $tri = $account;
             if ($tri->role_id == 1) {

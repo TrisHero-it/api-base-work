@@ -408,7 +408,8 @@ class AttendanceController extends Controller
         foreach ($request->attendances as $attendance) {
             $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh');
             $eightThirty = $time->copy()->startOfDay()->addHours(8)->addMinutes(30);
-            if ($time->greaterThan($eightThirty)) {
+            // Nếu điểm danh trước 8h30 thì sẽ thành điểm danh lúc 8h30
+            if ($time->lessThan($eightThirty)) {
                 $time = $eightThirty;
             }
             $time = $time->format('Y-m-d H:i:s');

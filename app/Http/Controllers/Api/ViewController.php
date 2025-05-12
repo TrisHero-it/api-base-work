@@ -31,7 +31,7 @@ class ViewController extends Controller
             ['label' => 'Tên ngân hàng', 'value' => 'name_bank'],
             ['label' => 'Số tài khoản', 'value' => 'bank_number'],
             ['label' => 'Người quản lí', 'value' => 'manager_id'],
-            ['label' => 'Số CMND', 'value' => 'identity_card'],
+            ['label' => 'CCCD', 'value' => 'identity_card'],
             ['label' => 'Địa chỉ tạm trú', 'value' => 'temporary_address'],
             ['label' => 'Hộ chiếu', 'value' => 'passport'],
             ['label' => 'Mã số thuế', 'value' => 'tax_code'],

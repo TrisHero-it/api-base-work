@@ -414,9 +414,9 @@ class AccountController extends Controller
         unset($account->role_id);
         $month = now()->month;
         $year = now()->year;
-        $category = ProposeCategory::whereIn('name', ['Đăng ký nghỉ', 'Đăng ký làm ở nhà'])->get();
+        $category = ProposeCategory::whereIn('name', ['Đăng ký nghỉ', 'Đăng ký WFH'])->get();
         $idHoliday = $category->where('name', 'Đăng ký nghỉ')->first()->id;
-        $idWorkFromHome = $category->where('name', 'Đăng ký làm ở nhà')->first()->id;
+        $idWorkFromHome = $category->where('name', 'Đăng ký WFH')->first()->id;
         $proposesWFM = Propose::where('propose_category_id', $idWorkFromHome)
             ->where('status', 'approved')
             ->where('account_id', $account->id)
