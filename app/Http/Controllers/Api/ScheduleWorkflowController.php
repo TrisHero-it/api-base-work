@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\AccountWorkflow;
 use App\Models\HistoryMoveTask;
 use App\Models\Schedule;
 use App\Models\Stage;
@@ -11,12 +12,18 @@ use App\Models\Task;
 use App\Models\Workflow;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ScheduleWorkflowController extends Controller
 {
     public function index(Request $request)
     {
-        $workflows = Workflow::all();
+        $workflows = Workflow::query();
+        if (!Auth::user()->isSeniorAdmin()) {
+            $workflowId = AccountWorkflow::where('account_id', Auth::user()->id)->pluck('workflow_id');
+            $workflows->whereIn('id', $workflowId);
+        }
+        $workflows = $workflows->get();
         if ($request->filled('start')) {
             $start = Carbon::parse($request->start);
             $end = Carbon::parse($request->end);

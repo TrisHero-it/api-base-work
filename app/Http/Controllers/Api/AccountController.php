@@ -440,6 +440,9 @@ class AccountController extends Controller
         if ($account->dayoffAccount != null) {
             $account['day_off'] = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
             unset($account->dayoffAccount);
+        } else {
+            unset($account->dayoffAccount);
+            $account['day_off'] = 0;
         }
         $account['day_off_used'] = $a;
         $account['avatar'] = $account->avatar;

@@ -106,7 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'employees' => EmployeeController::class,
         'affiliates' => AffiliateController::class,
         'notices' => NoticeController::class,
-        ]);
+    ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
     Route::put('assign-work/{id}', [TaskController::class, 'assignWork']);

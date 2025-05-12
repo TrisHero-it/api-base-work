@@ -406,7 +406,12 @@ class AttendanceController extends Controller
         $arrAccountId = $saleMembers->pluck('id')->toArray();
 
         foreach ($request->attendances as $attendance) {
-            $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
+            $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh');
+            $eightThirty = $time->copy()->startOfDay()->addHours(8)->addMinutes(30);
+            if ($time->greaterThan($eightThirty)) {
+                $time = $eightThirty;
+            }
+            $time = $time->format('Y-m-d H:i:s');
             foreach (self::ARRAY_ID_RONALJACK as $item) {
                 if ($attendance['user_id'] == $item['machine_id']) {
                     $attendance2 = Attendance::where('account_id', $item['account_id'])->latest('id')->first();
