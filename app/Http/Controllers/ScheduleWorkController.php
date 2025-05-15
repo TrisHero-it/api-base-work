@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\AccountWorkflow;
 use App\Models\HistoryMoveTask;
 use App\Models\Schedule;
 use App\Models\Task;
 use App\Models\Workflow;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ScheduleWorkController extends Controller
 {
@@ -22,7 +24,12 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
-        $worflows = Workflow::all();
+        if (Auth::user()->isSeniorAdmin()) {
+            $worflows = Workflow::all();
+        } else {
+            $workflowMember = AccountWorkflow::where('account_id', Auth::id())->get();
+            $worflows = Workflow::whereIn('id', $workflowMember->pluck('workflow_id'))->get();
+        }
         $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
             ->whereNotIn('account_id', $globalBan)
             ->with(['stage', 'account'])

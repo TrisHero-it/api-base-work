@@ -247,6 +247,7 @@ class ProposeController extends Controller
     {
         $data = $request->except('holiday');
         $data['account_id'] = Auth::id();
+        $accounts = Account::where('role_id', 3)->get();
         $proposeCategory = ProposeCategory::where('id', $request->propose_category_id)->first();
         if ($request->filled('propose_category')) {
             $proposeCategory = ProposeCategory::where('name', $request->propose_category)->first();
@@ -276,8 +277,8 @@ class ProposeController extends Controller
         // }
         if ($proposeCategory->name == "Đăng ký nghỉ") {
             foreach ($request->holiday as $date2) {
-                $startDate = Carbon::parse($date2['start_time']);
-                $endDate = Carbon::parse($date2['end_time']);
+                $startDate = Carbon::parse($date2['start_date']);
+                $endDate = Carbon::parse($date2['end_date']);
                 for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
                     // Nếu như không phải ngày đầu hay là ngày cuối, thì sẽ +1 ngày công luôn
                     if ($date->format('Y-m-d') != $startDate->format('Y-m-d') && $date->format('Y-m-d') != $endDate->format('Y-m-d')) {
@@ -319,6 +320,20 @@ class ProposeController extends Controller
                     ], status: 401);
                 }
             }
+
+            $arrNotifications = [];
+            foreach ($accounts as $account) {
+                $arrNotifications[] = [
+                    'account_id' => $account->id,
+                    'title' => 'Yêu cầu xin nghỉ',
+                    'message' => "<strong>" . Auth::user()->full_name . "</strong> đã gửi yêu cầu xin nghỉ",
+                    "link" => env('APP_URL') . "/request",
+                    "manager_id" => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            Notification::insert($arrNotifications);
         }
         if ($proposeCategory->name == "Đăng ký làm ở nhà") {
             $count = Propose::where('account_id', Auth::id())
@@ -331,6 +346,20 @@ class ProposeController extends Controller
                     'errors' => 'Bạn đã đăng ký làm ở nhà quá 5 lần trong tháng'
                 ], status: 401);
             }
+
+            $arrNotifications = [];
+            foreach ($accounts as $account) {
+                $arrNotifications[] = [
+                    'account_id' => $account->id,
+                    'title' => 'Yêu cầu xin làm ở nhà',
+                    'message' => "<strong>" . Auth::user()->full_name . "</strong> đã gửi yêu cầu xin làm ở nhà",
+                    "link" => env('APP_URL') . "/request",
+                    "manager_id" => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            Notification::insert($arrNotifications);
         }
 
         $arr = [];

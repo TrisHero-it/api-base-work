@@ -25,7 +25,9 @@ class ScheduleAccountController extends Controller
                 ->whereNotIn('id', $globalBan)
                 ->where('quit_work', false);
             if (isset($request->department_id)) {
-                $accountDepartment = AccountDepartment::where('department_id', $request->department_id)->get()->pluck('account_id');
+                $accountDepartment = AccountDepartment::where('department_id', $request->department_id)
+                    ->get()
+                    ->pluck('account_id');
                 $accounts = $accounts->whereIn('id', $accountDepartment);
             }
             $accounts = $accounts->get();

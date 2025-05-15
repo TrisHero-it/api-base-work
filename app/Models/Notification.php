@@ -22,6 +22,10 @@ class Notification extends Model
         'is_hidden'
     ];
 
+    protected $casts = [
+        'seen_by' => 'array',
+    ];
+
     public function manager()
     {
 

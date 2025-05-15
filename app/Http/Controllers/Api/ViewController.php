@@ -185,7 +185,9 @@ class ViewController extends Controller
         $view = View::find($id);
         $view->delete();
 
-        return response()->json($view);
+        return response()->json([
+            'message' => 'Xóa thành công',
+        ]);
     }
 
     public function updateIndexView(Request $request)

@@ -26,7 +26,11 @@ class JobPositionController extends Controller
         $jobPosition = JobPosition::latest()
             ->where('status', 'active')
             ->first();
-        $salary = Salary::where('job_position_id', $jobPosition->id)->first();
+        if ($jobPosition) {
+            $salary = Salary::where('job_position_id', $jobPosition->id)->first();
+        } else {
+            $salary = null;
+        }
         $account = Account::find($request->account_id);
         $dataAccount = $request->except('position', 'description', 'department_id', 'basic_salary', 'kpi', 'travel_allowance', 'eat_allowance');
         $dataJobPosition = [];
@@ -34,11 +38,13 @@ class JobPositionController extends Controller
         if ($request->filled('department_id')) {
             $dataAccount['department_id'] = $request->department_id;
         }
-        $jobPosition->update([
-            'status' => 'inactive'
-        ]);
+        if (isset($jobPosition)) {
+            $jobPosition->update([
+                'status' => 'inactive'
+            ]);
+        }
 
-        $dataJobPosition['name'] = $request->position ?? $jobPosition->name;
+        $dataJobPosition['name'] = $request->new_position ?? $jobPosition->name;
         $dataJobPosition['account_id'] = $request->account_id;
         $dataJobPosition['status'] = 'active';
         $dataJobPosition['description'] = $request->description ?? $jobPosition->description;
@@ -51,7 +57,7 @@ class JobPositionController extends Controller
         $dataSalary['eat_allowance'] = $request->eat_allowance ?? $salary->eat_allowance;
         $dataSalary['job_position_id'] = $jobPosition->id;
 
-        Salary::create($dataSalary);
+        $salary = Salary::create($dataSalary);
 
         $account->update($dataAccount);
         return response()->json([

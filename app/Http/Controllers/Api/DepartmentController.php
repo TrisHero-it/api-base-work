@@ -80,13 +80,13 @@ class DepartmentController extends Controller
         return response()->json($department);
     }
 
-    // public function destroy(int $id)
-    // {
-    //     $department = Department::query()->findOrFail($id);
-    //     $department->delete();
+    public function destroy(int $id)
+    {
+        $department = Department::query()->findOrFail($id);
+        $department->delete();
 
-    //     return response()->json([
-    //         'success' => 'Xoá thành công'
-    //     ]);
-    // }            
+        return response()->json([
+            'success' => 'Xoá thành công'
+        ]);
+    }            
 }

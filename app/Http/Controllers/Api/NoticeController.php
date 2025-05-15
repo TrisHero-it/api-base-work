@@ -10,7 +10,7 @@ class NoticeController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->filled('per_page') ?? 10;
+        $perPage = $request->filled('per_page') ? $request->per_page : 18;
         $notices = Notification::where('is_notice', true);
         if ($request->filled('include')) {
             $notices = $notices->where('is_hidden', true);
@@ -18,10 +18,26 @@ class NoticeController extends Controller
         $notices = $notices->where('is_hidden', false);
         }
 
-        $count = $notices->count();
-        $notices = $notices->paginate($perPage);
+        if ($request->filled('search')) {
+            $notices = $notices->where('title', 'like', '%' . $request->search . '%');
+        }
 
-        return response()->json($notices);
+        $count = Notification::where('is_notice', true)->where('is_hidden', false)->count();
+        $count_hidden = Notification::where('is_notice', true)->where('is_hidden', true)->count();
+
+        $notices = $notices->paginate($perPage);
+        return response()->json([
+            'current_page' => $notices->currentPage(),
+            'data' => $notices->items(),
+            'per_page' => $notices->perPage(),
+            'last_page' => $notices->lastPage(),
+            'from' => $notices->firstItem(),
+            'to' => $notices->lastItem(),
+            'total_pages' => $notices->lastPage(),
+            'total' => $notices->total(),
+            'count' => $count,
+            'count_hidden' => $count_hidden
+        ]);
     }
 
     public function store(Request $request)
@@ -46,7 +62,15 @@ class NoticeController extends Controller
     public function update(Request $request, $id)
     {
         $notice = Notification::find($id);
-        $notice->update($request->all());
+        $data = $request->except('seen_by');
+
+        if ($request->filled('action')) {
+            if (!in_array(auth()->user()->id, $notice->seen_by)) {
+                $data['seen_by'] = array_merge($notice->seen_by, [auth()->user()->id]);
+            }
+        }
+
+        $notice->update($data);
 
         return response()->json($notice);
     }
