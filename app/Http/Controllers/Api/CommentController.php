@@ -49,19 +49,19 @@ class CommentController extends Controller
         return response()->json($comments);
     }
 
-    public function store(CommentStoreRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->except('task_id', 'account_id', 'tag', 'link');
+        $data = $request->except('task_id', 'account_id', 'tags', 'link');
         $data['account_id'] = Auth::id();
         $data['task_id'] = $request->task_id;
         $comment = Comment::query()->create($data);
         $data2 = [];
-        if (isset($request->tag)) {
-            foreach ($request->tag as $a) {
+        if (isset($request->tags)) {
+            foreach ($request->tags as $a) {
                 $data2[] = [
                     'title' => Auth::user()->full_name . ' đã nhắc đến bạn',
-                    'message' => $request->content,
-                    'link' => $request->link,
+                    'message' => Auth::user()->full_name . ' đã nhắc đến bạn',
+                    'link' => env('APP_URL') . "/task" . "/$request->task_id",
                     'account_id' => $a,
                     'manager_id' => Auth::id()
                 ];

@@ -37,11 +37,9 @@ class DepartmentController extends Controller
                 'name' => $data['name'],
             ]);
             foreach ($data['members'] as $member) {
-                $account = Account::query()
-                    ->where('username', $member)->first();
                 AccountDepartment::query()->create([
                     'department_id' => $department->id,
-                    'account_id' => $account->id,
+                    'account_id' => $member,
                 ]);
             }
             $department = array_merge($department->toArray(), $data);
@@ -82,11 +80,17 @@ class DepartmentController extends Controller
 
     public function destroy(int $id)
     {
+       if (Auth::user()->isSeniorAdmin()) {
         $department = Department::query()->findOrFail($id);
         $department->delete();
 
         return response()->json([
-            'success' => 'Xoá thành công'
-        ]);
-    }            
+                'success' => 'Xoá thành công'
+            ]);
+        } else {
+            return response()->json([
+                'error' => 'Bạn không có quyền thực hiện hành động này'
+            ], 403);
+        }
+    }
 }

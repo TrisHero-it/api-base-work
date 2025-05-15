@@ -24,12 +24,8 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
-        if (Auth::user()->isSeniorAdmin()) {
             $worflows = Workflow::all();
-        } else {
-            $workflowMember = AccountWorkflow::where('account_id', Auth::id())->get();
-            $worflows = Workflow::whereIn('id', $workflowMember->pluck('workflow_id'))->get();
-        }
+        
         $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
             ->whereNotIn('account_id', $globalBan)
             ->with(['stage', 'account'])
@@ -92,7 +88,7 @@ class ScheduleWorkController extends Controller
                 if ($thisDayOff->go_to_work == false) {
                     continue;
                 }
-                $completedAt = Carbon::parse($task->created_at);
+                $completedAt = Carbon::parse($task->created_at);                                                                                 
                 $expiredAt = Carbon::parse($task->expired_at);
                 $startedAt = Carbon::parse($task->started_at);
                 if (now()->toDateString() < $date->toDateString() || $date->toDateString() < $startedAt->toDateString() || $completedAt->toDateString() < $date->toDateString()) {
@@ -119,7 +115,7 @@ class ScheduleWorkController extends Controller
                 $taskCopy->stage_id = $taskCopy->oldStage->id;
                 $taskCopy->stage_name = $taskCopy->oldStage->name;
                 $taskCopy->name_task = $taskCopy->task->name;
-                $hoursWork = $this->getHoursWorkHistory($taskCopy, $date);
+                $hoursWork = $this->getHoursWorkHistory($taskCopy, $date); 
                 $taskCopy->hours_work = $hoursWork['hours_work'];
                 $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
                 $taskCopy->end = $hoursWork['end']->format("Y-m-d H:i:s");

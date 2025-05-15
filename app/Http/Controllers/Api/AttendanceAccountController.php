@@ -113,10 +113,11 @@ class AttendanceAccountController extends Controller
                 ->where('status', 'approved')
                 ->whereMonth('date_wfh', $date->month)
                 ->count();
-                $wfh = $wfh * 0.8;
+            $wfh = $wfh * 0.8;
+            $wfh = number_format($wfh, 3);
             $account['day_off_used'] = $a;
             $account['hours_over_time'] = number_format($hoursOT, 2);
-            $account['workday'] = $totalWorkDay == 0 ? $totalWorkDay + $wfh : number_format($totalWorkDay, 3) + $wfh;
+            $account['workday'] = $totalWorkDay == 0 ? number_format($totalWorkDay + $wfh, 3) : number_format($totalWorkDay + $wfh, 3);
         }
 
         return response()->json($accounts);
