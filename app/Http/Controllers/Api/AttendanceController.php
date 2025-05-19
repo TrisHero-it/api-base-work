@@ -183,7 +183,7 @@ class AttendanceController extends Controller
             $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
             $attendance = Attendance::where('account_id', Auth::id())->latest('id')->first();
             $arrId = [];
-            $department = Department::where('name', 'Phòng sales')->first()->id;
+            $department = Department::where('name', 'Phòng Sale')->first()->id;
             $accountDepartments = AccountDepartment::where('department_id', $department)->get();
             $arrId = $accountDepartments->pluck('account_id')->toArray();
             $saleMembers = Account::whereIn('id', $arrId)->get();
@@ -399,7 +399,7 @@ class AttendanceController extends Controller
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
         $arrId = [];
-        $department = Department::where('name', 'Phòng sales')->first()->id;
+        $department = Department::where('name', 'Phòng Sale')->first()->id;
         $accountDepartments = AccountDepartment::where('department_id', $department)->get();
         $arrId = $accountDepartments->pluck('account_id')->toArray();
         $saleMembers = Account::whereIn('id', $arrId)->get();

@@ -63,7 +63,9 @@ class CommentController extends Controller
                     'message' => Auth::user()->full_name . ' đã nhắc đến bạn',
                     'link' => env('APP_URL') . "/task" . "/$request->task_id",
                     'account_id' => $a,
-                    'manager_id' => Auth::id()
+                    'manager_id' => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ];
             }
             Notification::insert($data2);
@@ -99,7 +101,7 @@ class CommentController extends Controller
     }
 
     public function notification(Request $request)
-    {   
+    {
         $accounts = Account::query()
             ->whereIn('id', $request->account_id)
             ->get();
@@ -109,7 +111,9 @@ class CommentController extends Controller
                 'message' => $request->message,
                 'link' => $request->link,
                 'account_id' => $account->id,
-                'manager_id' => Auth::id()
+                'manager_id' => Auth::id(),
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
         }
 

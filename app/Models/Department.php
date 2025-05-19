@@ -12,4 +12,8 @@ class Department extends Model
         'name'
     ];
 
+    public function workflowCategories()
+    {
+        return $this->hasMany(WorkflowCategory::class);
+    }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountDepartment;
 use App\Models\Department;
+use App\Models\Workflow;
+use App\Models\WorkflowCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,17 +17,22 @@ class DepartmentController extends Controller
     {
         $departments = Department::query()->get();
         $arrDepartmentId = $departments->pluck('id');
+        $workflowCategories = WorkflowCategory::query()->whereIn('department_id', $arrDepartmentId)->get();
         $accounts = AccountDepartment::query()->whereIn('department_id', $arrDepartmentId)->get();
         $arrAccountId = $accounts->pluck('account_id')->toArray();
         $members = Account::query()
             ->select('id', 'full_name', 'avatar')
             ->whereIn('id', $arrAccountId)->get();
         foreach ($departments as $department) {
+            $workflowCategory = $workflowCategories->where('department_id', $department->id)->first()->id;
+            $workflows = Workflow::query()->where('workflow_category_id', $workflowCategory)->get();
+            $department['projects'] = $workflows;
             $accounts2 = $accounts->where('department_id', $department->id);
             $members2 = $members->whereIn('id', $accounts2->pluck('account_id'));
             $members2 = array_values($members2->toArray());
             $department['members'] = $members2;
         }
+
         return response()->json($departments);
     }
 
@@ -50,7 +57,7 @@ class DepartmentController extends Controller
             ], 403);
         }
     }
- 
+
     public function update(int $id, Request $request)
     {
         if (Auth::user()->isSeniorAdmin()) {
@@ -80,11 +87,11 @@ class DepartmentController extends Controller
 
     public function destroy(int $id)
     {
-       if (Auth::user()->isSeniorAdmin()) {
-        $department = Department::query()->findOrFail($id);
-        $department->delete();
+        if (Auth::user()->isSeniorAdmin()) {
+            $department = Department::query()->findOrFail($id);
+            $department->delete();
 
-        return response()->json([
+            return response()->json([
                 'success' => 'Xoá thành công'
             ]);
         } else {

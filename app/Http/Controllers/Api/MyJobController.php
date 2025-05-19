@@ -16,6 +16,7 @@ class MyJobController extends Controller
     {
         if (isset($request->include)) {
             $countMyTask = Task::where('account_id', Auth::id())
+                ->where('stage_id', null)
                 ->whereNull('completed_at')
                 ->count();
 
@@ -23,12 +24,6 @@ class MyJobController extends Controller
         }
         $query = Task::with(['stage.workflow', 'account', 'creatorBy']);
 
-        // Lọc theo workflows
-        if (!empty($request->workflow_id)) {
-            $stageIds = Stage::whereIn('workflow_id', (array) $request->workflow_id)
-                ->pluck('id');
-            $query->whereIn('stage_id', $stageIds);
-        }
 
         // Sắp xếp theo bộ lọc được chọn
         $sortableColumns = ['updated_at', 'created_at', 'expired', 'completed_at'];
@@ -68,6 +63,7 @@ class MyJobController extends Controller
         // Lọc theo tài khoản đang đăng nhập & chỉ lấy task chưa hoàn thành
         $tasks = $query->where('account_id', Auth::id())
             ->whereNull('completed_at')
+            ->whereNull('stage_id')
             ->get();
         foreach ($tasks as $task) {
             if ($task->creator_by != null) {

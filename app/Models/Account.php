@@ -76,7 +76,7 @@ class Account extends Authenticatable
 
     public function isSalesMember()
     {
-        $salesDepartment = Department::where('name', 'Phòng sales')->first()->id;
+        $salesDepartment = Department::where('name', 'Phòng Sale')->first()->id;
         $accountDepartment = AccountDepartment::where('department_id', $salesDepartment)
             ->where('account_id', $this->id)
             ->exists();
