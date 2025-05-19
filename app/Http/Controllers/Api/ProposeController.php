@@ -510,4 +510,12 @@ class ProposeController extends Controller
 
         return response()->json($propose);
     }
+
+    public function destroy(int $id)
+    {
+        $propose = Propose::query()->findOrFail($id);
+        $propose->delete();
+
+        return response()->json($propose);
+    }
 }

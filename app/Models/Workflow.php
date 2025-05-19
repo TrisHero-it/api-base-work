@@ -17,11 +17,13 @@ class Workflow extends Model
         'require_link_youtube'
     ];
 
-    public function stages() {
+    public function stages()
+    {
         return $this->hasMany(Stage::class);
     }
 
-    public function category() {
+    public function category()
+    {
 
         return $this->belongsTo(WorkflowCategory::class, 'workflow_category_id', 'id');
     }

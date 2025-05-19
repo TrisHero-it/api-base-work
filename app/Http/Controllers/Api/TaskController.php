@@ -122,7 +122,6 @@ class TaskController extends Controller
         }
 
         if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
-
             return response()->json([
                 'message' => 'Nhiệm vụ này không phải của bạn',
                 'errors' => [
@@ -200,11 +199,21 @@ class TaskController extends Controller
                 }
             }
             if ($request->account_id == Auth::id()) {
-                $data['started_at'] = now();
-                if ($task->stage->expired_after_hours != null && $task->expired == null) {
-                    $dateTime = new \DateTime($data['started_at']);
-                    $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
-                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                $checkTaskStarted = Task::where('account_id', $request->account_id)->where('started_at', '!=', null)->first();
+                if ($checkTaskStarted == null) {
+                    $data['started_at'] = now();
+                    if ($task->stage->expired_after_hours != null && $task->expired == null) {
+                        $dateTime = new \DateTime($data['started_at']);
+                        $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                        $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                    }
+                } else {
+                    return response()->json([
+                        'message' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ',
+                        'errors' => [
+                            'task' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ'
+                        ],
+                    ], 401);
                 }
             }
         }

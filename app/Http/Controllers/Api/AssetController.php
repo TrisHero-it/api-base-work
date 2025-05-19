@@ -185,4 +185,12 @@ class   AssetController extends Controller
 
         return response()->json($asset);
     }
+
+    public function destroy(int $id)
+    {
+        $asset = Asset::findOrFail($id);
+        $asset->delete();
+
+        return response()->json(['message' => 'Asset deleted successfully']);
+    }
 }

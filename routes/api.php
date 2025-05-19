@@ -120,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/active-account/{id}', [AccountController::class, 'activeAccount']);
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
     Route::put('update-index-views', [ViewController::class, 'updateIndexView']);
+    Route::get('my-projects', [WorkflowController::class, 'myProjects']);
 });
 
 Route::post('/check-in-out', [AttendanceController::class, 'checkInOut']);

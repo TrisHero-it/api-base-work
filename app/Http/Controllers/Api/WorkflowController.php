@@ -63,7 +63,7 @@ class WorkflowController extends Controller
             ->get();
         $arrAccountId = $members->pluck('account_id');
         $accounts = Account::query()
-        ->select('id', 'full_name', 'avatar', 'role_id')
+            ->select('id', 'full_name', 'avatar', 'role_id', 'username')
             ->whereIn('id', $arrAccountId)
             ->get();
         foreach ($accounts as $account) {
@@ -245,5 +245,16 @@ class WorkflowController extends Controller
 
             return response()->json($workflows);
         }
+    }
+
+    public function myProjects(Request $request)
+    {
+        $workflows = AccountWorkflow::query()
+            ->where('account_id', Auth::id())
+            ->get();
+        $arrWorkflowId = $workflows->pluck('workflow_id')->toArray();
+        $workflows = Workflow::query()->whereIn('id', $arrWorkflowId)->get();
+
+        return response()->json($workflows);
     }
 }

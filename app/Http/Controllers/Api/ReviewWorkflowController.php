@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\HistoryMoveTask;
 use App\Models\Stage;
+use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -23,6 +24,7 @@ class ReviewWorkflowController extends Controller
 
         $stages = Stage::query()
             ->where('workflow_id', $request->workflow_id)
+            ->orderBy('index', 'desc')
             ->get();
 
         $subQuery = HistoryMoveTask::query()
@@ -33,17 +35,35 @@ class ReviewWorkflowController extends Controller
             })
             ->whereYear('started_at', $year)
             ->whereMonth('started_at', $month)
-            ->groupBy('task_id', 'old_stage', 'new_stage');
+            ->groupBy('task_id', 'old_stage');
 
         $historyMoveTasks = HistoryMoveTask::query()
             ->whereIn('id', $subQuery)
             ->get();
+        $expiredTasks = 0;
+        $successTasks = $historyMoveTasks->where('status', '!=', 'skipped')->count();
+
+        foreach ($historyMoveTasks as $historyMoveTask) {
+            if ($historyMoveTask->expired_at != null) {
+                if (Carbon::parse($historyMoveTask->created_at)->gt(Carbon::parse($historyMoveTask->expired_at))) {
+                    $expiredTasks++;
+                }
+            }
+        }
+
+        foreach ($stages as $stage) {
+            $stage->total_tasks = $historyMoveTasks->where('new_stage', $stage->id)
+                ->count();
+        }
 
         $totalTasks = $historyMoveTasks->count();
-        
 
         return response()->json([
             'total_tasks' => $totalTasks,
+            'expired_tasks' => $expiredTasks,
+            'success_tasks' => $successTasks,
+            'progress_tasks' => $totalTasks - $successTasks - $expiredTasks,
+            'stages' => $stages,
         ]);
     }
 }

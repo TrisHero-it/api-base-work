@@ -48,7 +48,7 @@ class AccountController extends Controller
 
     public function update(int $id, AccountUpdateRequest $request)
     {
-        $account = Account::query()->with('dayoffAccount')->findOrFail($id);
+        $account = Account::query()->with(['dayoffAccount', 'jobPositionActive.salary'])->findOrFail($id);
         if ($request->filled('avatar')) {
             $account->update([
                 'avatar' => $request->avatar
@@ -146,6 +146,7 @@ class AccountController extends Controller
                     'old_postion' => $name,
                     'status' => 'active',
                 ]);
+
                 if ($request->filled('salary')) {
                     $travelAllowance = $request->salary['travel_allowance'] ?? 0;
                     $eatAllowance = $request->salary['eat_allowance'] ?? 0;
@@ -157,20 +158,55 @@ class AccountController extends Controller
                     $kpi = $salary->kpi ?? 0;
                     $basicSalary = $salary->basic_salary ?? 0;
                 }
+
                 Salary::create([
-                    'job_position_id' => $jobPosition2->id,
+                    'job_position_id' => isset($jobPosition2) ? $jobPosition2->id : $jobPosition->id,
                     'travel_allowance' => $travelAllowance,
                     'eat_allowance' => $eatAllowance,
                     'kpi' => $kpi,
                     'basic_salary' => $basicSalary,
                 ]);
             }
-
+            if ($request->filled('salary')) {
+                $travelAllowance = $request->salary['travel_allowance'] ?? 0;
+                $eatAllowance = $request->salary['eat_allowance'] ?? 0;
+                $kpi = $request->salary['kpi'] ?? 0;
+                $basicSalary = $request->salary['basic_salary'] ?? 0;
+            } else {
+                $travelAllowance = $salary->travel_allowance ?? 0;
+                $eatAllowance = $salary->eat_allowance ?? 0;
+                $kpi = $salary->kpi ?? 0;
+                $basicSalary = $salary->basic_salary ?? 0;
+            }
+            if (isset($request->salary['id'])) {
+                $account->jobPositionActive->salary->update([
+                    'travel_allowance' => $travelAllowance,
+                    'eat_allowance' => $eatAllowance,
+                    'kpi' => $kpi,
+                    'basic_salary' => $basicSalary,
+                ]);
+            }
+            
             return response()->json($account);
         }
 
         //  Nếu không phải là admin thì cập nhập sẽ thành yêu cầu sửa thông tin
-        $arrKeys = array_keys($request->except('password', 'avatar', 'position', 'department_name', 'email', 'username', 'education', 'history_works', 'family_member', 'role', 'department', 'job_position', 'dayoff_account', 'salary'));
+        $arrKeys = array_keys($request->except(
+            'password',
+            'avatar',
+            'position',
+            'department_name',
+            'email',
+            'username',
+            'education',
+            'history_works',
+            'family_member',
+            'role',
+            'department',
+            'job_position',
+            'dayoff_account',
+            'salary'
+        ));
         $oldData = [];
         if ($arrKeys != null) {
             $oldData = Account::select($arrKeys)
