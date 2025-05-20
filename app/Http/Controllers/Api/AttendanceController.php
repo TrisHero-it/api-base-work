@@ -13,6 +13,7 @@ use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Role;
 
 class AttendanceController extends Controller
 {
@@ -415,18 +416,25 @@ class AttendanceController extends Controller
             $time = $time->format('Y-m-d H:i:s');
             foreach (self::ARRAY_ID_RONALJACK as $item) {
                 if ($attendance['user_id'] == $item['machine_id']) {
-                    $attendance2 = Attendance::where('account_id', $item['account_id'])->latest('id')->first();
+                    // Kiểm tra xem trong ngày hôm đó có điểm danh hay chưa
+                    $attendance2 = Attendance::where('account_id', $item['account_id'])
+                        ->whereDate('checkin', explode(' ', $time)[0])
+                        ->first();
                     // check xem có trong khoảng giờ nghỉ trưa hay không
                     if (!$currentTime->between($startTime, $endTime)) {
-                        // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
-                        if (in_array($item['account_id'], $arrAccountId)) {
-                            if ($attendance2 != null) {
-                                if (Carbon::parse($attendance2->checkin)->isToday()) {
-                                    if ($attendance2->checkout == null) {
-                                        $attendance2->update([
-                                            'checkout' => $time
-                                        ]);
-                                    } else {
+                        if ($attendance2 != null) {
+                            // Nếu cùng ngày mà chưa check out thì update checkout
+                            if (
+                                Carbon::parse($attendance2->checkin)->isSameDay($time)
+                                && $attendance2->checkout == null
+                            ) {
+                                $attendance2->update([
+                                    'checkout' => $time
+                                ]);
+                            } else {
+                                if (in_array($item['account_id'], $arrAccountId)) {
+                                    // Đối với người phòng sales, được phép điểm danh hơn 1 lần trong 1 ngày
+                                    if (Carbon::parse($attendance2->checkin)->isSameDay($time)) {
                                         Attendance::query()
                                             ->create([
                                                 'account_id' => $item['account_id'],
@@ -434,65 +442,39 @@ class AttendanceController extends Controller
                                             ]);
                                     }
                                 } else {
-                                    Attendance::query()
-                                        ->create([
-                                            'account_id' => $item['account_id'],
-                                            'checkin' => $time
-                                        ]);
+                                    return response()->json([
+                                        'error' => 'Không được điểm danh vào thời gian này'
+                                    ], 403);
                                 }
-                            } else {
-                                Attendance::query()
-                                    ->create([
-                                        'account_id' => $item['account_id'],
-                                        'checkin' => $time
-                                    ]);
                             }
                         } else {
-                            if ($attendance2 != null) {
-                                if ((Carbon::parse($attendance2->checkin)->isToday())) {
-                                    if ($attendance2->checkout == null) {
-                                        $attendance2->update([
-                                            'checkout' => $time
-                                        ]);
-                                    }
-                                } else {
-                                    Attendance::query()
-                                        ->create([
-                                            'account_id' => $item['account_id'],
-                                            'checkin' => $time
-                                        ]);
-                                }
-                            } else {
-                                Attendance::query()
-                                    ->create([
-                                        'account_id' => $item['account_id'],
-                                        'checkin' => $time
-                                    ]);
-                            }
+                            // Nếu không có điểm danh trong hôm đó thì điểm danh
+                            Attendance::query()
+                                ->create([
+                                    'account_id' => $item['account_id'],
+                                    'checkin' => $time
+                                ]);
                         }
                     } else {
                         if (in_array($item['account_id'], $arrAccountId)) {
                             if ($attendance2 != null) {
-                                if (Carbon::parse($attendance2->checkin)->isToday()) {
-                                    if ($attendance2->checkout == null) {
-                                        $attendance2->update([
-                                            'checkout' => Carbon::parse($item['time'])->format('Y-m-d H:i:s')
-                                        ]);
-                                    } else {
+                                // Nếu cùng ngày mà chưa check out thì update checkout
+                                if (Carbon::parse($attendance2->checkin)->isSameDay($time) && $attendance2->checkout == null) {
+                                    $attendance2->update([
+                                        'checkout' => $time
+                                    ]);
+                                } else {
+                                    // Đối với người phòng sales, được phép điểm danh hơn 1 lần trong 1 ngày
+                                    if (Carbon::parse($attendance2->checkin)->isSameDay($time)) {
                                         Attendance::query()
                                             ->create([
                                                 'account_id' => $item['account_id'],
                                                 'checkin' => $time
                                             ]);
                                     }
-                                } else {
-                                    Attendance::query()
-                                        ->create([
-                                            'account_id' => $item['account_id'],
-                                            'checkin' => $time
-                                        ]);
                                 }
                             } else {
+                                // Nếu không có điểm danh trong hôm đó thì điểm danh
                                 Attendance::query()
                                     ->create([
                                         'account_id' => $item['account_id'],
@@ -504,5 +486,8 @@ class AttendanceController extends Controller
                 }
             }
         }
+        return response()->json([
+            'success' => 'Đã đồng bộ điểm danh lên hệ thống'
+        ]);
     }
 }

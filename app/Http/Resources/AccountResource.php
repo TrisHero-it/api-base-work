@@ -15,9 +15,9 @@ class AccountResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roles = [
-            'Thành viên thông thường',
-            'Quản trị viên',
-            'Quản trị cấp cao',
+            'Nhân viên',
+            'Quản lí',
+            'Admin',
         ];
 
         if ($this->quit_work == true) {

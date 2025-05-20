@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -77,15 +78,16 @@ class EmployeeController extends Controller
                 $account->department_name = $account->department[0]->name;
                 unset($account->department);
             }
+            $roles = Role::query()->get();
             if ($account->quit_work == true) {
                 $account['role'] = 'Vô hiệu hoá';
             } else {
                 if ($account->role_id == 2) {
-                    $account['role'] = 'Quản trị';
+                    $account['role'] = $roles->where('id', 2)->first()->name;
                 } else if ($account->role_id == 3) {
-                    $account['role'] = 'Quản trị cấp cao';
+                    $account['role'] = $roles->where('id', 3)->first()->name;
                 } else {
-                    $account['role'] = 'Thành viên thông thường';
+                    $account['role'] = $roles->where('id', 1)->first()->name;
                 }
             }
         }
@@ -104,9 +106,9 @@ class EmployeeController extends Controller
         $a = $a->get();
         $countRoleAccount = [
             'Tất cả' => $a->count(),
-            'Thành viên thông thường' => $a->where('role_id', 1)->where('quit_work', false)->count(),
-            'Quản trị' => $a->where('role_id', 2)->where('quit_work', false)->count(),
-            'Quản trị cấp cao' => $a->where('role_id', 3)->where('quit_work', false)->count(),
+            $roles->where('id', 1)->first()->name => $a->where('role_id', 1)->where('quit_work', false)->count(),
+            $roles->where('id', 2)->first()->name => $a->where('role_id', 2)->where('quit_work', false)->count(),
+            $roles->where('id', 3)->first()->name => $a->where('role_id', 3)->where('quit_work', false)->count(),
             'Vô hiệu hoá' => $a->where('quit_work', true)->count(),
         ];
 

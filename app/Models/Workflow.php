@@ -14,7 +14,8 @@ class Workflow extends Model
         'description',
         'workflow_category_id',
         'is_close',
-        'require_link_youtube'
+        'require_link_youtube',
+        'is_key_workflow',
     ];
 
     public function stages()

@@ -169,7 +169,6 @@ class   AssetController extends Controller
         if ($data['status'] === 'using' && $asset->status !== 'using') {
             $data['start_date'] = now();
         }
-
         if ($data['status'] === 'unused') {
             $data['start_date'] = null;
             $data['account_id'] = null;
@@ -181,7 +180,7 @@ class   AssetController extends Controller
     public function show(int $id)
     {
         $asset = Asset::with(['buyer', 'seller', 'assetCategory', 'account', 'brand', 'historyAssets.account'])
-            ->find($id);
+            ->findOrFail($id);
 
         return response()->json($asset);
     }

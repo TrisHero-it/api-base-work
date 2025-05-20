@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\DateHoliday;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use App\Models\Role;
 use Carbon\Carbon;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
@@ -58,6 +59,8 @@ class AttendanceAccountController extends Controller
             ->whereYear('checkin', $year2)
             ->get();
 
+        $roles = Role::query()->get();
+
         foreach ($accounts as $account) {
             if ($account->dayoffAccount != null) {
                 $account->day_off = $account->dayoffAccount->dayoff_count + $account->dayoffAccount->dayoff_long_time_worker;
@@ -67,11 +70,11 @@ class AttendanceAccountController extends Controller
                 $account['role'] = 'Vô hiệu hoá';
             } else {
                 if ($account->role_id == 2) {
-                    $account['role'] = 'Quản trị';
+                    $account['role'] = $roles->where('id', 2)->first()->name;
                 } else if ($account->role_id == 3) {
-                    $account['role'] = 'Quản trị cấp cao';
+                    $account['role'] = $roles->where('id', 3)->first()->name;
                 } else {
-                    $account['role'] = 'Thành viên thông thường';
+                    $account['role'] = $roles->where('id', 1)->first()->name;
                 }
             }
             $a = 0;

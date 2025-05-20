@@ -10,6 +10,7 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
+        'workflow_id',
         'name',
         "description",
         "account_id",

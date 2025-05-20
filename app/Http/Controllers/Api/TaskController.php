@@ -98,6 +98,27 @@ class TaskController extends Controller
         $account = Auth::user();
         $task = Task::query()->find($id);
 
+        if ($request->filled('first_stage')) {
+            $this->firstStage($task);
+            return response()->json([
+                'message' => 'Nhiệm vụ đã được đưa về giai đoạn đầu'
+            ]);
+        }
+
+        if ($request->filled('previous_stage')) {
+            $this->previousStage($task);
+            return response()->json([
+                'message' => 'Nhiệm vụ đã được đưa về giai đoạn trước'
+            ]);
+        }
+
+        if ($request->filled('next_stage')) {
+            $this->nextStage($task);
+            return response()->json([
+                'message' => 'Nhiệm vụ đã được đưa đến giai đoạn tiếp theo'
+            ]);
+        }
+
         if ($request->filled('complete')) {
             $this->completeTask($id);
             return response()->json([
@@ -121,7 +142,7 @@ class TaskController extends Controller
             }
         }
 
-        if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {    
+        if ($account->id != $task->account_id && !isset($request->account_id) && !$account->isAdmin()) {
             return response()->json([
                 'message' => 'Nhiệm vụ này không phải của bạn',
                 'errors' => [
@@ -201,12 +222,12 @@ class TaskController extends Controller
             if ($request->account_id == Auth::id()) {
                 $checkTaskStarted = Task::where('account_id', $request->account_id)->where('started_at', '!=', null)->first();
                 if ($checkTaskStarted == null || Auth::id() == 14) {
-                $data['started_at'] = now();
-                if ($task->stage->expired_after_hours != null && $task->expired == null) {
-                    $dateTime = new \DateTime($data['started_at']);
-                    $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
-                    $data['expired'] = $dateTime->format('Y-m-d H:i:s');
-                }
+                    $data['started_at'] = now();
+                    if ($task->stage->expired_after_hours != null && $task->expired == null) {
+                        $dateTime = new \DateTime($data['started_at']);
+                        $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                        $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                    }
                 } else {
                     return response()->json([
                         'message' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ',
@@ -219,6 +240,7 @@ class TaskController extends Controller
         }
         //  Nếu có tồn tại stage_id thì là chuyển giai đoạn
         if ($task->stage_id != $request->stage_id && $request->stage_id != null) {
+
             if ($task->stage->isSuccessStage()) {
                 $data['link_youtube'] = null;
                 $data['code_youtube'] = null;
@@ -231,6 +253,10 @@ class TaskController extends Controller
             }
             //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
+                // Nếu như là key workflow thì sẽ chuyển đến giai đoạn tiếp theo
+                if ($stage->workflow->workflow_id != null) {
+                    $this->forwardTask($task);
+                }
                 if ($task->started_at == null) {
                     return response()->json([
                         'message' => 'Nhiệm vụ chưa được giao',
@@ -463,5 +489,96 @@ class TaskController extends Controller
         return response()->json([
             'message' => 'Chuyển giai đoạn thành công'
         ]);
+    }
+
+    private function firstStage(Task $task)
+    {
+        $stage = Stage::query()->where('workflow_id', $task->stage->workflow_id)
+            ->orderBy('index', 'desc')
+            ->first();
+        $task->update([
+            'stage_id' => $stage->id
+        ]);
+    }
+
+    private function nextStage(Task $task)
+    {
+        $stage = Stage::query()->where('workflow_id', $task->stage->workflow_id)
+            ->where('index', '<', $task->stage->index)
+            ->orderBy('index', 'desc')
+            ->first();
+        // Nếu đang ở giai đoạn hoàn thành thì sẽ xóa tất cả các trường
+        $data = [];
+        $data = $this->updateTaskInHistory($task, $data, $stage);
+        $data['stage_id'] = $stage->id;
+
+        $task->update($data);
+    }
+
+    private function previousStage(Task $task)
+    {
+        $stage = Stage::query()->where('workflow_id', $task->stage->workflow_id)
+            ->where('index', '>', $task->stage->index)
+            ->orderBy('index', 'asc')
+            ->first();
+        $data = [];
+        $data = $this->updateTaskSuccessStage($task, $data);
+
+        $this->updateTaskInHistory($task, $data, $stage);
+        $data['stage_id'] = $stage->id;
+
+        $task->update($data);
+    }
+
+    private function updateTaskInHistory(Task $task, array $data, Stage $stage)
+    {
+
+        $worker = HistoryMoveTask::query()
+            ->where('task_id', $task->id)
+            ->where('old_stage', $stage->id)
+            ->orderBy('id', 'desc')
+            ->first() ?? null;
+        if ($worker !== null) {
+            $data['expired'] = $worker->expired_at;
+            $data['account_id'] = $worker->worker;
+            $data['started_at'] = $worker->started_at;
+        } else {
+            $data['expired'] = null;
+            $data['account_id'] = null;
+            $data['started_at'] = null;
+        }
+
+        return $data;
+    }
+
+    private function updateTaskSuccessStage(Task $task, $data)
+    {
+        if ($task->stage->isSuccessStage()) {
+            $data['link_youtube'] = null;
+            $data['code_youtube'] = null;
+            $data['view_count'] = 0;
+            $data['like_count'] = 0;
+            $data['comment_count'] = 0;
+            $data['date_posted'] = null;
+            $data['completed_at'] = null;
+            $data['status'] = null;
+        }
+
+        return $data;
+    }
+
+    private function forwardTask(Task $task)
+    {
+        $workflow = Workflow::query()->where('id', $task->stage->workflow->workflow_id)->first();
+        if ($workflow != null) {
+            $stage = Stage::query()
+                ->where('workflow_id', $workflow->id)
+                ->orderBy('index', 'desc')
+                ->whereNotIn('index', [0, 1])
+                ->first();
+            $task->update([
+                'stage_id' => $stage->id
+            ]);
+        }
     }
 }

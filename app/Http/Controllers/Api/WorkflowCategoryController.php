@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WorkflowCategoryStoreRequest;
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
 use App\Models\AccountWorkflowCategory;
 use App\Models\Workflow;
@@ -23,6 +24,8 @@ class WorkflowCategoryController extends Controller
         $categories = WorkflowCategory::query()->get();
         $workflows = AccountWorkflow::where('account_id', Auth::id())->get();
         $arrWorkflowId = $workflows->pluck('workflow_id');
+        $accounts = Account::query()->select('id', 'username', 'full_name', 'avatar')->get();
+        $accountDepartment = AccountDepartment::query()->get();
 
         if (Auth::user()->isSeniorAdmin()) {
             $workflows = Workflow::get();
@@ -32,6 +35,9 @@ class WorkflowCategoryController extends Controller
 
         foreach ($categories as $category) {
             $category['workflows'] = array_values($workflows->where('workflow_category_id', $category->id)->toArray());
+            if (isset($category->department_id)) {
+                $category['members'] = array_values($accounts->whereIn('id', $accountDepartment->where('department_id', $category->department_id)->pluck('account_id'))->toArray());
+            }
         }
 
         return response()->json($categories);

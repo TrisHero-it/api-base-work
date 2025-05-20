@@ -18,6 +18,7 @@ use App\Models\FamilyMember;
 use App\Models\JobPosition;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
+use App\Models\Role;
 use App\Models\Salary;
 use App\Models\Task;
 use App\Models\View;
@@ -186,7 +187,7 @@ class AccountController extends Controller
                     'basic_salary' => $basicSalary,
                 ]);
             }
-            
+
             return response()->json($account);
         }
 
@@ -266,6 +267,8 @@ class AccountController extends Controller
             $accounts = $accounts->where('quit_work', $request->quit_work);
         }
 
+        $roles = Role::query()->get();
+
         $accounts = $accounts->get();
         foreach ($accounts as $account) {
             if ($account->start_work_date != null) {
@@ -309,11 +312,11 @@ class AccountController extends Controller
                 $account['role'] = 'Vô hiệu hoá';
             } else {
                 if ($account->role_id == 2) {
-                    $account['role'] = 'Quản trị';
+                    $account['role'] = $roles->where('id', 2)->first()->name;
                 } else if ($account->role_id == 3) {
-                    $account['role'] = 'Quản trị cấp cao';
+                    $account['role'] = $roles->where('id', 3)->first()->name;
                 } else {
-                    $account['role'] = 'Thành viên thông thường';
+                    $account['role'] = $roles->where('id', 1)->first()->name;
                 }
             }
         }
@@ -363,12 +366,13 @@ class AccountController extends Controller
             $account = Account::select('id', 'username', 'full_name', 'avatar', 'role_id', 'email', 'phone')
                 ->findOrFail($id);
         }
+        $roles = Role::query()->get();
         if ($account->role_id == 2) {
-            $account['role'] = 'Quản trị';
+            $account['role'] = $roles->where('id', 2)->first()->name;
         } else if ($account->role_id == 3) {
-            $account['role'] = 'Quản trị cấp cao';
+            $account['role'] = $roles->where('id', 3)->first()->name;
         } else {
-            $account['role'] = 'Thành viên thông thường';
+            $account['role'] = $roles->where('id', 1)->first()->name;
         }
         unset($account->role_id);
         $month = now()->month;
@@ -440,12 +444,13 @@ class AccountController extends Controller
                 ->where('id', Auth::id())
                 ->first();
         }
+        $roles = Role::query()->get();
         if ($account->role_id == 2) {
-            $account['role'] = 'Quản trị';
+            $account['role'] = $roles->where('id', 2)->first()->name;
         } else if ($account->role_id == 3) {
-            $account['role'] = 'Quản trị cấp cao';
+            $account['role'] = $roles->where('id', 3)->first()->name;
         } else {
-            $account['role'] = 'Thành viên thông thường';
+            $account['role'] = $roles->where('id', 1)->first()->name;
         }
         unset($account->role_id);
         $month = now()->month;
