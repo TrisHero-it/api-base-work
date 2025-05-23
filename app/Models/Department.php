@@ -16,4 +16,9 @@ class Department extends Model
     {
         return $this->hasMany(WorkflowCategory::class);
     }
+
+    public function members()
+    {
+        return $this->hasManyThrough(Account::class, AccountDepartment::class, 'department_id', 'id', 'id', 'account_id');
+    }
 }

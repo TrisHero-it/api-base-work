@@ -65,6 +65,7 @@ class TaskController extends Controller
             'account_id' => $account->id ?? null,
             'stage_id' => $stage->id,
             'creator_by' => Auth::id(),
+            'expired' => $request->expired != null ? Carbon::parse($request->expired) : null,
         ];
         if (isset($request->account_id)) {
             $data['delivery_date'] = now();
@@ -310,7 +311,7 @@ class TaskController extends Controller
                         $item->delete();
                     } else {
                         Kpi::query()->create([
-                            'status' => 1,  
+                            'status' => 1,
                             'task_id' => $item->task_id,
                             'stage_id' => $item->stage_id,
                             'account_id' => $item->account_id,

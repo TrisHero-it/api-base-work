@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\StickerController;
 use App\Http\Controllers\Api\TagValueController;
 use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\DepartmentMemberController;
 use App\Http\Controllers\Api\LeaveHistoryController;
 use App\Http\Controllers\Api\LoginHistoryController;
 use App\Http\Controllers\Api\NoticeController;
@@ -106,6 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'affiliates' => AffiliateController::class,
         'notices' => NoticeController::class,
         "departments/{id}/overviews" => ReviewWorkflowController::class,
+        "departments/{id}/members" => DepartmentMemberController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
