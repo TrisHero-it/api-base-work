@@ -13,9 +13,13 @@ use Illuminate\Support\Facades\Auth;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::query()->get();
+        if (isset($request->department_id)) {
+            $departments = Department::query()->where('id', $request->department_id)->get();
+        } else {
+            $departments = Department::query()->get();
+        }
         $arrDepartmentId = $departments->pluck('id');
         $workflowCategories = WorkflowCategory::query()->whereIn('department_id', $arrDepartmentId)->get();
         $accounts = AccountDepartment::query()->whereIn('department_id', $arrDepartmentId)->get();

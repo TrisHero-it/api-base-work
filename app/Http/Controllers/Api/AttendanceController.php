@@ -21,6 +21,7 @@ class AttendanceController extends Controller
     {
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
+        $numberWorkingDays = 0;
 
         if (isset($request->me)) {
             $account = Auth::user();
@@ -82,10 +83,10 @@ class AttendanceController extends Controller
 
                 $checkin = Carbon::parse($item->checkin);
                 $checkout = Carbon::parse($item->checkout);
-                $noonTime = $checkin->copy()->setHour(12)->setMinute(0)->setSecond(0);
+                $noonTime = $checkin->copy()->setHour(value: 13)->setMinute(30)->setSecond(0);
                 if ($item->checkout != null) {
                     if (!$isSalesMember) {
-                        if ($checkin->greaterThanOrEqualTo($noonTime)) {
+                        if ($checkin->greaterThan($noonTime) || !$checkout->greaterThan($noonTime)) {
                             $hours = $checkout->floatDiffInHours($checkin);
                         } else {
                             $hours = $checkout->floatDiffInHours($checkin) - 1.5;
@@ -99,6 +100,9 @@ class AttendanceController extends Controller
                 $workday = number_format($hours, 2) / 7.5;
                 if ($workday > 1) {
                     $workday = 1;
+                }
+                if ($item->account_id == Auth::id()) {
+                    $numberWorkingDays += $workday;
                 }
                 $item['workday'] = number_format($workday, 2);
             }
@@ -130,6 +134,9 @@ class AttendanceController extends Controller
                     unset($a['propose_category']);
                     unset($a['date_holidays']);
                     $arrDateHoliday[] = $a;
+                    if ($propose->account_id == Auth::id()) {
+                        $numberWorkingDays += 0.8;
+                    }
                 }
             }
             $data['ot_and_holiday'] = $arrDateHoliday;
@@ -139,16 +146,6 @@ class AttendanceController extends Controller
                 ->where('go_to_work', 1)
                 ->get()
                 ->count();
-            $numberWorkingDays = 0;
-            foreach ($attendance->where('account_id', Auth::id()) as $item) {
-                if ($item->checkout != null) {
-                    $checkOut = Carbon::parse($item->checkout);
-                    $checkIn = Carbon::parse($item->checkin);
-                    $diff = $checkOut->diff($checkIn);
-                    $totalHours = $diff->days * 24 + $diff->h + ($diff->i / 60);
-                    $numberWorkingDays += round($totalHours / 9, 2);
-                }
-            }
             $data['number_of_working_days'] = number_format($numberWorkingDays, 2);
             $accountDayOff = Auth::user()->day_off;
             // số ngày nghỉ có phép của tài khoản

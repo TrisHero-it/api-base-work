@@ -97,16 +97,28 @@ class AttendanceAccountController extends Controller
             // Lọc từng tài khoản để tính ngày công
             $newAttendances = null;
             $newAttendances = $attendances->where('account_id', $account->id);
+            $isSalesMember = Auth::user()->isSalesMember();
             foreach ($newAttendances as $newAttendance) {
-                $diff = 0;
                 $hours = 0;
                 $workday = 0;
                 $checkout = null;
+                $checkin = Carbon::parse($newAttendance->checkin);
+                $checkout = Carbon::parse($newAttendance->checkout);
+                $noonTime = $checkin->copy()->setHour(value: 13)->setMinute(30)->setSecond(0);
                 if ($newAttendance->checkout != null) {
-                    $checkout = Carbon::parse($newAttendance->checkout);
-                    $diff = $checkout->diffInMinutes($newAttendance->checkin);
-                    $hours = $diff / 60;
-                    $workday = $hours > 9 ? 1 : $hours / 9;
+                    if (!$isSalesMember) {
+                        if ($checkin->greaterThan($noonTime) || !$checkout->greaterThan($noonTime)) {
+                            $hours = $checkout->floatDiffInHours($checkin);
+                        } else {
+                            $hours = $checkout->floatDiffInHours($checkin) - 1.5;
+                        }
+                    } else {
+                        $hours = $checkout->floatDiffInHours($checkin);
+                    }
+                }
+                $workday = number_format($hours, 2) / 7.5;
+                if ($workday > 1) {
+                    $workday = 1;
                 }
                 $totalWorkDay += $workday;
             }

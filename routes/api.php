@@ -66,7 +66,6 @@ Route::middleware('auth:sanctum')->group(function () {
         'images' => ImageController::class,
         'notifications' => NotificationController::class,
         'workflows' => WorkflowController::class,
-        'review-workflow' => ReviewWorkflowController::class,
         'stages' => StageController::class,
         'tasks' => TaskController::class,
         'workflow-categories' => WorkflowCategoryController::class,
@@ -106,6 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'employees' => EmployeeController::class,
         'affiliates' => AffiliateController::class,
         'notices' => NoticeController::class,
+        "departments/{id}/overviews" => ReviewWorkflowController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);

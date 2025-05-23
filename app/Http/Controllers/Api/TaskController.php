@@ -253,10 +253,10 @@ class TaskController extends Controller
             }
             //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
-                // Nếu như là key workflow thì sẽ chuyển đến giai đoạn tiếp theo
-                if ($stage->workflow->workflow_id != null) {
-                    $this->forwardTask($task);
+                if (isset($request->workflow_id)) {
+                    $this->forwardTask($task, $request);
                 }
+                // Nếu như là key workflow thì sẽ chuyển đến giai đoạn tiếp theo
                 if ($task->started_at == null) {
                     return response()->json([
                         'message' => 'Nhiệm vụ chưa được giao',
@@ -310,7 +310,7 @@ class TaskController extends Controller
                         $item->delete();
                     } else {
                         Kpi::query()->create([
-                            'status' => 1,
+                            'status' => 1,  
                             'task_id' => $item->task_id,
                             'stage_id' => $item->stage_id,
                             'account_id' => $item->account_id,
@@ -567,18 +567,18 @@ class TaskController extends Controller
         return $data;
     }
 
-    private function forwardTask(Task $task)
+    private function forwardTask(Task $task, Request $request)
     {
-        $workflow = Workflow::query()->where('id', $task->stage->workflow->workflow_id)->first();
+        $workflow = Workflow::query()->where('id', $request->workflow_id)->first();
         if ($workflow != null) {
             $stage = Stage::query()
                 ->where('workflow_id', $workflow->id)
                 ->orderBy('index', 'desc')
                 ->whereNotIn('index', [0, 1])
                 ->first();
-            $task->update([
-                'stage_id' => $stage->id
-            ]);
+            $data = $task->toArray();
+            $data['stage_id'] = $stage->id;
+            Task::query()->create($data);
         }
     }
 }
