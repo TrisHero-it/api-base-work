@@ -12,12 +12,9 @@ class Field extends Model
     protected $fillable = [
         'name',
         'workflow_id',
-        'stage_id',
         'require',
         'type',
         'options',
-        'model',
-        'report_rule_id'
     ];
 
     protected $casts = [

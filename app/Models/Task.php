@@ -52,7 +52,7 @@ class Task extends Model
 
     public function account()
     {
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class)->select('id', 'full_name', 'avatar', 'username');
     }
 
     public function isNextStage($index)

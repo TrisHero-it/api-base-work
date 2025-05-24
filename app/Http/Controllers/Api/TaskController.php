@@ -35,7 +35,7 @@ class TaskController extends Controller
     {
         $account = Account::query()->find($request->account_id);
         $stage = Stage::query()
-            ->where('workflow_id', $request->workflow_id)
+            ->where('workflow_id', operator: $request->workflow_id)
             ->orderByDesc('index')
             ->first();
         $members = AccountWorkflow::query()
@@ -117,13 +117,6 @@ class TaskController extends Controller
             $this->nextStage($task);
             return response()->json([
                 'message' => 'Nhiệm vụ đã được đưa đến giai đoạn tiếp theo'
-            ]);
-        }
-
-        if ($request->filled('complete')) {
-            $this->completeTask($id);
-            return response()->json([
-                'message' => 'Chuyển giai đoạn thành công'
             ]);
         }
 
@@ -219,23 +212,24 @@ class TaskController extends Controller
                         ],
                     ], 401);
                 }
-            }
-            if ($request->account_id == Auth::id()) {
-                $checkTaskStarted = Task::where('account_id', $request->account_id)->where('started_at', '!=', null)->first();
-                if ($checkTaskStarted == null || Auth::id() == 14) {
-                    $data['started_at'] = now();
-                    if ($task->stage->expired_after_hours != null && $task->expired == null) {
-                        $dateTime = new \DateTime($data['started_at']);
-                        $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
-                        $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+
+                if ($request->account_id == Auth::id() && $task->account_id == Auth::id() && $request->name == null) {
+                    $checkTaskStarted = Task::where('account_id', $request->account_id)->where('started_at', '!=', null)->first();
+                    if ($checkTaskStarted == null || Auth::id() == 14) {
+                        $data['started_at'] = now();
+                        if ($task->stage->expired_after_hours != null && $task->expired == null) {
+                            $dateTime = new \DateTime($data['started_at']);
+                            $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                            $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+                        }
+                    } else {
+                        return response()->json([
+                            'message' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ',
+                            'errors' => [
+                                'task' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ'
+                            ],
+                        ], 401);
                     }
-                } else {
-                    return response()->json([
-                        'message' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ',
-                        'errors' => [
-                            'task' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ'
-                        ],
-                    ], 401);
                 }
             }
         }
@@ -408,7 +402,7 @@ class TaskController extends Controller
 
     public function show(int $id)
     {
-        $task = Task::query()->with('creatorBy')->findOrFail($id);
+        $task = Task::query()->with(['creatorBy', 'account'])->findOrFail($id);
         $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
         if ($task->stage_id != null) {
             $task['workflow_id'] = $task->stage->workflow_id;
@@ -472,23 +466,6 @@ class TaskController extends Controller
 
         return response()->json([
             'success' => 'Cập nhập thành công'
-        ]);
-    }
-
-    private function completeTask(int $id)
-    {
-        $task = Task::query()->findOrFail($id);
-        $workflow_id = $task->stage->workflow_id;
-        $stages = Stage::query()->where('workflow_id', $workflow_id)->get();
-        $stage = $stages->where('index', $task->stage->index - 1)->first();
-        if ($stage && $stage->index != 0) {
-            $task->update([
-                'stage_id' => $stage->id
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Chuyển giai đoạn thành công'
         ]);
     }
 

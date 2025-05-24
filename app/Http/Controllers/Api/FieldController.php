@@ -12,12 +12,15 @@ class FieldController extends Controller
 {
     public function index(Request $request)
     {
-        $field = Field::query()
-            ->where('model', 'field')
-            ->where('workflow_id', $request->workflow_id)
-            ->get();
+        $fields = Field::query();
+        
+        if ($request->filled('workflow_id')) {
+            $fields = $fields->where('workflow_id', $request->workflow_id);
+        }
 
-        return response()->json($field);
+        $fields = $fields->get();
+
+        return response()->json($fields);
     }
 
     public function store(FieldStoreRequest $request)

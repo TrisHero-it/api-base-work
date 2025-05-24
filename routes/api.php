@@ -74,8 +74,6 @@ Route::middleware('auth:sanctum')->group(function () {
         'field-values' => FieldValueController::class,
         'history-move-tasks' => HistoryMoveTaskController::class,
         'comments' => CommentController::class,
-        'report-fields' => ReportFieldController::class,
-        'report-field-values' => ReportFieldValueController::class,
         'kpis' => KpiController::class,
         'tags' => StickerController::class,
         'tag-task' => TagValueController::class,

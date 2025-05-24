@@ -63,7 +63,6 @@ class MyJobController extends Controller
         // Lọc theo tài khoản đang đăng nhập & chỉ lấy task chưa hoàn thành
         $tasks = $query->where('account_id', Auth::id())
             ->whereNull('completed_at')
-            ->whereNull('stage_id')
             ->get();
         foreach ($tasks as $task) {
             if ($task->creator_by != null) {

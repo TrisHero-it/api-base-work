@@ -68,6 +68,17 @@ class DepartmentController extends Controller
             $data = $request->all();
             $department = Department::query()->findOrFail($id);
             $department->update($data);
+
+            if (isset($data['members'])) {
+                AccountDepartment::where('department_id', $id)->delete();
+                foreach ($data['members'] as $member) {
+                    AccountDepartment::query()->create([
+                        'department_id' => $id,
+                        'account_id' => $member,
+                    ]);
+                }
+            }
+
             return response()->json($department);
         } else {
             return response()->json([

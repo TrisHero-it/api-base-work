@@ -10,7 +10,15 @@ class DepartmentMemberController extends Controller
 {
     public function index(Request $request)
     {
-        $department = Department::with('members')->findOrFail($request->id);
+        $department = Department::with('members.jobPositionActive')->findOrFail($request->id);
+
+        $department->members->map(function ($member) {
+            if ($member->jobPositionActive != null) {
+                $member->position = $member->jobPositionActive->name;
+            }
+            return $member;
+        });
+
         return response()->json($department);
     }
 }
