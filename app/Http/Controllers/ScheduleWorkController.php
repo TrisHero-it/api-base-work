@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
 use App\Models\HistoryMoveTask;
 use App\Models\Schedule;
@@ -24,12 +25,23 @@ class ScheduleWorkController extends Controller
             $endDate = Carbon::now()->endOfWeek();
             $startDate = Carbon::now()->startOfWeek();
         }
-            $worflows = Workflow::all();
-        
+        $worflows = Workflow::all();
+
+        if ($request->filled('department_id')) {
+            $accountDepartments = AccountDepartment::where('department_id', $request->department_id)
+                ->pluck('account_id');
+            $accounts = Account::whereIn('id', $accountDepartments)
+                ->whereNotIn('id', $globalBan)
+                ->get();
+        } else {
+            $accounts = Account::query()
+                 ->whereNotIn('id', $globalBan)
+                ->get();
+        }
         $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
             ->whereNotIn('account_id', $globalBan)
-            ->with(['stage', 'account'])
-            ->where('account_id', '!=', null)
+            ->with(['stage', 'account'])    
+            ->whereIn('account_id', $accounts->pluck('id'))
             ->where('started_at', '!=', null)
             ->get();
         $arrSchedule = [];
@@ -74,12 +86,13 @@ class ScheduleWorkController extends Controller
             ->where('status', null)
             ->groupBy('old_stage', 'new_stage', 'worker', 'task_id')
             ->pluck('id');
-        $accounts = Account::all();
-        
+
+
         $taskInHistory = HistoryMoveTask::whereIn('id', $latestTaskIds)
             ->with(['oldStage', 'newStage', 'task'])
             ->whereDate('created_at', '>=', $startDate->format('Y-m-d'))
             ->whereDate('created_at', '<=', $endDate->format('Y-m-d'))
+            ->whereIn('worker', $accounts->pluck('id'))
             ->whereNotIn('worker', $globalBan)
             ->get();
         foreach ($taskInHistory as $task) {
@@ -88,7 +101,7 @@ class ScheduleWorkController extends Controller
                 if ($thisDayOff->go_to_work == false) {
                     continue;
                 }
-                $completedAt = Carbon::parse($task->created_at);                                                                                 
+                $completedAt = Carbon::parse($task->created_at);
                 $expiredAt = Carbon::parse($task->expired_at);
                 $startedAt = Carbon::parse($task->started_at);
                 if (now()->toDateString() < $date->toDateString() || $date->toDateString() < $startedAt->toDateString() || $completedAt->toDateString() < $date->toDateString()) {
@@ -115,7 +128,7 @@ class ScheduleWorkController extends Controller
                 $taskCopy->stage_id = $taskCopy->oldStage->id;
                 $taskCopy->stage_name = $taskCopy->oldStage->name;
                 $taskCopy->name_task = $taskCopy->task->name;
-                $hoursWork = $this->getHoursWorkHistory($taskCopy, $date); 
+                $hoursWork = $this->getHoursWorkHistory($taskCopy, $date);
                 $taskCopy->hours_work = $hoursWork['hours_work'];
                 $taskCopy->start = $hoursWork['start']->format("Y-m-d H:i:s");
                 $taskCopy->end = $hoursWork['end']->format("Y-m-d H:i:s");

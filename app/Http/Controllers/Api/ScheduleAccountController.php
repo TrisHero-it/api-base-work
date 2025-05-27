@@ -51,8 +51,14 @@ class ScheduleAccountController extends Controller
         $dayOff = Schedule::whereDate('day_of_week', $date)->first();
 
         $data = $this->getScheduleAccount($date, $date);
+        $departments = AccountDepartment::query()->get();
 
         foreach ($accounts as $account) {
+            if ($departments->where('account_id', $account->id)->first() != null) {
+                $account->department_id = $departments->where('account_id', $account->id)->first()->department_id;
+            } else {
+                $account->department_id = null;
+            }
             if (count($account->department) != 0) {
                 $account->department_name = $account->department[0]->name;
                 unset($account->department);

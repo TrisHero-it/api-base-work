@@ -18,7 +18,6 @@ use App\Http\Controllers\Api\DayScheduleController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\FieldController;
-use App\Http\Controllers\Api\FieldValueController;
 use App\Http\Controllers\Api\HistoryMoveTaskController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\IpWifiController;
@@ -26,8 +25,6 @@ use App\Http\Controllers\Api\JobPositionController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\ReportFieldController;
-use App\Http\Controllers\Api\ReportFieldValueController;
 use App\Http\Controllers\Api\ScheduleAccountController;
 use App\Http\Controllers\Api\ScheduleWorkflowController;
 use App\Http\Controllers\Api\StaffController;
@@ -50,7 +47,6 @@ use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ReviewWorkflowController;
 use App\Http\Controllers\Api\ViewController;
 use App\Http\Controllers\ScheduleWorkController;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);
@@ -71,7 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
         'tasks' => TaskController::class,
         'workflow-categories' => WorkflowCategoryController::class,
         'fields' => FieldController::class,
-        'field-values' => FieldValueController::class,
         'history-move-tasks' => HistoryMoveTaskController::class,
         'comments' => CommentController::class,
         'kpis' => KpiController::class,

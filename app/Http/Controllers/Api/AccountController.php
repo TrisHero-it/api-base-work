@@ -267,10 +267,17 @@ class AccountController extends Controller
             $accounts = $accounts->where('quit_work', $request->quit_work);
         }
 
+        $departments = AccountDepartment::query()->get();
+
         $roles = Role::query()->get();
 
         $accounts = $accounts->get();
         foreach ($accounts as $account) {
+            if ($departments->where('account_id', $account->id)->first() != null) {
+                $account->department_id = $departments->where('account_id', $account->id)->first()->department_id;
+            } else {
+                $account->department_id = null;
+            }
             if ($account->start_work_date != null) {
                 $mocThoiGian = Carbon::parse($account->start_work_date); // mốc thời gian
                 $hienTai = Carbon::now();
@@ -319,6 +326,7 @@ class AccountController extends Controller
                     $account['role'] = $roles->where('id', 1)->first()->name;
                 }
             }
+            $account->avatar = env('APP_URL') . $account->avatar;
         }
 
         return response()->json($accounts);

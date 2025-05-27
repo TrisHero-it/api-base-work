@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskStoreRequest;
 use App\Models\Account;
 use App\Models\AccountWorkflow;
+use App\Models\Field;
+use App\Models\FieldTask;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
 use App\Models\Stage;
@@ -404,6 +406,8 @@ class TaskController extends Controller
     {
         $task = Task::query()->with(['creatorBy', 'account'])->findOrFail($id);
         $task['sticker'] = StickerTask::query()->where('task_id', $task->id)->get();
+        $task['fields'] = $this->getFieldByIdTask($task->id);
+
         if ($task->stage_id != null) {
             $task['workflow_id'] = $task->stage->workflow_id;
         }
@@ -510,7 +514,6 @@ class TaskController extends Controller
 
     private function updateTaskInHistory(Task $task, array $data, Stage $stage)
     {
-
         $worker = HistoryMoveTask::query()
             ->where('task_id', $task->id)
             ->where('old_stage', $stage->id)
@@ -558,5 +561,26 @@ class TaskController extends Controller
             $data['stage_id'] = $stage->id;
             Task::query()->create($data);
         }
+    }
+
+    private function getFieldByIdTask(int $id)
+    {
+        $fieldTasks = FieldTask::query()
+            ->where('task_id', $id)
+            ->get();
+
+        $fields = Field::query()
+            ->whereIn('id', $fieldTasks->pluck('field_id'))
+            ->get();
+
+        $arr = collect();
+
+        foreach ($fieldTasks as $fieldTask) {
+            $field = $fields->where('id', $fieldTask->field_id)->first();
+            $arr[$field->name] = $fieldTask->value;
+        }
+
+
+        return $arr ?? [];
     }
 }
