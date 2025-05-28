@@ -250,10 +250,10 @@ class TaskController extends Controller
             }
             //  Chuyển đến giai đọan hoàn thành phải có người làm mới chuyển được
             if ($stage->isSuccessStage()) {
-                if (isset($request->workflow_id)) {
-                    $this->forwardTask($task, $request);
-                }
                 // Nếu như là key workflow thì sẽ chuyển đến giai đoạn tiếp theo
+                if (isset($request->workflow_id)) {
+                    $data['stage_id'] = $this->forwardTask($task, $request->workflow_id);
+                }
                 if ($task->started_at == null) {
                     return response()->json([
                         'message' => 'Nhiệm vụ chưa được giao',
@@ -548,18 +548,17 @@ class TaskController extends Controller
         return $data;
     }
 
-    private function forwardTask(Task $task, Request $request)
+    private function forwardTask(Task $task, int $workflow_id)
     {
-        $workflow = Workflow::query()->where('id', $request->workflow_id)->first();
+        $workflow = Workflow::query()->where('id', $workflow_id)->first();
         if ($workflow != null) {
             $stage = Stage::query()
                 ->where('workflow_id', $workflow->id)
                 ->orderBy('index', 'desc')
                 ->whereNotIn('index', [0, 1])
                 ->first();
-            $data = $task->toArray();
-            $data['stage_id'] = $stage->id;
-            Task::query()->create($data);
+
+            return $stage->id;
         }
     }
 
@@ -579,7 +578,6 @@ class TaskController extends Controller
             $field = $fields->where('id', $fieldTask->field_id)->first();
             $arr[$field->name] = $fieldTask->value;
         }
-
 
         return $arr ?? [];
     }

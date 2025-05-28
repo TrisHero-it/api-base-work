@@ -47,12 +47,21 @@ use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ReviewWorkflowController;
 use App\Http\Controllers\Api\ViewController;
 use App\Http\Controllers\ScheduleWorkController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('send_email', [EmailController::class, 'sendEmail']);
 Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
+
+Route::get('test', function () {
+    return request()->ip();
+});
+
+Route::get('test2', function () {
+    return Http::get('https://api.ipify.org?format=json');
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
