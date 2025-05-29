@@ -21,7 +21,7 @@ class StageController extends Controller
             // Tuần này
             $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
             // Tuần trước
-            $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
+            $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString(); 
         }
 
         $stages = Stage::query()
@@ -37,7 +37,7 @@ class StageController extends Controller
             ->orderBy('account_id', 'desc')
             ->get();
         foreach ($stages as $stage) {
-            if ($stage->isSuccessStage()) {
+            if ($stage->isSuccessStage()) {  
                 $tasks = $tasks2->where('stage_id', $stage->id)
                     ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
                     ->sortByDesc('completed_at');

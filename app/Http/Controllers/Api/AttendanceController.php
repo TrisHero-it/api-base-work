@@ -439,7 +439,7 @@ class AttendanceController extends Controller
                                     }
                                 } else {
                                     return response()->json([
-                                        'error' => 'Không được điểm danh vào thời gian này'
+                                        'error' => $attendance['user_id'] . ' không được điểm danh vào thời gian này'
                                     ], 403);
                                 }
                             }

@@ -35,12 +35,12 @@ class ScheduleWorkController extends Controller
                 ->get();
         } else {
             $accounts = Account::query()
-                 ->whereNotIn('id', $globalBan)
+                ->whereNotIn('id', $globalBan)
                 ->get();
         }
         $taskInProgress = Task::select('id as task_id', 'name as name_task', 'account_id', 'started_at', 'expired as expired_at', 'stage_id', 'completed_at')
             ->whereNotIn('account_id', $globalBan)
-            ->with(['stage', 'account'])    
+            ->with(['stage', 'account'])
             ->whereIn('account_id', $accounts->pluck('id'))
             ->where('started_at', '!=', null)
             ->get();

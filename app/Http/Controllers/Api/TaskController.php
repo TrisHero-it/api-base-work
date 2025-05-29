@@ -36,10 +36,18 @@ class TaskController extends Controller
     public function store(TaskStoreRequest $request)
     {
         $account = Account::query()->find($request->account_id);
+
         $stage = Stage::query()
             ->where('workflow_id', operator: $request->workflow_id)
             ->orderByDesc('index')
             ->first();
+
+        if (!$this->checkMemberWorkflow($request->workflow_id)) {
+            return response()->json([
+                'message' => 'Bạn không phải là thành viên của workflow này'
+            ], 401);
+        }
+
         $members = AccountWorkflow::query()
             ->where('workflow_id', $request->workflow_id)
             ->get();
@@ -112,6 +120,13 @@ class TaskController extends Controller
             $this->previousStage($task);
             return response()->json([
                 'message' => 'Nhiệm vụ đã được đưa về giai đoạn trước'
+            ]);
+        }
+
+        if ($request->filled('failed_stage')) {
+            $this->failedStage($task);
+            return response()->json([
+                'message' => 'Nhiệm vụ đã được đánh thất bại'
             ]);
         }
 
@@ -253,6 +268,17 @@ class TaskController extends Controller
                 // Nếu như là key workflow thì sẽ chuyển đến giai đoạn tiếp theo
                 if (isset($request->workflow_id)) {
                     $data['stage_id'] = $this->forwardTask($task, $request->workflow_id);
+                }
+                if ($stage->workflow->is_key_workflow && !isset($request->workflow_id)) {
+                    return response()->json([
+                        'message' => 'Vui lòng điền workflow bạn muốn hướng tới',
+                    ], 401);
+                }
+
+                if ($stage->workflow->require_link_youtube && !isset($request->link_youtube)) {
+                    return response()->json([
+                        'message' => 'Vui lòng điền link video của bạn',
+                    ], 401);
                 }
                 if ($task->started_at == null) {
                     return response()->json([
@@ -418,6 +444,13 @@ class TaskController extends Controller
     {
         try {
             $task = Task::query()->findOrFail($id);
+
+            if (!$this->checkMemberWorkflow($task->stage->workflow_id)) {
+                return response()->json([
+                    'message' => 'Bạn không phải là thành viên của workflow này'
+                ], 401);
+            }
+
             if ($task->account_id != Auth::id() && !Auth::user()->isAdmin()) {
                 return response()->json([
                     'message' => 'Bạn không có quyền xóa nhiệm vụ này'
@@ -497,6 +530,16 @@ class TaskController extends Controller
         $task->update($data);
     }
 
+    private function failedStage(Task $task)
+    {
+        $stage = Stage::query()->where('workflow_id', $task->stage->workflow_id)
+            ->where('index', 0)
+            ->first();
+        $task->update([
+            'stage_id' => $stage->id
+        ]);
+    }
+
     private function previousStage(Task $task)
     {
         $stage = Stage::query()->where('workflow_id', $task->stage->workflow_id)
@@ -546,6 +589,18 @@ class TaskController extends Controller
         }
 
         return $data;
+    }
+
+    private function checkMemberWorkflow($workflow_id)
+    {
+        $workflow = Workflow::query()->where('id', $workflow_id)->first();
+        $isMemberWorkflow = AccountWorkflow::where('workflow_id', $workflow->id)
+            ->where('account_id', Auth::id())
+            ->first();
+        if ($isMemberWorkflow == null) {
+            return false;
+        }
+        return true;
     }
 
     private function forwardTask(Task $task, int $workflow_id)
