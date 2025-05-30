@@ -10,13 +10,9 @@ class FieldTask extends Model
     use HasFactory;
 
     protected $fillable = [
-        'data_yield_id',
         'task_id',
         'value',
-        'fields_id',
-        'task_id',
-        'model',
-        'account_id'
+        'field_id',
     ];
 
     public function field()

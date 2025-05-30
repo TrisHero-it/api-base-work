@@ -48,6 +48,7 @@ class TaskController extends Controller
             ], 401);
         }
 
+
         $members = AccountWorkflow::query()
             ->where('workflow_id', $request->workflow_id)
             ->get();
@@ -101,6 +102,10 @@ class TaskController extends Controller
             }
         }
 
+        if ($request->filled('fields')) {
+            $this->storeFieldTask($task, $request);
+        }
+
         return response()->json($task);
     }
 
@@ -135,6 +140,10 @@ class TaskController extends Controller
             return response()->json([
                 'message' => 'Nhiệm vụ đã được đưa đến giai đoạn tiếp theo'
             ]);
+        }
+
+        if ($request->filled('fields')) {
+            $this->updateFieldTask($task, $request);
         }
 
         if (isset($request->tag_id)) {
@@ -635,5 +644,31 @@ class TaskController extends Controller
         }
 
         return $arr ?? [];
+    }
+
+    private function storeFieldTask(Task $task, Request $request)
+    {
+        $data = [];
+        foreach ($request->fields as $field) {
+            $data['field_id'] = $field['id'];
+            $data['task_id'] = $task->id;
+            $data['value'] = $field['value'];
+            $data['created_at'] = now();
+            $data['updated_at'] = now();
+        }
+        FieldTask::insert($data);
+    }
+
+    public function updateFieldTask(Task $task, Request $request)
+    {
+        $data = [];
+        foreach ($request->fields as $field) {
+            $fieldTask = FieldTask::query()
+                ->where('task_id', $task->id)
+                ->where('field_id', $field['id'])
+                ->update([
+                    'value' => $field['value']
+                ]);
+        }
     }
 }

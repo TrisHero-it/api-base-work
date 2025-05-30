@@ -174,49 +174,37 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
-        if (Auth::user()->workAtHome()) {
-            $currentTime = Carbon::now();
-            $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
-            $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
-            $attendance = Attendance::where('account_id', Auth::id())->latest('id')->first();
-            $arrId = [];
-            $department = Department::where('name', 'Phòng Sale')->first()->id;
-            $accountDepartments = AccountDepartment::where('department_id', $department)->get();
-            $arrId = $accountDepartments->pluck('account_id')->toArray();
-            $saleMembers = Account::whereIn('id', $arrId)->get();
-            $arrAccountId = $saleMembers->pluck('id')->toArray();
-            // check xem có trong khoảng giờ nghỉ trưa hay không
-            if (!$currentTime->between($startTime, $endTime) || in_array(Auth::id(), $arrAccountId)) {
-                // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
-                if (in_array(Auth::id(), $arrAccountId)) {
-                    Attendance::query()
-                        ->create([
-                            'account_id' => Auth::id(),
-                            'checkin' => now()
-                        ]);
-                    return response()
-                        ->json([
-                            'success' => 'Đã điểm danh'
-                        ]);
-                } else {
-                    if ($attendance != null) {
-                        if ((Carbon::parse($attendance->checkin)->isToday())) {
-                            return response()
-                                ->json([
-                                    'message' => 'Hôm nay bạn đã điểm danh rồi',
-                                    'error' => 'Hôm nay bạn đã điểm danh rồi'
-                                ], 403);
-                        } else {
-                            Attendance::query()
-                                ->create([
-                                    'account_id' => Auth::id(),
-                                    'checkin' => now()
-                                ]);
-                            return response()
-                                ->json([
-                                    'success' => 'Đã điểm danh'
-                                ]);
-                        }
+        $currentTime = Carbon::now();
+        $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
+        $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
+        $attendance = Attendance::where('account_id', Auth::id())->latest('id')->first();
+        $arrId = [];
+        $department = Department::where('name', 'Phòng Sale')->first()->id;
+        $accountDepartments = AccountDepartment::where('department_id', $department)->get();
+        $arrId = $accountDepartments->pluck('account_id')->toArray();
+        $saleMembers = Account::whereIn('id', $arrId)->get();
+        $arrAccountId = $saleMembers->pluck('id')->toArray();
+        // check xem có trong khoảng giờ nghỉ trưa hay không
+        if (!$currentTime->between($startTime, $endTime) || in_array(Auth::id(), $arrAccountId)) {
+            // nếu tài khoản là tài khoản trong phòng sales hoặc chưa điểm danh trong hnay thì mới được điểm danh
+            if (in_array(Auth::id(), $arrAccountId)) {
+                Attendance::query()
+                    ->create([
+                        'account_id' => Auth::id(),
+                        'checkin' => now()
+                    ]);
+                return response()
+                    ->json([
+                        'success' => 'Đã điểm danh'
+                    ]);
+            } else {
+                if ($attendance != null) {
+                    if ((Carbon::parse($attendance->checkin)->isToday())) {
+                        return response()
+                            ->json([
+                                'message' => 'Hôm nay bạn đã điểm danh rồi',
+                                'error' => 'Hôm nay bạn đã điểm danh rồi'
+                            ], 403);
                     } else {
                         Attendance::query()
                             ->create([
@@ -228,19 +216,23 @@ class AttendanceController extends Controller
                                 'success' => 'Đã điểm danh'
                             ]);
                     }
+                } else {
+                    Attendance::query()
+                        ->create([
+                            'account_id' => Auth::id(),
+                            'checkin' => now()
+                        ]);
+                    return response()
+                        ->json([
+                            'success' => 'Đã điểm danh'
+                        ]);
                 }
-            } else {
-                return response()
-                    ->json([
-                        'message' => 'Không được điểm danh vào thời gian này',
-                        'error' => 'Không được điểm danh vào thời gian này'
-                    ], 403);
             }
         } else {
             return response()
                 ->json([
-                    'message' => 'Vui lòng điểm danh bằng máy chấm công',
-                    'error' => 'Vui lòng điểm danh bằng máy chấm công'
+                    'message' => 'Không được điểm danh vào thời gian này',
+                    'error' => 'Không được điểm danh vào thời gian này'
                 ], 403);
         }
     }

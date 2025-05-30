@@ -34,6 +34,16 @@ class LoginController extends Controller
                 ],
             ], 400);
         }
+
+        if ($account->attendance_at_home != true && explode(',', $request->header('X-Forwarded-For'))[0] != '1.54.23.203') {
+            return response()->json([
+                'message' => 'Ip mạng không được cho phép',
+                'errors' => [
+                    'email' => 'Ip mạng không được cho phép',
+                ],
+            ], 400);
+        }
+
         $credentials = [
             'password' => $request->password,
         ];
@@ -46,6 +56,10 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             $token = $account->createToken('auth_token')->plainTextToken;
+
+            $loginHistory = new LoginHistoryController();
+            $loginHistory->store($request);
+
             return response()->json([
                 'message' => 'Đăng nhập thành công',
                 'token' => $token,
