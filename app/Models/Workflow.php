@@ -23,6 +23,11 @@ class Workflow extends Model
         return $this->hasMany(Stage::class);
     }
 
+    public function fields()
+    {
+        return $this->hasMany(Field::class);
+    }
+
     public function category()
     {
 

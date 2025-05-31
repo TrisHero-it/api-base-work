@@ -47,8 +47,6 @@ use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ReviewWorkflowController;
 use App\Http\Controllers\Api\ViewController;
 use App\Http\Controllers\ScheduleWorkController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);

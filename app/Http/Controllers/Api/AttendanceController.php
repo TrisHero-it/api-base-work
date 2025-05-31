@@ -227,7 +227,7 @@ class AttendanceController extends Controller
                             'success' => 'Đã điểm danh'
                         ]);
                 }
-            }
+            }                                          
         } else {
             return response()
                 ->json([

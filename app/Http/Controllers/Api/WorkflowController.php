@@ -190,6 +190,11 @@ class WorkflowController extends Controller
                 ], 403);
             }
         }
+
+        if (isset($request->fields)) {
+            $this->updateField($workflow, $request);
+        }
+
         if (isset($data['manager'])) {
             AccountWorkflow::query()->where('workflow_id', $id)->delete();
             $arrManager = explode(' ', $data['manager']);
@@ -212,7 +217,7 @@ class WorkflowController extends Controller
     {
         $arr = [];
         $arrMember = [];
-        $workflow = Workflow::query()->findOrFail($id)->toArray();
+        $workflow = Workflow::query()->with('fields')->findOrFail($id)->toArray();
         $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
         $arrMemberId = $members->pluck('account_id')->toArray();
         $accounts = Account::query()
@@ -235,6 +240,7 @@ class WorkflowController extends Controller
         $a = array_merge($arr, $workflow);
         $a['members'] = $arrMember;
 
+
         return response()->json($a);
     }
 
@@ -256,5 +262,13 @@ class WorkflowController extends Controller
         $workflows = Workflow::query()->whereIn('id', $arrWorkflowId)->get();
 
         return response()->json($workflows);
+    }
+
+    private function updateField($worflow, Request $request)
+    {
+        $fields = $request->fields;
+        foreach ($fields as $field) {
+            Field::where('id', $field['id'])->update($field);
+        }
     }
 }
