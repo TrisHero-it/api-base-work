@@ -639,8 +639,15 @@ class TaskController extends Controller
         $arr = collect();
 
         foreach ($fieldTasks as $fieldTask) {
+            $arrB = [];
             $field = $fields->where('id', $fieldTask->field_id)->first();
-            $arr[$field->name] = $fieldTask->value;
+            $arrB['id'] = $field->id;
+            $arrB['label'] = $field->name;
+            $arrB['value'] = $fieldTask->value;
+            $arrB['type'] = $field->type;
+            $arrB['options'] = $field->options;
+            $arrB['required'] = $field->require == 1 ? true : false;
+            $arr->push($arrB);
         }
 
         return $arr ?? [];
