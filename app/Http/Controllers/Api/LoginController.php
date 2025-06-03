@@ -35,7 +35,7 @@ class LoginController extends Controller
             ], 400);
         }
 
-        if ($account->attendance_at_home != true && explode(',', $request->header('X-Forwarded-For'))[0] != '1.54.23.203') {
+        if ($account->attendance_at_home != true && explode(',', $request->header('X-Forwarded-For'))[0] != '42.116.188.44') {
             return response()->json([
                 'message' => 'Ip mạng không được cho phép',
                 'errors' => [

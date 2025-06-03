@@ -227,7 +227,7 @@ class AttendanceController extends Controller
                             'success' => 'Đã điểm danh'
                         ]);
                 }
-            }                                          
+            }
         } else {
             return response()
                 ->json([
@@ -429,11 +429,7 @@ class AttendanceController extends Controller
                                                 'checkin' => $time
                                             ]);
                                     }
-                                } else {
-                                    return response()->json([
-                                        'error' => $attendance['user_id'] . ' không được điểm danh vào thời gian này'
-                                    ], 403);
-                                }
+                                } 
                             }
                         } else {
                             // Nếu không có điểm danh trong hôm đó thì điểm danh
