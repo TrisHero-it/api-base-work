@@ -21,7 +21,7 @@ class StageController extends Controller
             // Tuần này
             $endOfThisWeek = Carbon::now()->endOfWeek()->toDateString();
             // Tuần trước
-            $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString(); 
+            $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek()->toDateString();
         }
 
         $stages = Stage::query()
@@ -37,7 +37,7 @@ class StageController extends Controller
             ->orderBy('account_id', 'desc')
             ->get();
         foreach ($stages as $stage) {
-            if ($stage->isSuccessStage()) {  
+            if ($stage->isSuccessStage()) {
                 $tasks = $tasks2->where('stage_id', $stage->id)
                     ->whereBetween('completed_at', [$startOfLastWeek, $endOfThisWeek])
                     ->sortByDesc('completed_at');
@@ -129,36 +129,31 @@ class StageController extends Controller
         return response()->json($stage);
     }
 
-    public function update(int $id, StageUpdateRequest $request)
+    public function update(int $id, Request $request)
     {
         $stage = Stage::query()->findOrFail($id);
-        if (isset($request->index)) {
+
+        if (isset($request->stages)) {
             $stages = Stage::query()
                 ->where('workflow_id', $stage->workflow_id)
-                ->where('index', '>=', $request->index)
-                ->where('index', '<', $stage->index)
                 ->whereNotIn('id', [0, 1])
                 ->get();
-            //  chuyển từ cái to thành cái nhỏ (từ trái qua phải) 
-            if ($request->index < $stage->index) {
-                foreach ($stages as $stage2) {
-                    $stage2->update([
-                        'index' => $stage2->index + 1,
-                    ]);
+            foreach ($request->stages as $stage) {
+                if ($stage['index'] == 0 || $stage['index'] == 1) {
+                    continue;
                 }
-            } else {
-                foreach ($stages as $stage2) {
-                    $stage2->update([
-                        'index' => $stage2->index - 1,
-                    ]);
-                }
+
+                $stages->where('id', $stage['id'])->first()->update([
+                    'index' => $stage['index']
+                ]);
             }
         }
-        $data = $request->except('index');
-        if (isset($request->index)) {
-            $data['index'] = $request->index;
+
+        $data = $request->except('index', 'stages');
+
+        if (count($data) != 0) {
+            $stage->update($data);
         }
-        $stage->update($data);
 
         return \response()->json($stage);
     }

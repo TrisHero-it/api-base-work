@@ -40,6 +40,7 @@ class StoreAssetRequest extends FormRequest
             'serial_number' => 'nullable|string',
             'brand_link' => 'nullable|string',
             'start_date' => 'nullable|date',
+            'brand_name' => 'nullable|string',
         ];
     }
 }

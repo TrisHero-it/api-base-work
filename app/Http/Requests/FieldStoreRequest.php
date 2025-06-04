@@ -26,9 +26,8 @@ class FieldStoreRequest extends FormRequest
         return [
             'name' => 'required|string',
             'workflow_id' => 'required|exists:workflows,id',
-            'stage_id' => 'required|exists:stages,id',
             'description' => 'string',
-            'type'=> 'string',
+            'type' => 'string',
             'require' => 'boolean',
         ];
     }

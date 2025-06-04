@@ -15,6 +15,7 @@ class Field extends Model
         'require',
         'type',
         'options',
+        'description',
     ];
 
     protected $casts = [

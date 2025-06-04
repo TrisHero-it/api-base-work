@@ -41,6 +41,8 @@ class UpdateAssetRequest extends FormRequest
             'brand_link' => 'nullable|string',
             'start_date' => 'nullable|date',
             'creator_by' => 'nullable|exists:accounts,id',
+            'brand_name' => 'nullable|string',
+            'asset_category_id' => 'nullable|exists:asset_categories,id',
         ];
     }
 }

@@ -115,8 +115,8 @@ class   AssetController extends Controller
 
     public function store(StoreAssetRequest $request)
     {
-        $data = $request->safe()->except('category_id');
-        $data['asset_category_id'] = $request->category_id;
+        $data = $request->safe()->except('asset_category_id');
+        $data['asset_category_id'] = $request->asset_category_id;
         $asset = Asset::create($data);
 
         HistoryAsset::create([
