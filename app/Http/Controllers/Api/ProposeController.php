@@ -265,6 +265,20 @@ class ProposeController extends Controller
                 $data['old_check_in'] = null;
                 $data['old_check_out'] = null;
             }
+
+            $arrNotifications = [];
+            foreach ($accounts as $account) {
+                $arrNotifications[] = [
+                    'account_id' => $account->id,
+                    'title' => 'Yêu cầu sửa giờ vào ra',
+                    'message' => "<strong>" . Auth::user()->full_name . "</strong> đã gửi yêu cầu sửa giờ vào ra",
+                    "link" => env('APP_URL') . "/request",
+                    "manager_id" => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            Notification::insert($arrNotifications);
         }
         $numberHoliDay = 0;
         // if ($request->filled('holiday')) {
@@ -426,12 +440,14 @@ class ProposeController extends Controller
                 $attendance->update([
                     'checkin' => $propose->start_time,
                     'checkout' => $propose->end_time,
+                    'edited_at' => now(),
                 ]);
             } else {
                 Attendance::create([
                     'checkin' => $propose->start_time,
                     'checkout' => $propose->end_time,
                     'account_id' => $propose->account_id,
+                    'edited_at' => now(),
                 ]);
             }
         }

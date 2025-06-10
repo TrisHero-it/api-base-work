@@ -380,6 +380,21 @@ class AttendanceController extends Controller
             'account_id' => 32,
             'name' => 'Quang'
         ],
+        [
+            'machine_id' => 18,
+            'account_id' => 34,
+            'name' => 'Mai'
+        ],
+        [
+            'machine_id' => 19,
+            'account_id' => 36,
+            'name' => 'Thế Anh'
+        ],
+        [
+            'machine_id' => 20,
+            'account_id' => 35,
+            'name' => 'Tùng Dương'
+        ]
     ];
 
     public function checkInOut(Request $request)
@@ -397,19 +412,33 @@ class AttendanceController extends Controller
         foreach ($request->attendances as $attendance) {
             $time = Carbon::parse($attendance['time'])->setTimezone('Asia/Ho_Chi_Minh');
             $eightThirty = $time->copy()->startOfDay()->addHours(8)->addMinutes(30);
-            // Nếu điểm danh trước 8h30 thì sẽ thành điểm danh lúc 8h30
-            if ($time->lessThan($eightThirty)) {
-                $time = $eightThirty;
+            $seventeenForty = $time->copy()->startOfDay()->addHours(17)->addMinutes(40);
+            $eighteen = $time->copy()->startOfDay()->addHours(18);
+
+            // Nếu điểm danh trước 8h30 thì sẽ thành điểm danh lúc 8h30 ngoại trừ account số 19
+            if ($time->lessThan($eightThirty)  && $attendance['user_id'] != 19) {
+                $time = $eightThirty;   
             }
-            $time = $time->format('Y-m-d H:i:s');
+
             foreach (self::ARRAY_ID_RONALJACK as $item) {
                 if ($attendance['user_id'] == $item['machine_id']) {
+
+                    if (!in_array($item['account_id'], $arrAccountId)) {
+                        // Nếu không phải người phòng sales thì checkout sau 18h sẽ đổi thành lúc 17h40
+                        if ($time->greaterThan($eighteen)) {
+                            $time = $seventeenForty;
+                        }
+                    }
+                    $time = $time->format('Y-m-d H:i:s');
+
                     // Kiểm tra xem trong ngày hôm đó có điểm danh hay chưa
                     $attendance2 = Attendance::where('account_id', $item['account_id'])
                         ->whereDate('checkin', explode(' ', $time)[0])
                         ->first();
                     // check xem có trong khoảng giờ nghỉ trưa hay không
                     if (!$currentTime->between($startTime, $endTime)) {
+                        // Check xem có phải là người phòng sales hay không
+
                         if ($attendance2 != null) {
                             // Nếu cùng ngày mà chưa check out thì update checkout
                             if (
@@ -429,7 +458,7 @@ class AttendanceController extends Controller
                                                 'checkin' => $time
                                             ]);
                                     }
-                                } 
+                                }
                             }
                         } else {
                             // Nếu không có điểm danh trong hôm đó thì điểm danh
@@ -448,7 +477,6 @@ class AttendanceController extends Controller
                                         'checkout' => $time
                                     ]);
                                 } else {
-                                    // Đối với người phòng sales, được phép điểm danh hơn 1 lần trong 1 ngày
                                     if (Carbon::parse($attendance2->checkin)->isSameDay($time)) {
                                         Attendance::query()
                                             ->create([
@@ -458,7 +486,6 @@ class AttendanceController extends Controller
                                     }
                                 }
                             } else {
-                                // Nếu không có điểm danh trong hôm đó thì điểm danh
                                 Attendance::query()
                                     ->create([
                                         'account_id' => $item['account_id'],
