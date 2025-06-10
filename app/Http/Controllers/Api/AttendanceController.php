@@ -380,6 +380,21 @@ class AttendanceController extends Controller
             'account_id' => 32,
             'name' => 'Quang'
         ],
+        [
+            'machine_id' => 18,
+            'account_id' => 34,
+            'name' => 'Mai'
+        ],
+        [
+            'machine_id' => 19,
+            'account_id' => 36,
+            'name' => 'Thế Anh'
+        ],
+        [
+            'machine_id' => 20,
+            'account_id' => 35,
+            'name' => 'Tùng Dương'
+        ]
     ];
 
     public function checkInOut(Request $request)
@@ -429,7 +444,7 @@ class AttendanceController extends Controller
                                                 'checkin' => $time
                                             ]);
                                     }
-                                } 
+                                }
                             }
                         } else {
                             // Nếu không có điểm danh trong hôm đó thì điểm danh

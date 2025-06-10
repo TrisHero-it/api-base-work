@@ -125,7 +125,7 @@ class AttendanceAccountController extends Controller
             $wfhId = ProposeCategory::where('name', 'Đăng ký WFH')->first()->id;
             $wfh = Propose::where('propose_category_id', $wfhId)
                 ->where('account_id', $account->id)
-                ->where('status', 'approved')
+                ->where('status', operator: 'approved')
                 ->whereMonth('date_wfh', $date->month)
                 ->count();
             $wfh = $wfh * 0.8;

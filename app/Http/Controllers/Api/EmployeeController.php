@@ -53,6 +53,8 @@ class EmployeeController extends Controller
                 $account->name_contract = $account->contractActive['files'][0]['file_name'];
                 $account->category__contract_id = $account->contractActive->category->name;
                 $account->url_contract = $account->contractActive['files'][0]['file_url'];
+                $account->contract_start_date = $account->contractActive->start_date;
+                $account->contract_end_date = $account->contractActive->end_date;
                 unset($account->contractActive);
             }
             if ($account->dayoffAccount != null) {
