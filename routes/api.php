@@ -100,7 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'employees' => EmployeeController::class,
         'affiliates' => AffiliateController::class,
         'notices' => NoticeController::class,
-        "departments/{id}/overviews" => ReviewWorkflowController::class,
+        "workflows/{id}/overviews" => ReviewWorkflowController::class,
         "departments/{id}/members" => DepartmentMemberController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
