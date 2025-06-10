@@ -4,10 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class checkDevMuaKey
+class bannedIp
 {
     /**
      * Handle an incoming request.
@@ -16,11 +15,13 @@ class checkDevMuaKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedIps = ['nghia@gmail.com', 'dovuong020802@gmail.com', 'minhtri204dz@gmail.com', 'ankhangit06@gmail.com'];
-        if (in_array(Auth::user()->email, $allowedIps)) {
+        $bannedIp = [
+            '118.99.2.29'
+        ];
+        if (in_array(explode(',', $request->header('X-Forwarded-For'))[0], $bannedIp)) {
+            abort(404);
+        }else {
             return $next($request);
-        } else {
-            redirect(env('APP_URL'));
         }
     }
 }

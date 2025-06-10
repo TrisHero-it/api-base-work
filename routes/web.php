@@ -25,3 +25,9 @@ Route::get('/', function () {
 Route::get('/getcode', function (Request $request) {
     return view('get-code.index');
 });
+
+Route::middleware('auth.basic')->group(function () {
+    Route::get('a', function () {
+        return redirect('https://docs.google.com/spreadsheets/d/1nSiTn8ETSRtlTrSfY_8cIekGlZa50x7B9d2H4qZr0gI/edit?usp=sharing');
+    });
+});

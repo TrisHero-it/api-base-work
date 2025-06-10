@@ -16,7 +16,6 @@ class Notification extends Model
         'seen',
         'account_id',
         'manager_id',
-        'new',
         'is_notice',
         'thumbnail',
         'is_hidden'

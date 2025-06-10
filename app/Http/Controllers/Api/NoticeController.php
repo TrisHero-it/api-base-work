@@ -14,8 +14,8 @@ class NoticeController extends Controller
         $notices = Notification::where('is_notice', true);
         if ($request->filled('include')) {
             $notices = $notices->where('is_hidden', true);
-        }else {
-        $notices = $notices->where('is_hidden', false);
+        } else {
+            $notices = $notices->where('is_hidden', false);
         }
 
         if ($request->filled('search')) {
@@ -53,8 +53,8 @@ class NoticeController extends Controller
     public function show($id)
     {
         $notice = Notification::where('is_notice', true)
-        ->with(['account', 'manager'])
-        ->findOrFail($id);
+            ->with(['account', 'manager'])
+            ->findOrFail($id);
 
         return response()->json($notice);
     }
@@ -81,5 +81,13 @@ class NoticeController extends Controller
         $notice->delete();
 
         return response()->json($notice);
+    }
+
+    public function getNoticeToday()
+    {
+        $notice = Notification::where('is_notice', true)
+            ->where('created_at', '>=', now()->startOfDay())
+            ->where('created_at', '<=', now()->endOfDay())
+            ->get();
     }
 }
