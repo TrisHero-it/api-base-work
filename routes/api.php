@@ -80,7 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'departments' => DepartmentController::class,
         'proposes' => ProposeController::class,
         'propose-categories' => ProposeCategoryController::class,
-        'attendances' => AttendanceController::class,
+        'attendances' => AttendanceController::class,   
         'attendance-accounts' => AttendanceAccountController::class,
         'ip-wifis' => IpWifiController::class,
         'resource-categories' => CategoryResourceController::class,
