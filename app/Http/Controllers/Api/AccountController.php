@@ -594,8 +594,8 @@ class AccountController extends Controller
             'children' => [
                 ['label' => 'Ghi chú', 'value' => 'note'],
                 ['label' => 'Loại hợp đồng', 'value' => 'category__contract_id'],
-                ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'start_date'],
-                ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'end_date'],
+                ['label' => 'Ngày bắt đầu hợp đồng', 'value' => 'contract_start_date'],
+                ['label' => 'Ngày kết thúc hợp đồng', 'value' => 'contract_end_date'],
                 ['label' => 'Trạng thái của hợp đồng', 'value' => 'contract_status'],
                 ['label' => 'Tài liệu hợp đồng', 'value' => 'contract_files'],
                 ['label' => 'Người tạo hợp đồng', 'value' => 'creator_by'],
@@ -698,5 +698,21 @@ class AccountController extends Controller
         return response()->json([
             'message' => 'Kích hoạt tài khoản thành công'
         ]);
+    }
+
+    public function checkPassword(Request $request)
+    {
+        $account = Auth::user();
+        if (Hash::check($request->password, $account->password)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Mật khẩu chính xác'
+            ]);
+        }
+
+        return response()->json(    [
+            'success' => false,
+            'message' => 'Mật khẩu không chính xác'
+        ], 401);
     }
 }

@@ -23,6 +23,10 @@ class JobPositionController extends Controller
 
     public function store(Request $request)
     {
+        JobPosition::where('account_id', $request->account_id)
+            ->where('status', 'active')
+            ->update(['status' => 'inactive']);
+
         $jobPosition = JobPosition::latest()
             ->where('status', 'active')
             ->first();

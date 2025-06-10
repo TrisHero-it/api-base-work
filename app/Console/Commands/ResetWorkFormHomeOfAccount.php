@@ -31,12 +31,10 @@ class ResetWorkFormHomeOfAccount extends Command
         $globalBan = [
             11,
             12,
-            13,
             14,
             15,
             30,
             32,
-            2,
             17,
             5,
             6

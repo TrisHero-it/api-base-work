@@ -12,5 +12,6 @@ class Attendance extends Model
         'account_id',
         'checkin',
         'checkout',
+        'edited_at',
     ];
 }

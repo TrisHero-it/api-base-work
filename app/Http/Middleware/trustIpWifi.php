@@ -17,11 +17,14 @@ class trustIpWifi
     public function handle(Request $request, Closure $next): Response
     {
         $arrayIp = [
-            '1.54.23.46'
+            "127.0.0.1",
+            '1.54.23.160',
+            '26.43.253.19',
+            '42.116.188.239'
         ];
         if (
             in_array(explode(',', $request->header('X-Forwarded-For'))[0], $arrayIp)
-            || Auth::user()->attendance_at_home == true
+            || (Auth::user()->attendance_at_home == true && Auth::user()->quit_work == false)
         ) {
             return $next($request);
         } else {

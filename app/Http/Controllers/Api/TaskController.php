@@ -14,6 +14,7 @@ use App\Models\FieldTask;
 use App\Models\HistoryMoveTask;
 use App\Models\Kpi;
 use App\Models\Stage;
+use App\Models\StatusTask;
 use App\Models\StickerTask;
 use App\Models\Task;
 use App\Models\Workflow;
@@ -240,22 +241,13 @@ class TaskController extends Controller
                 }
 
                 if ($request->account_id == Auth::id() && $task->account_id == Auth::id() && $request->name == null) {
-                    $checkTaskStarted = Task::where('account_id', $request->account_id)->where('started_at', '!=', null)->first();
-                    if ($checkTaskStarted == null || Auth::id() == 14) {
-                        $data['started_at'] = now();
-                        if ($task->stage->expired_after_hours != null && $task->expired == null) {
-                            $dateTime = new \DateTime($data['started_at']);
-                            $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
-                            $data['expired'] = $dateTime->format('Y-m-d H:i:s');
-                        }
-                    } else {
-                        return response()->json([
-                            'message' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ',
-                            'errors' => [
-                                'task' => 'Bạn chỉ có thể bắt đầu 1 nhiệm vụ'
-                            ],
-                        ], 401);
+                    $data['started_at'] = now();
+                    if ($task->stage->expired_after_hours != null && $task->expired == null) {
+                        $dateTime = new \DateTime($data['started_at']);
+                        $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                        $data['expired'] = $dateTime->format('Y-m-d H:i:s');
                     }
+                    // $this->updateStatusTask($id, $request->account_id, $task->stage_id, 'progress');
                 }
             }
         }
@@ -396,6 +388,7 @@ class TaskController extends Controller
         if (Auth::user()->isAdmin() || $request->account_id == Auth::id()) {
             $task = Task::with('stage')->findOrFail($id);
             $data = [];
+            $this->updateStatusTask($id, $request->account_id, $task->stage_id, 'progress');
 
             if (isset($request->account_id)) {
                 $workflow = Workflow::where('id', $task->stage->workflow_id)->first();
@@ -496,7 +489,7 @@ class TaskController extends Controller
             $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
             $response = file_get_contents($url);
             $data = json_decode($response, true);
-            if ($data['items'] == null) {
+            if ($data['items'] == null) {   
                 continue;
             }
             $dateTime = new \DateTime($data['items'][0]['snippet']['publishedAt']);
@@ -546,6 +539,16 @@ class TaskController extends Controller
             ->first();
         $task->update([
             'stage_id' => $stage->id
+        ]);
+    }
+
+    private function updateStatusTask($taskId, $accountId, $stageId, $status)
+    {
+        $status = StatusTask::create([
+            'task_id' => $taskId,
+            'account_id' => $accountId,
+            'stage_id' => $stageId,
+            'status' => $status,
         ]);
     }
 

@@ -68,19 +68,22 @@ class NotificationController extends Controller
 
     public function seenNotification(Request $request)
     {
-        $notifications = Notification::where('account_id', Auth::id())
-            ->where('new', true)
+
+        Notification::where('account_id', Auth::id())
+            ->where('seen', false)
             ->update([
-                'new' => false
+                'seen' => true
             ]);
 
-        return response()->json($notifications);
+        return response()->json([
+            'success' => 'Đã đọc thông báo'
+        ]);
     }
 
     public function numberNotification()
     {
         $countNotifications = Notification::where('account_id', Auth::id())
-            ->where('new', true)
+            ->where('seen', false)
             ->count();
 
         return response()->json($countNotifications);

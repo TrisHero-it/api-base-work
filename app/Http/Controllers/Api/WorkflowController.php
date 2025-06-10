@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\WorkflowStoreRequest;
 use App\Http\Requests\WorkflowUpdateRequest;
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\AccountWorkflow;
 use App\Models\AccountWorkflowCategory;
 use App\Models\Field;
@@ -124,28 +125,21 @@ class WorkflowController extends Controller
             $error['name'] = 'Workflow đã tồn tại';
         }
 
-        $accounts = explode(' ', $request->manager);
-        foreach ($accounts as $account) {
-            $acc = Account::query()->where('username', $account)->first();
-            if (!$acc) {
-                $error['manager'] = 'Tài khoản không tồn tại';
-            }
-        }
         if ($error) {
             return response()->json(['errors' => $error], 403);
         }
         $workflow = Workflow::query()->create($request->all());
         // Thêm thành viên cho workflow
-        foreach ($accounts as $account) {
-            $acc = Account::query()->where('username', $account)->first();
-            if (isset($acc)) {
-                $accWork = AccountWorkflow::query()->where('account_id', $acc->id)->where('workflow_id', $workflow->id)->first();
-                if (!$accWork) {
-                    AccountWorkflow::query()->create([
-                        'account_id' => $acc->id,
-                        'workflow_id' => $workflow->id
-                    ]);
-                }
+        foreach ($request->manager as $account) {
+            $acc = AccountWorkflow::query()
+                ->where('account_id', $account)
+                ->where('workflow_id', $workflow->id)
+                ->exists();
+            if (!$acc) {
+                AccountWorkflow::query()->create([
+                    'account_id' => $account,
+                    'workflow_id' => $workflow->id,
+                ]);
             }
         }
 
@@ -167,8 +161,17 @@ class WorkflowController extends Controller
 
     public function destroy($id)
     {
-        $workflow = Workflow::query()->findOrFail($id);
-        $workflow->delete();
+        if (Auth::user()->isSeniorAdmin()) {
+            $workflow = Workflow::query()->findOrFail($id);
+            $workflow->delete();
+        } else {
+            return response()->json([
+                'message' => 'Bạn không có quyền xoá workflow',
+                'errors' => [
+                    'workflow_id' => 'Bạn không có quyền xoá workflow'
+                ]
+            ], 403);
+        }
 
         return response()->json(['success' => 'Xoá thành công']);
     }
@@ -197,12 +200,14 @@ class WorkflowController extends Controller
 
         if (isset($data['manager'])) {
             AccountWorkflow::query()->where('workflow_id', $id)->delete();
-            $arrManager = explode(' ', $data['manager']);
-            foreach ($arrManager as $account) {
-                $acc = Account::query()->where('username', $account)->first();
-                if (isset($acc)) {
+            foreach ($request->manager as $account) {
+                $acc = AccountWorkflow::query()
+                    ->where('account_id', $account)
+                    ->where('workflow_id', $id)
+                    ->exists();
+                if (!$acc) {
                     AccountWorkflow::query()->create([
-                        'account_id' => $acc->id,
+                        'account_id' => $account,
                         'workflow_id' => $id,
                     ]);
                 }
@@ -221,7 +226,7 @@ class WorkflowController extends Controller
         $members = AccountWorkflow::query()->where('workflow_id', $workflow['id'])->get();
         $arrMemberId = $members->pluck('account_id')->toArray();
         $accounts = Account::query()
-            ->select('id', 'full_name', 'avatar', 'role_id')
+            ->select('id', 'full_name', 'avatar', 'role_id', 'username')
             ->whereIn('id', $arrMemberId)
             ->get();
         foreach ($accounts as $account) {

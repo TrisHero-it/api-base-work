@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\JobPositionController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\SalaryTableController;
 use App\Http\Controllers\Api\ScheduleAccountController;
 use App\Http\Controllers\Api\ScheduleWorkflowController;
 use App\Http\Controllers\Api\StaffController;
@@ -46,8 +47,12 @@ use App\Http\Controllers\Api\ProposeCategoryController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ReviewWorkflowController;
 use App\Http\Controllers\Api\ViewController;
+use App\Http\Controllers\Api\YoutubeAccountController;
+use App\Http\Controllers\Api\YoutubeChannelController;
+use App\Http\Controllers\Api\YoutubeUploadController;
 use App\Http\Controllers\ScheduleWorkController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::post('login', [LoginController::class, 'store']);
 
@@ -100,8 +105,12 @@ Route::middleware('auth:sanctum')->group(function () {
         'employees' => EmployeeController::class,
         'affiliates' => AffiliateController::class,
         'notices' => NoticeController::class,
-        "departments/{id}/overviews" => ReviewWorkflowController::class,
+        "workflows/{id}/overviews" => ReviewWorkflowController::class,
         "departments/{id}/members" => DepartmentMemberController::class,
+        'youtube-uploads' => YoutubeUploadController::class,
+        'youtube-channels' => YoutubeChannelController::class,
+        'youtube-accounts' => YoutubeAccountController::class,
+        'salary-tables' => SalaryTableController::class,
     ]);
     Route::get('/account-fields', [AccountController::class, 'accountsField']);
     Route::get('work-time', [ScheduleWorkController::class, 'workTime']);
@@ -117,7 +126,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('time-stage/{idTask}', [HistoryMoveTaskController::class, 'timeStage']);
     Route::put('update-index-views', [ViewController::class, 'updateIndexView']);
     Route::get('my-projects', [WorkflowController::class, 'myProjects']);
+    Route::get('get-notice-today', [NoticeController::class, 'getNoticeToday']);
+    Route::post('check-password', [AccountController::class, 'checkPassword']);
+    Route::get('account-report-youtube', [YoutubeAccountController::class, 'accountReportYoutube']);
 });
 // });
 
 Route::post('/check-in-out', [AttendanceController::class, 'checkInOut']);
+
+Route::get('youtube-uploads-pending', [YoutubeUploadController::class, 'getYoutubeUploadsPending']);

@@ -18,7 +18,7 @@ class IpWifiController extends Controller
 
     public function store(Request $request)
     {
-        if (Auth::user()->role_id == 2) {
+        if (Auth::user()->role_id == 3) {
             $ip = request()->ip();
             $ipWifi = ipWifi::where('ip', $ip)->first();
             if (!$ipWifi) {

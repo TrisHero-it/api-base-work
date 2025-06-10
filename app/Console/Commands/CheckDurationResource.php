@@ -50,7 +50,7 @@ class CheckDurationResource extends Command
                         'title' => 'Hết hạn tài nguyên',
                         'created_at' => now(),
                         'updated_at' => now(),
-                        'link' => "https://work.1997.pro.vn/resources"
+                        'link' => "/resources"
                     ];
                 }
                 Notification::insert($notifications);
