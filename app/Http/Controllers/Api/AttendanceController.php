@@ -394,6 +394,16 @@ class AttendanceController extends Controller
             'machine_id' => 20,
             'account_id' => 35,
             'name' => 'Tùng Dương'
+        ],
+        [
+            "machine_id" =>  21,
+            "account_id" => 38,
+            "name" => "Tùng Anh"
+        ],
+        [
+            "machine_id" => 22,
+            "account_id" => 40,
+            "name" => "Hương"
         ]
     ];
 
@@ -417,7 +427,7 @@ class AttendanceController extends Controller
 
             // Nếu điểm danh trước 8h30 thì sẽ thành điểm danh lúc 8h30 ngoại trừ account số 19
             if ($time->lessThan($eightThirty)  && $attendance['user_id'] != 19) {
-                $time = $eightThirty;   
+                $time = $eightThirty;
             }
 
             foreach (self::ARRAY_ID_RONALJACK as $item) {

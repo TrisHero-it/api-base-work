@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\AccountDepartment;
 use App\Models\Attendance;
 use App\Models\DateHoliday;
+use App\Models\Department;
 use App\Models\JobPosition;
 use App\Models\Propose;
 use App\Models\ProposeCategory;
@@ -21,71 +23,105 @@ class SalaryTableController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->filled('date') && $request->filled('salary_closed')) {
-            $a = explode('-', $request->date);
-            $month = $a[1];
-            $year = $a[0];
+        if (Auth::id() == 11 || Auth::id() == 25) {
+            if ($request->filled('date') && $request->filled('salary_closed')) {
+                $a = explode('-', $request->date);
+                $month = $a[1];
+                $year = $a[0];
 
-            $salaryTable = SalaryMonth::with("account")->where('month', $month)
-                ->where('year', $year)
+                $salaryTable = SalaryMonth::with("account")->where('month', $month)
+                    ->where('year', $year)
+                    ->get();
+                $accountDepartments = AccountDepartment::all();
+                $departments = Department::all();
+                $jobPositionActive = JobPosition::where('status', 'active')->get();
+                foreach ($salaryTable as $salary) {
+                    $salary->avatar = $salary->account->avatar;
+                    $salary->email = $salary->account->email;
+                    $salary->full_name = $salary->account->full_name;
+                    $salary->username = $salary->account->username;
+
+                    $departmentId = $accountDepartments->where('account_id', $salary->account->id)->first();
+                    if ($departmentId != null) {
+                        $department = $departments->where('id', $departmentId->department_id)->first();
+                        $salary->department = $department->name;
+                    }
+
+                    $position = $jobPositionActive->where('account_id', $salary->account->id)->first();
+                    if ($position != null) {
+                        $salary->postion = $position->name;
+                    }
+
+                    if ($salary->account->role_id == 1) {
+                        $salary->role = 'Nhân viên';
+                    } else if ($salary->account->role_id == 2) {
+                        $salary->role = 'Quản lý';
+                    } else {
+                        $salary->role = 'Admin';
+                    }
+
+                    unset($salary->account);
+                }
+
+                return response()->json($salaryTable);
+            }
+
+            if ($request->filled('date')) {
+                $a = explode('-', $request->date);
+                $month = $a[1];
+                $year = $a[0];
+            } else {
+                $month = Carbon::now()->month;
+                $year = Carbon::now()->year;
+            }
+
+            $accounts = Account::with(['jobPositionActive', 'department'])
+                ->where('quit_work', false)
+                ->select('id', 'email', 'avatar', 'full_name', 'username', 'role_id', 'quit_work')
                 ->get();
 
-            return response()->json($salaryTable);
-        }
-
-        if ($request->filled('date')) {
-            $a = explode('-', $request->date);
-            $month = $a[1];
-            $year = $a[0];
-        } else {
-            $month = Carbon::now()->month;
-            $year = Carbon::now()->year;
-        }
-
-        $accounts = Account::with(['jobPositionActive', 'department'])
-            ->where('quit_work', false)
-            ->select('id', 'email', 'avatar', 'full_name', 'username', 'role_id', 'quit_work')
-            ->get();
-
-        foreach ($accounts as $account) {
-            if ($account->role_id == 1) {
-                $account->role = 'Nhân viên';
-            } else if ($account->role_id == 2) {
-                $account->role = 'Quản lý';
-            } else {
-                $account->role = 'Admin';
-            }
-
-            $account->workday_in_month = Schedule::query()
-                ->whereMonth('day_of_week', $month)
-                ->whereYear('day_of_week', $year)
-                ->where('go_to_work', true)
-                ->count();
-
-            $account->workday = $this->workDay($account->id, $request)->original['workday'];
-            if ($account->jobPositionActive != null) {
-                $account->position = $account->jobPositionActive->name;
-                unset($account->jobPositionActive);
-            }
-            if ($account->department != null) {
-                foreach ($account->department as $dept) {
-                    $account->departments = $dept->name;
-                    break;
+            foreach ($accounts as $account) {
+                if ($account->role_id == 1) {
+                    $account->role = 'Nhân viên';
+                } else if ($account->role_id == 2) {
+                    $account->role = 'Quản lý';
+                } else {
+                    $account->role = 'Admin';
                 }
-                unset($account->department);
-            }
 
-            $basicSalary = JobPosition::where('status', 'active');
-            $jobPosition = $basicSalary->where('account_id', $account->id)->first();
+                $account->workday_in_month = Schedule::query()
+                    ->whereMonth('day_of_week', $month)
+                    ->whereYear('day_of_week', $year)
+                    ->where('go_to_work', true)
+                    ->count();
 
-            if ($jobPosition != null) {
-                $salary = Salary::where('job_position_id', $jobPosition->id)->first();
-                $account->salary = $salary->basic_salary + $salary->travel_allowance + $salary->eat_allowance + $salary->kpi;
-                $account->salary_detail = $salary;
-            } else {
-                $account->salary = null;
-                $account->salary_detail = null;
+                $account->workday = $this->workDay($account->id, $request)->original['workday'];
+                if ($account->jobPositionActive != null) {
+                    $account->position = $account->jobPositionActive->name;
+                    unset($account->jobPositionActive);
+                }
+                if ($account->department != null) {
+                    foreach ($account->department as $dept) {
+                        $account->departments = $dept->name;
+                        break;
+                    }
+                    unset($account->department);
+                }
+
+                $basicSalary = JobPosition::where('status', 'active');
+                $jobPosition = $basicSalary->where('account_id', $account->id)->first();
+
+                if ($jobPosition != null) {
+                    $salary = Salary::where('job_position_id', $jobPosition->id)->first();
+                    $account->salary = $salary->basic_salary + $salary->travel_allowance + $salary->eat_allowance + $salary->kpi;
+                    $account->salary_detail = $salary;
+                } else {
+                    $account->salary = null;
+                    $account->salary_detail = null;
+                }
             }
+        } else {
+            return response()->json(['message' => 'Bạn không có quyền truy cập'], 403);
         }
 
         return response()->json($accounts);
@@ -246,5 +282,51 @@ class SalaryTableController extends Controller
 
 
         return response()->json($account);
+    }
+
+    public function show($id, Request $request)
+    {
+        if ($request->filled('date')) {
+            $a = explode('-', $request->date);
+            $month = $a[1];
+            $year = $a[0];
+
+            $salaryTable = SalaryMonth::with("account")->where('month', $month) 
+                ->where('year', $year)
+                ->where('account_id', $id)
+                ->get();
+            $accountDepartments = AccountDepartment::all();
+            $departments = Department::all();
+            $jobPositionActive = JobPosition::where('status', 'active')->get();
+            foreach ($salaryTable as $salary) {
+                $salary->avatar = $salary->account->avatar;
+                $salary->email = $salary->account->email;
+                $salary->full_name = $salary->account->full_name;
+                $salary->username = $salary->account->username;
+
+                $departmentId = $accountDepartments->where('account_id', $salary->account->id)->first();
+                if ($departmentId != null) {
+                    $department = $departments->where('id', $departmentId->department_id)->first();
+                    $salary->department = $department->name;
+                }
+
+                $position = $jobPositionActive->where('account_id', $salary->account->id)->first();
+                if ($position != null) {
+                    $salary->position = $position->name;
+                }
+
+                if ($salary->account->role_id == 1) {
+                    $salary->role = 'Nhân viên';
+                } else if ($salary->account->role_id == 2) {
+                    $salary->role = 'Quản lý';
+                } else {
+                    $salary->role = 'Admin';
+                }
+
+                unset($salary->account);
+            }
+
+            return response()->json($salaryTable);
+        }
     }
 }

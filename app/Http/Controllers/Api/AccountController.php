@@ -359,7 +359,6 @@ class AccountController extends Controller
                 $account->paid_day_off = $account->dayoffAccount->dayoff_count;
                 $account->dayoff_long_time_worker = $account->dayoffAccount->dayoff_long_time_worker;
             }
-
             unset($account->department);
         } else if ($request->include == 'my-job') {
             $account = Account::with(['jobPosition' => function ($query) {
@@ -710,7 +709,7 @@ class AccountController extends Controller
             ]);
         }
 
-        return response()->json(    [
+        return response()->json([
             'success' => false,
             'message' => 'Mật khẩu không chính xác'
         ], 401);
