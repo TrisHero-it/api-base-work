@@ -710,7 +710,7 @@ class AccountController extends Controller
             ]);
         }
 
-        return response()->json(    [
+        return response()->json([
             'success' => false,
             'message' => 'Mật khẩu không chính xác'
         ], 401);
