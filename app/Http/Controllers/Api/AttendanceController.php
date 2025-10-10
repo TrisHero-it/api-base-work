@@ -56,7 +56,7 @@ class AttendanceController extends Controller
                 $attendance->whereMonth('created_at', date('m'));
             }
             $attendance = $attendance->get();
-            $isSalesMember = Auth::user()->isSalesMember();
+            $arrIdAccountSales = AccountDepartment::where('department_id', 3)->pluck('account_id')->toArray();
 
             $proposes = Propose::with(['date_holidays', 'propose_category'])->whereIn('name', ['Nghỉ có hưởng lương', 'Đăng ký OT', 'Nghỉ không hưởng lương', 'Đăng ký làm ở nhà', 'Đăng ký WFH'])
                 ->select('id', 'account_id', 'name', 'propose_category_id', 'date_wfh')
@@ -84,13 +84,14 @@ class AttendanceController extends Controller
                 $checkout = Carbon::parse($item->checkout);
                 $noonTime = $checkin->copy()->setHour(value: 13)->setMinute(30)->setSecond(0);
                 if ($item->checkout != null) {
-                    if (!$isSalesMember) {
+                    if (!in_array($item->account_id, $arrIdAccountSales)) {
                         if ($checkin->greaterThan($noonTime) || !$checkout->greaterThan($noonTime)) {
                             $hours = $checkout->floatDiffInHours($checkin);
                         } else {
                             $hours = $checkout->floatDiffInHours($checkin) - 1.5;
                         }
                     } else {
+                        $item->department = 'Sales';
                         $hours = $checkout->floatDiffInHours($checkin);
                     }
                 }
@@ -248,6 +249,7 @@ class AttendanceController extends Controller
     public function checkOut(Request $request)
     {
         // if (Auth::user()->workAtHome()) {
+
         $isToday = false;
         $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
         $isToday = Carbon::parse($account->checkin)->isToday();
@@ -257,14 +259,19 @@ class AttendanceController extends Controller
             ]);
         } else {
             if ($account->checkout != null) {
-
                 return response()->json([
                     'error' => 'Hôm nay bạn đã checkout rồi'
                 ]);
             } else {
-                $account->update([
-                    'checkout' => now()
-                ]);
+                if (now()->format('H') < 18) {
+                    $account->update([
+                        'checkout' => now()
+                    ]);
+                } else {
+                    $account->update([
+                        'checkout' => Carbon::parse($account->checkin)->setHour(17)->setMinute(40)->setSecond(0)
+                    ]);
+                }
 
                 return response()->json([
                     'success' => 'checkout thành công'
@@ -432,7 +439,6 @@ class AttendanceController extends Controller
 
             foreach (self::ARRAY_ID_RONALJACK as $item) {
                 if ($attendance['user_id'] == $item['machine_id']) {
-
                     if (!in_array($item['account_id'], $arrAccountId)) {
                         // Nếu không phải người phòng sales thì checkout sau 18h sẽ đổi thành lúc 17h40
                         if ($time->greaterThan($eighteen)) {
@@ -440,7 +446,6 @@ class AttendanceController extends Controller
                         }
                     }
                     $time = $time->format('Y-m-d H:i:s');
-
                     // Kiểm tra xem trong ngày hôm đó có điểm danh hay chưa
                     $attendance2 = Attendance::where('account_id', $item['account_id'])
                         ->whereDate('checkin', explode(' ', $time)[0])

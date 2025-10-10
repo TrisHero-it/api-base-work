@@ -23,7 +23,9 @@ class SalaryTableController extends Controller
 {
     public function index(Request $request)
     {
-        if (Auth::id() == 11 || Auth::id() == 25) {
+        // if (Auth::id() == 11 || Auth::id() == 25) {
+        if (Auth::user()->isSeniorAdmin()) {
+            # code...
             if ($request->filled('date') && $request->filled('salary_closed')) {
                 $a = explode('-', $request->date);
                 $month = $a[1];
@@ -36,20 +38,22 @@ class SalaryTableController extends Controller
                 $departments = Department::all();
                 $jobPositionActive = JobPosition::where('status', 'active')->get();
                 foreach ($salaryTable as $salary) {
+                    $salary->salary_detail = $salary->salary;
                     $salary->avatar = $salary->account->avatar;
                     $salary->email = $salary->account->email;
                     $salary->full_name = $salary->account->full_name;
+                    $salary->workday = $salary->salary['workday'] ?? 0;
                     $salary->username = $salary->account->username;
-
+                    $salary->workday_in_month = $salary->salary['workday_in_month'] ?? 0;
                     $departmentId = $accountDepartments->where('account_id', $salary->account->id)->first();
                     if ($departmentId != null) {
                         $department = $departments->where('id', $departmentId->department_id)->first();
-                        $salary->department = $department->name;
+                        $salary->departments = $department->name;
                     }
 
                     $position = $jobPositionActive->where('account_id', $salary->account->id)->first();
                     if ($position != null) {
-                        $salary->postion = $position->name;
+                        $salary->position = $position->name;
                     }
 
                     if ($salary->account->role_id == 1) {
@@ -61,8 +65,8 @@ class SalaryTableController extends Controller
                     }
 
                     unset($salary->account);
+                    unset($salary->salary);
                 }
-
                 return response()->json($salaryTable);
             }
 
@@ -120,11 +124,13 @@ class SalaryTableController extends Controller
                     $account->salary_detail = null;
                 }
             }
-        } else {
-            return response()->json(['message' => 'Bạn không có quyền truy cập'], 403);
-        }
 
-        return response()->json($accounts);
+            return response()->json($accounts);
+        }
+        // } else {
+        //     return response()->json(['message' => 'Bạn không có quyền truy cập'], 403);
+        // }
+
     }
 
     public function store(Request $request)
@@ -291,7 +297,7 @@ class SalaryTableController extends Controller
             $month = $a[1];
             $year = $a[0];
 
-            $salaryTable = SalaryMonth::with("account")->where('month', $month) 
+            $salaryTable = SalaryMonth::with("account")->where('month', $month)
                 ->where('year', $year)
                 ->where('account_id', $id)
                 ->get();

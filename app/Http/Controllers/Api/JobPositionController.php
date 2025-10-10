@@ -23,13 +23,13 @@ class JobPositionController extends Controller
 
     public function store(Request $request)
     {
-        JobPosition::where('account_id', $request->account_id)
-            ->where('status', 'active')
-            ->update(['status' => 'inactive']);
-
         $jobPosition = JobPosition::latest()
             ->where('status', 'active')
             ->first();
+
+        JobPosition::where('account_id', $request->account_id)
+            ->update(['status' => 'inactive']);
+
         if ($jobPosition) {
             $salary = Salary::where('job_position_id', $jobPosition->id)->first();
         } else {
@@ -42,23 +42,18 @@ class JobPositionController extends Controller
         if ($request->filled('department_id')) {
             $dataAccount['department_id'] = $request->department_id;
         }
-        if (isset($jobPosition)) {
-            $jobPosition->update([
-                'status' => 'inactive'
-            ]);
-        }
 
         $dataJobPosition['name'] = $request->new_position ?? $jobPosition->name;
         $dataJobPosition['account_id'] = $request->account_id;
         $dataJobPosition['status'] = 'active';
-        $dataJobPosition['description'] = $request->description ?? $jobPosition->description;
+        $dataJobPosition['description'] = $request->description ?? NULL;
 
         $jobPosition = JobPosition::create($dataJobPosition);
 
         $dataSalary['basic_salary'] = $request->basic_salary ?? $salary->basic_salary;
-        $dataSalary['kpi'] = $request->kpi ?? $salary->kpi;
-        $dataSalary['travel_allowance'] = $request->travel_allowance ?? $salary->travel_allowance;
-        $dataSalary['eat_allowance'] = $request->eat_allowance ?? $salary->eat_allowance;
+        $dataSalary['kpi'] = $request->kpi ?? 0;
+        $dataSalary['travel_allowance'] = $request->travel_allowance ?? 0;
+        $dataSalary['eat_allowance'] = $request->eat_allowance ?? 0;
         $dataSalary['job_position_id'] = $jobPosition->id;
 
         $salary = Salary::create($dataSalary);

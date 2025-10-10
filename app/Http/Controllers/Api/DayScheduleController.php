@@ -23,8 +23,13 @@ class DayScheduleController extends Controller
         $schedules = Schedule::query()
             ->whereMonth('day_of_week', $month)
             ->whereYear('day_of_week', $year)
-            ->orderBy('day_of_week')
-            ->get();
+            ->orderBy('day_of_week');
+        if (!$request->filled('is_have_salary')) {
+            $schedules = $schedules->get();
+        } else {
+            $schedules = $schedules->where('is_have_salary', true)
+                ->get();
+        }
         if (Auth::user()->isSalesMember() && Auth::id() != 25) {
             foreach ($schedules as $schedule) {
                 $schedule->go_to_work = true;

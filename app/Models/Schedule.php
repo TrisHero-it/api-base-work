@@ -14,6 +14,7 @@ class Schedule extends Model
         'go_to_work',
         'description',
         'start_at',
-        'end_at'
+        'end_at',
+        'is_have_salary'
     ];
 }

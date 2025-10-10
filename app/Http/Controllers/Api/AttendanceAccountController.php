@@ -122,7 +122,9 @@ class AttendanceAccountController extends Controller
                 }
                 $totalWorkDay += $workday;
             }
-            $wfhId = ProposeCategory::where('name', 'Đăng ký WFH')->first()->id;
+            $wfhId = ProposeCategory::where('name', 'Đăng ký WFH')
+                ->first()
+                ->id;
             $wfh = Propose::where('propose_category_id', $wfhId)
                 ->where('account_id', $account->id)
                 ->where('status', operator: 'approved')
@@ -132,7 +134,9 @@ class AttendanceAccountController extends Controller
             $wfh = number_format($wfh, 3);
             $account['day_off_used'] = $a;
             $account['hours_over_time'] = number_format($hoursOT, 2);
-            $account['workday'] = $totalWorkDay == 0 ? number_format($totalWorkDay + $wfh, 3) : number_format($totalWorkDay + $wfh, 3);
+            $account['workday'] = $totalWorkDay == 0 ?
+                number_format($totalWorkDay + $wfh, 3) :
+                number_format($totalWorkDay + $wfh, 3);
         }
 
         $accounts = $accounts->sortByDesc('workday');
