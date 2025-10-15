@@ -39,6 +39,7 @@ use App\Http\Controllers\Api\TagValueController;
 use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\DepartmentMemberController;
+use App\Http\Controllers\Api\DoorController;
 use App\Http\Controllers\Api\LeaveHistoryController;
 use App\Http\Controllers\Api\LoginHistoryController;
 use App\Http\Controllers\Api\NoticeController;
@@ -56,7 +57,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'store']);
 
-Route::middleware('trustIpWifi')->group(function () {
+// Route::middleware('trustIpWifi')->group(function () {
     Route::post('/register', [AccountController::class, 'register']);
     Route::post('send_email', [EmailController::class, 'sendEmail']);
     Route::put('load-youtube', [TaskController::class, 'loadYoutube']);
@@ -130,7 +131,7 @@ Route::middleware('trustIpWifi')->group(function () {
         Route::post('check-password', [AccountController::class, 'checkPassword']);
         Route::get('account-report-youtube', [YoutubeAccountController::class, 'accountReportYoutube']);
     });
-});
+// });
 
 Route::post('/check-in-out', [AttendanceController::class, 'checkInOut']);
 

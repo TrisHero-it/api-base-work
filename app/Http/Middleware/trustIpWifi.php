@@ -18,7 +18,7 @@ class trustIpWifi
     {
         $arrayIp = [
             "127.0.0.1",
-            "1.52.134.132"
+            "1.55.109.112"
         ];
         if (
             in_array(explode(',', $request->header('X-Forwarded-For'))[0], $arrayIp)
