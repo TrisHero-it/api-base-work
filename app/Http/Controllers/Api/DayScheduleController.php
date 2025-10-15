@@ -23,13 +23,17 @@ class DayScheduleController extends Controller
         $schedules = Schedule::query()
             ->whereMonth('day_of_week', $month)
             ->whereYear('day_of_week', $year)
-            ->orderBy('day_of_week');
-        if (!$request->filled('is_have_salary')) {
-            $schedules = $schedules->get();
-        } else {
-            $schedules = $schedules->where('is_have_salary', true)
-                ->get();
+            ->orderBy('day_of_week')
+            ->get();
+
+        foreach ($schedules as $schedule) {
+            if ($schedule->is_have_salary == false) {
+                $schedule->is_have_salary = false;
+            } else {
+                $schedule->is_have_salary = true;
+            }
         }
+
         if (Auth::user()->isSalesMember() && Auth::id() != 25) {
             foreach ($schedules as $schedule) {
                 $schedule->go_to_work = true;
@@ -110,13 +114,22 @@ class DayScheduleController extends Controller
                 }
             })->update([
                 'go_to_work' => false,
-                'description' => $request->description
+                'description' => $request->description,
+                'is_have_salary' => false,
             ]);
         }
 
         if (isset($request->is_not_holiday)) {
             Schedule::query()->whereIn('id', $request->is_not_holiday)->update([
                 'go_to_work' => true,
+                'is_have_salary' => false,
+            ]);
+        }
+
+        if ($request->filled('is_holiday_have_salary')) {
+            Schedule::query()->whereIn('id', $request->is_holiday_have_salary)->update([
+                'is_have_salary' => true,
+                'go_to_work' => false,
             ]);
         }
 
