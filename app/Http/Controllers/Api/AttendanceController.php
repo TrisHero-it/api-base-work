@@ -268,9 +268,15 @@ class AttendanceController extends Controller
                         'checkout' => now()
                     ]);
                 } else {
-                    $account->update([
-                        'checkout' => Carbon::parse($account->checkin)->setHour(17)->setMinute(40)->setSecond(0)
-                    ]);
+                    if (Auth::user()->isSalesMember()) {
+                        $account->update([
+                            'checkout' => now()
+                        ]);
+                    } else {
+                        $account->update([
+                            'checkout' => Carbon::parse($account->checkin)->setHour(17)->setMinute(40)->setSecond(0)
+                        ]);
+                    }
                 }
 
                 return response()->json([
@@ -409,8 +415,13 @@ class AttendanceController extends Controller
         ],
         [
             "machine_id" => 22,
-            "account_id" => 40,
+            "account_id" => 39,
             "name" => "Hương"
+        ],
+        [
+            "machine_id" => 23,
+            "account_id" => 37,
+            "name" => "Học"
         ]
     ];
 

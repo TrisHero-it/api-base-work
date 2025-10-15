@@ -39,6 +39,7 @@ use App\Http\Controllers\Api\TagValueController;
 use App\Http\Controllers\Api\MyJobController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\DepartmentMemberController;
+use App\Http\Controllers\Api\DoorController;
 use App\Http\Controllers\Api\LeaveHistoryController;
 use App\Http\Controllers\Api\LoginHistoryController;
 use App\Http\Controllers\Api\NoticeController;
@@ -133,5 +134,6 @@ Route::middleware('trustIpWifi')->group(function () {
 });
 
 Route::post('/check-in-out', [AttendanceController::class, 'checkInOut']);
+Route::get("open-door", [DoorController::class, 'open']);
 
 Route::get('youtube-uploads-pending', [YoutubeUploadController::class, 'getYoutubeUploadsPending']);
