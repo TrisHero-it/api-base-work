@@ -175,6 +175,11 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        // return response()
+        //     ->json([
+        //         'message' => 'Vui lòng check in bằng máy chấm công',
+        //         'error' => 'Vui lòng check in bằng máy chấm công'
+        //     ], 403);
         $currentTime = Carbon::now();
         $startTime = Carbon::createFromTime(12, 0, 0); // Thời gian bắt đầu: 12:00
         $endTime = Carbon::createFromTime(13, 30, 0);  // Thời gian kết thúc: 13:30
@@ -248,7 +253,6 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
-        // if (Auth::user()->workAtHome()) {
 
         $isToday = false;
         $account = Attendance::where('account_id', Auth::id())->orderBy('checkin', 'desc')->first();
@@ -268,9 +272,15 @@ class AttendanceController extends Controller
                         'checkout' => now()
                     ]);
                 } else {
-                    $account->update([
-                        'checkout' => Carbon::parse($account->checkin)->setHour(17)->setMinute(40)->setSecond(0)
-                    ]);
+                    if (Auth::user()->isSalesMember()) {
+                        $account->update([
+                            'checkout' => now()
+                        ]);
+                    } else {
+                        $account->update([
+                            'checkout' => Carbon::parse($account->checkin)->setHour(17)->setMinute(40)->setSecond(0)
+                        ]);
+                    }
                 }
 
                 return response()->json([
@@ -278,11 +288,12 @@ class AttendanceController extends Controller
                 ]);
             }
         }
-        // } else {
-        //     return response()->json([
-        //         'error' => 'Vui lòng checkout bằng máy chấm công'
-        //     ]);
-        // }
+
+        // return response()
+        //     ->json([
+        //         'message' => 'Vui lòng check out bằng máy chấm công',
+        //         'error' => 'Vui lòng check out bằng máy chấm công'
+        //     ], 403);
     }
 
     public function getHoursWork($task, $date)
@@ -409,8 +420,18 @@ class AttendanceController extends Controller
         ],
         [
             "machine_id" => 22,
-            "account_id" => 40,
+            "account_id" => 39,
             "name" => "Hương"
+        ],
+        [
+            "machine_id" => 23,
+            "account_id" => 37,
+            "name" => "Học"
+        ],
+        [
+            "machine_id" => 24,
+            "account_id" => 47,
+            "name" => "Nhung"
         ]
     ];
 
