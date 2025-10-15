@@ -37,7 +37,7 @@ class LoginController extends Controller
 
         $credentials = [
             'password' => $request->password,
-        ];
+        ];  
 
         if ($request->filled('email') && $request->email == $account->email) {
             $credentials['email'] = $request->email;
