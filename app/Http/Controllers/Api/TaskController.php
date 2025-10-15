@@ -214,6 +214,15 @@ class TaskController extends Controller
                 $data['code_youtube'] = $matches[1];
             }
         }
+
+        if ($request->account_id == Auth::id() && $request->filled('started_at')) {
+            $data['started_at'] = now();
+            if ($task->stage->expired_after_hours != null && $task->expired == null) {
+                $dateTime = new \DateTime($data['started_at']);
+                $dateTime->modify('+' . $task->stage->expired_after_hours . ' hours');
+                $data['expired'] = $dateTime->format('Y-m-d H:i:s');
+            }
+        }
         //  Nếu có tồn tại account_id thì là giao việc cho người khác thì thêm thông báo
         //  Nếu account_id == null thì là gỡ người làm nhiệm vụ
         if (isset($request->account_id) && $request->account_id == null) {
@@ -489,7 +498,7 @@ class TaskController extends Controller
             $url = "https://www.googleapis.com/youtube/v3/videos?id={$videoId}&key={$apiKey}&part=snippet,contentDetails,statistics";
             $response = file_get_contents($url);
             $data = json_decode($response, true);
-            if ($data['items'] == null) {   
+            if ($data['items'] == null) {
                 continue;
             }
             $dateTime = new \DateTime($data['items'][0]['snippet']['publishedAt']);
